@@ -11,6 +11,8 @@ const batteryWidget = document.querySelector(".battery-widget");
 const mouth = document.querySelector("#mouth");
 const computerShell = document.querySelector(".computer-shell");
 const hatAssembly = document.querySelector(".hat-assembly");
+const backPlug = document.querySelector("#back-plug");
+const floorOutlet = document.querySelector("#floor-outlet");
 const faceDisplay = document.querySelector("#face-display");
 const faceEyes = document.querySelectorAll(".face-eyes .eye");
 const skyScene = document.querySelector(".sky-scene");
@@ -184,6 +186,7 @@ let batteryHintTimer = null;
 let autoSkyCycleTimer = null;
 let isTerrorNightActive = false;
 let lastChatActivityAt = Date.now();
+let lastPointerActivityAt = Date.now();
 let hatBumpTimer = null;
 let dizzyTimer = null;
 let rainbowPukeTimer = null;
@@ -195,12 +198,21 @@ let hatDetached = false;
 let hatX = 0;
 let hatY = 0;
 let foodDrag = null;
+let plugDrag = null;
+let plugDetached = false;
+let plugInserted = false;
+let plugCharging = false;
+let plugX = 0;
+let plugY = 0;
+let chargeTimer = null;
 
 const BATTERY_MAX = 100;
 const LOW_BATTERY_THRESHOLD = 20;
 const BATTERY_DRAIN_INTERVAL = 7000;
 const BATTERY_DRAIN_STEP = 4;
 const BATTERY_FEED_GAIN = 24;
+const BATTERY_CHARGE_STEP = 10;
+const BATTERY_CHARGE_INTERVAL = 320;
 const AUTO_DAY_DURATION = 60000;
 const AUTO_NIGHT_DURATION = 60000;
 const CHAT_IDLE_GRACE_MS = 9000;
@@ -218,12 +230,16 @@ function markChatActivity() {
   lastChatActivityAt = Date.now();
 }
 
+function markPointerActivity() {
+  lastPointerActivityAt = Date.now();
+}
+
 function isChatActive() {
   return isRecording || Date.now() - lastChatActivityAt < CHAT_IDLE_GRACE_MS;
 }
 
 function isSleepyIdle() {
-  return !isRecording && Date.now() - lastChatActivityAt > SLEEPY_IDLE_MS;
+  return !isRecording && Date.now() - lastPointerActivityAt > SLEEPY_IDLE_MS;
 }
 
 function setMood(nextIndex) {
@@ -245,12 +261,118 @@ function setEyeLook(offsetX = 0, offsetY = 0) {
 function updateShellPosition() {
   computerShell.style.setProperty("--shell-offset-x", `${shellOffsetX}px`);
   computerShell.style.setProperty("--shell-offset-y", `${shellOffsetY}px`);
+  updatePlugCable();
 }
 
 function updateHatPosition() {
   if (!hatAssembly) return;
   hatAssembly.style.setProperty("--hat-x", `${hatX}px`);
   hatAssembly.style.setProperty("--hat-y", `${hatY}px`);
+}
+
+function updatePlugPosition() {
+  if (!backPlug) return;
+  backPlug.style.setProperty("--plug-x", `${plugX}px`);
+  backPlug.style.setProperty("--plug-y", `${plugY}px`);
+  updatePlugCable();
+}
+
+function getPlugAnchorPoint() {
+  if (!computerShell) {
+    return { x: 0, y: 0 };
+  }
+
+  const shellRect = computerShell.getBoundingClientRect();
+  return {
+    x: shellRect.right - 8,
+    y: shellRect.top + 156
+  };
+}
+
+function updatePlugCable() {
+  if (!backPlug) return;
+
+  if (!plugDetached && !plugInserted) {
+    backPlug.style.setProperty("--plug-cable-length", "38px");
+    backPlug.style.setProperty("--plug-cable-angle", "0deg");
+    return;
+  }
+
+  const anchor = getPlugAnchorPoint();
+  const plugRect = backPlug.getBoundingClientRect();
+  const dx = plugRect.right - anchor.x;
+  const dy = plugRect.top + plugRect.height / 2 - anchor.y;
+  const distance = Math.max(24, Math.hypot(dx, dy));
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  backPlug.style.setProperty("--plug-cable-length", `${distance}px`);
+  backPlug.style.setProperty("--plug-cable-angle", `${angle}deg`);
+}
+
+function stopPlugCharging() {
+  if (chargeTimer) {
+    window.clearInterval(chargeTimer);
+    chargeTimer = null;
+  }
+  plugCharging = false;
+  backPlug?.classList.remove("charging");
+  floorOutlet?.classList.remove("charging");
+}
+
+function dockPlugToOutlet() {
+  if (!backPlug || !floorOutlet) return;
+  const outletRect = floorOutlet.getBoundingClientRect();
+  plugDetached = true;
+  plugInserted = true;
+  backPlug.classList.add("detached", "plugged-in");
+  plugX = outletRect.left + outletRect.width - 20;
+  plugY = outletRect.top + 5;
+  updatePlugPosition();
+}
+
+function undockPlug() {
+  plugInserted = false;
+  stopPlugCharging();
+  if (!backPlug) return;
+  backPlug.classList.remove("plugged-in");
+  if (!plugDetached) {
+    backPlug.classList.remove("detached");
+  }
+}
+
+function startPlugCharging() {
+  dockPlugToOutlet();
+  stopPlugCharging();
+  plugCharging = true;
+  backPlug?.classList.add("charging");
+  floorOutlet?.classList.add("charging");
+  showSubtitle("滴，插上电了，正在充电。", false);
+  showBatteryMomentarily(2400);
+
+  chargeTimer = window.setInterval(() => {
+    if (batteryPercent >= BATTERY_MAX) {
+      stopPlugCharging();
+      return;
+    }
+
+    changeBattery(BATTERY_CHARGE_STEP);
+
+    if (isPoweredOff && batteryPercent >= 12) {
+      setPowerState(true);
+    }
+
+    showBatteryMomentarily(1200);
+
+    if (batteryPercent >= BATTERY_MAX) {
+      stopPlugCharging();
+      showSubtitle("电量充满了。", false);
+      if (screenTimer) {
+        window.clearTimeout(screenTimer);
+      }
+      screenTimer = window.setTimeout(() => {
+        showFaceOnly();
+      }, 1500);
+    }
+  }, BATTERY_CHARGE_INTERVAL);
 }
 
 function updateBatteryUI() {
@@ -293,6 +415,7 @@ function stopBatteryDrain() {
 }
 
 function triggerLowBatteryFall() {
+  if (isSleepyIdle()) return;
   lowPowerWarningShown = true;
   setBatteryVisible(true);
   showSubtitle("没电了，要掉下去了。", false);
@@ -335,7 +458,7 @@ function changeBattery(delta) {
 function startBatteryDrain() {
   stopBatteryDrain();
   batteryDrainTimer = window.setInterval(() => {
-    if (isPoweredOff || isChatActive() || isTerrorNightActive) return;
+    if (isPoweredOff || isChatActive() || isTerrorNightActive || isSleepyIdle() || plugCharging) return;
     changeBattery(-BATTERY_DRAIN_STEP);
   }, BATTERY_DRAIN_INTERVAL);
 }
@@ -466,6 +589,7 @@ function setPowerState(powerOn) {
     setBatteryVisible(false);
     showFaceOnly();
   } else {
+    stopPlugCharging();
     computerShell.classList.remove("hat-spinning");
     computerShell.classList.remove("grounded");
     screenSubtitle.style.display = "none";
@@ -483,7 +607,7 @@ function startTerrorNight() {
   skyScene.classList.add("terror-mode");
   computerShell.classList.add("terror-flicker");
   forcedFlight = true;
-  if (!isPoweredOff) {
+  if (!isPoweredOff && batteryPercent > 0) {
     setHatSpinning(true, null);
   } else {
     setHatSpinning(false);
@@ -577,6 +701,7 @@ function bumpHat() {
 
 function setupInteractiveFace() {
   window.addEventListener("pointermove", (event) => {
+    markPointerActivity();
     if (isPoweredOff || moodPanel.classList.contains("text-mode")) {
       setEyeLook(0, 0);
       return;
@@ -598,6 +723,7 @@ function setupInteractiveFace() {
   });
 
   computerShell.addEventListener("pointerdown", (event) => {
+    markPointerActivity();
     if (event.target.closest("#chat-form")) return;
     if (event.target.closest(".hat-assembly")) return;
     bumpHat();
@@ -635,6 +761,7 @@ function setupDragInteractions() {
   if (!computerShell || !hatAssembly) return;
 
   const onWindowPointerMove = (event) => {
+    markPointerActivity();
     if (shellDrag) {
       shellOffsetX = event.clientX - shellDrag.startX + shellDrag.originX;
       shellOffsetY = event.clientY - shellDrag.startY + shellDrag.originY;
@@ -646,10 +773,18 @@ function setupDragInteractions() {
       hatX = event.clientX - hatDrag.offsetX;
       hatY = event.clientY - hatDrag.offsetY;
       updateHatPosition();
+      return;
+    }
+
+    if (plugDrag) {
+      plugX = event.clientX - plugDrag.offsetX;
+      plugY = event.clientY - plugDrag.offsetY;
+      updatePlugPosition();
     }
   };
 
-  const onWindowPointerUp = () => {
+  const onWindowPointerUp = (event) => {
+    markPointerActivity();
     if (shellDrag) {
       computerShell.classList.remove("dragging");
       shellDrag = null;
@@ -659,13 +794,39 @@ function setupDragInteractions() {
     if (hatDrag) {
       hatDrag = null;
     }
+
+    if (plugDrag) {
+      const outletRect = floorOutlet?.getBoundingClientRect();
+      const isNearOutlet =
+        outletRect &&
+        event.clientX >= outletRect.left - 34 &&
+        event.clientX <= outletRect.right + 34 &&
+        event.clientY >= outletRect.top - 28 &&
+        event.clientY <= outletRect.bottom + 28;
+
+      if (isNearOutlet && (isPoweredOff || batteryPercent <= LOW_BATTERY_THRESHOLD)) {
+        startPlugCharging();
+      } else {
+        stopPlugCharging();
+        plugInserted = false;
+        if (backPlug) {
+          backPlug.classList.remove("plugged-in");
+          if (!plugDetached) {
+            backPlug.classList.remove("detached");
+          }
+        }
+      }
+
+      plugDrag = null;
+    }
   };
 
   window.addEventListener("pointermove", onWindowPointerMove);
   window.addEventListener("pointerup", onWindowPointerUp);
 
   computerShell.addEventListener("pointerdown", (event) => {
-    if (event.target.closest(".hat-assembly") || event.target.closest("#chat-form")) return;
+    markPointerActivity();
+    if (event.target.closest(".hat-assembly") || event.target.closest("#chat-form") || event.target.closest(".back-plug")) return;
     event.preventDefault();
     setDizzy(false);
     computerShell.classList.add("dragging");
@@ -678,6 +839,7 @@ function setupDragInteractions() {
   });
 
   hatAssembly.addEventListener("pointerdown", (event) => {
+    markPointerActivity();
     event.preventDefault();
     const rect = hatAssembly.getBoundingClientRect();
 
@@ -692,6 +854,24 @@ function setupDragInteractions() {
     hatDrag = {
       offsetX: event.clientX - hatX,
       offsetY: event.clientY - hatY
+    };
+  });
+
+  backPlug?.addEventListener("pointerdown", (event) => {
+    markPointerActivity();
+    event.preventDefault();
+    stopPlugCharging();
+    const rect = backPlug.getBoundingClientRect();
+    plugDetached = true;
+    plugInserted = false;
+    backPlug.classList.add("detached");
+    backPlug.classList.remove("plugged-in");
+    plugX = rect.left;
+    plugY = rect.top;
+    updatePlugPosition();
+    plugDrag = {
+      offsetX: event.clientX - plugX,
+      offsetY: event.clientY - plugY
     };
   });
 }
@@ -952,6 +1132,7 @@ function setupFoodDrag() {
   };
 
   const beginFoodDrag = (event, foodType, existingFood = null) => {
+    markPointerActivity();
     event.preventDefault();
     const rect = existingFood?.getBoundingClientRect();
     spawnFood(event.clientX, event.clientY, foodType, existingFood);

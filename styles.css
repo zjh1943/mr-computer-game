@@ -237,10 +237,10 @@ body:not(.night-mode) .sky-moon.moon-crescent .moon-face::after {
 }
 
 body.terror-night .cloud-eye {
-  top: 8px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+  top: 7px;
+  width: 34px;
+  height: 16px;
+  border-radius: 999px;
   background: #f6f2ea;
   box-shadow: 0 0 0 2px rgba(38, 0, 0, 0.35);
 }
@@ -250,21 +250,21 @@ body.terror-night .cloud-eye::after {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 8px;
-  height: 8px;
-  margin-left: -4px;
-  margin-top: -4px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
   border-radius: 50%;
   background: #120000;
   animation: cloud-look 1.5s ease-in-out infinite;
 }
 
 body.terror-night .left-eye {
-  left: 32px;
+  left: 38px;
 }
 
 body.terror-night .right-eye {
-  right: 32px;
+  display: none;
 }
 
 body.terror-night .cloud,
@@ -410,6 +410,85 @@ body.terror-night .sun-eye-right {
   transition: transform 360ms ease, margin-top 280ms ease;
   touch-action: none;
   user-select: none;
+}
+
+.back-plug {
+  --plug-x: 0px;
+  --plug-y: 0px;
+  --plug-cable-length: 38px;
+  --plug-cable-angle: 0deg;
+  position: absolute;
+  right: -34px;
+  top: 122px;
+  width: 42px;
+  height: 26px;
+  z-index: 2;
+  cursor: grab;
+  touch-action: none;
+}
+
+.back-plug::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 11px;
+  width: var(--plug-cable-length);
+  height: 4px;
+  border-radius: 999px;
+  background: #2a2a2a;
+  transform-origin: 0 50%;
+  transform: rotate(var(--plug-cable-angle));
+}
+
+.back-plug.detached,
+.back-plug.plugged-in {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translate(var(--plug-x), var(--plug-y));
+  z-index: 18;
+}
+
+.back-plug.detached::before,
+.back-plug.plugged-in::before {
+  left: 0;
+  top: 10px;
+}
+
+.back-plug.plugged-in {
+  cursor: default;
+}
+
+.back-plug.charging .plug-head {
+  box-shadow: 0 0 14px rgba(255, 237, 119, 0.72);
+}
+
+.plug-head {
+  position: absolute;
+  right: 0;
+  top: 3px;
+  width: 26px;
+  height: 20px;
+  border-radius: 8px 8px 6px 6px;
+  background: #d8dce0;
+  border: 2px solid #8a9097;
+}
+
+.plug-prong {
+  position: absolute;
+  right: -4px;
+  width: 4px;
+  height: 7px;
+  border-radius: 2px;
+  background: #d9b55f;
+}
+
+.prong-left {
+  top: 6px;
+}
+
+.prong-right {
+  top: 14px;
 }
 
 .computer-shell.grounded {
@@ -1043,6 +1122,26 @@ body.terror-night .terror-mask {
 
 .outlet {
   display: none;
+}
+
+.floor-outlet {
+  position: absolute;
+  left: 50%;
+  bottom: 356px;
+  width: 50px;
+  height: 34px;
+  margin-left: -25px;
+  border-radius: 12px;
+  background: #d6d9dd;
+  border: 3px solid #8f959b;
+  z-index: 6;
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.16);
+}
+
+.floor-outlet.charging {
+  box-shadow:
+    0 0 0 4px rgba(255, 233, 131, 0.22),
+    0 8px 14px rgba(0, 0, 0, 0.2);
 }
 
 .cables {

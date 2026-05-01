@@ -47,17 +47,33 @@
 - 帽子可以单独拿下来，放到地上。
 - 左下角有恐怖之夜按钮，右下角有白天夜晚按钮。
 
-## 运行方式
+## 如何启动项目
 
-这是一个纯前端静态项目，直接用本地静态服务器打开即可，例如：
+这是一个纯前端静态项目，不需要安装额外依赖。
+
+1. 先进入项目目录：
+
+```bash
+cd mr-computer-game
+```
+
+2. 在项目目录里启动一个本地静态服务器：
 
 ```bash
 python3 -m http.server 4173
 ```
 
-然后访问：
+3. 打开浏览器，访问：
 
 `http://127.0.0.1:4173/`
+
+如果你是从 GitHub 刚下载下来的，也可以直接按这个顺序操作：
+
+```bash
+git clone https://github.com/zjh1943/mr-computer-game.git
+cd mr-computer-game
+python3 -m http.server 4173
+```
 
 ## 文件说明
 

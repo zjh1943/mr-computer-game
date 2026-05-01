@@ -22,6 +22,7 @@
         <span class="sun-ray sun-ray-6"></span>
         <span class="sun-ray sun-ray-7"></span>
         <span class="sun-ray sun-ray-8"></span>
+        <span class="sky-bubble" aria-hidden="true"></span>
       </div>
       <div id="sky-moon" class="sky-moon moon-round">
         <span class="moon-face">
@@ -29,11 +30,14 @@
           <span class="moon-eye moon-eye-right"></span>
           <span class="moon-mouth"></span>
         </span>
+        <span class="sky-bubble" aria-hidden="true"></span>
       </div>
       <span class="cloud cloud-one"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
       <span class="cloud cloud-two"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
       <span class="cloud cloud-three"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
       <span class="cloud cloud-four"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <div class="rain-field" aria-hidden="true"></div>
+      <div class="snow-field" aria-hidden="true"></div>
     </div>
     <main class="stage">
       <section class="computer-shell grounded" aria-label="电脑先生">
@@ -66,6 +70,12 @@
                   <span id="battery-level" class="battery-level"></span>
                 </span>
               </div>
+              <div class="rain-error-code" aria-hidden="true">
+                <span>ERR_RAIN_WATER_X_X</span>
+                <span>取消 取消 取消 X X X</span>
+                <span>while(rain){ error++; }</span>
+                <span>0xSUN_OFFLINE ××××××</span>
+              </div>
               <div id="face-display" class="face-display">
                 <div class="face-eyes" aria-hidden="true">
                   <span class="eye"></span>
@@ -94,11 +104,10 @@
           <span class="desk-leg leg-left"></span>
           <span class="desk-leg leg-right"></span>
         </div>
-      </div>
-
-      <div id="floor-outlet" class="floor-outlet" aria-hidden="true">
-        <span class="outlet-hole"></span>
-        <span class="outlet-hole"></span>
+        <div id="floor-outlet" class="floor-outlet">
+          <span class="outlet-hole"></span>
+          <span class="outlet-hole"></span>
+        </div>
       </div>
 
       <div class="cables" aria-hidden="true">
@@ -168,6 +177,8 @@
       </section>
       <button id="terror-toggle" class="terror-toggle" type="button">开启恐怖之夜</button>
       <button id="day-night-toggle" class="day-night-toggle" type="button">切到夜晚</button>
+      <button id="weather-toggle" class="weather-toggle" type="button">切到多云</button>
+      <button id="light-toggle" class="light-toggle" type="button">开灯</button>
     </main>
 
     <script src="./app.js"></script>

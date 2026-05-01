@@ -13,6 +13,7 @@
   --muted: #9db7ca;
   --glow: 0 0 40px rgba(94, 226, 209, 0.25);
   --shadow: 0 22px 80px rgba(0, 0, 0, 0.45);
+  --ground-line: 66%;
   font-family: "Hiragino Sans GB", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
@@ -23,14 +24,39 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(180deg, #7fd6ff 0%, #b8ecff 58%, #87d65b 58%, #64b03f 100%);
+  min-height: 100svh;
+  background: linear-gradient(180deg, #7fd6ff 0%, #b8ecff var(--ground-line), #87d65b var(--ground-line), #64b03f 100%);
   color: var(--text);
   overflow-x: hidden;
   transition: background 500ms ease;
 }
 
 body.night-mode {
-  background: linear-gradient(180deg, #071326 0%, #18253d 58%, #355b2a 58%, #274420 100%);
+  background: linear-gradient(180deg, #071326 0%, #18253d var(--ground-line), #355b2a var(--ground-line), #274420 100%);
+}
+
+body.weather-cloudy:not(.night-mode) {
+  background: linear-gradient(180deg, #95cde8 0%, #c9e1ec var(--ground-line), #87d65b var(--ground-line), #64b03f 100%);
+}
+
+body.weather-rain:not(.night-mode) {
+  background: linear-gradient(180deg, #6f94aa 0%, #aabcc8 var(--ground-line), #78bd50 var(--ground-line), #58943a 100%);
+}
+
+body.weather-snow:not(.night-mode) {
+  background: linear-gradient(180deg, #bddfff 0%, #edf8ff var(--ground-line), #b7df90 var(--ground-line), #91c86a 100%);
+}
+
+body.night-mode.weather-cloudy {
+  background: linear-gradient(180deg, #0a1424 0%, #253147 var(--ground-line), #355b2a var(--ground-line), #274420 100%);
+}
+
+body.night-mode.weather-rain {
+  background: linear-gradient(180deg, #07101d 0%, #202b38 var(--ground-line), #2e4a28 var(--ground-line), #20391d 100%);
+}
+
+body.night-mode.weather-snow {
+  background: linear-gradient(180deg, #10223b 0%, #35445c var(--ground-line), #3f6536 var(--ground-line), #294c25 100%);
 }
 
 body.night-mode .grass {
@@ -38,14 +64,29 @@ body.night-mode .grass {
 }
 
 body::before {
-  display: none;
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 248, 172, 0.34) 0 110px, rgba(255, 239, 142, 0.15) 111px 260px, transparent 360px);
+  mix-blend-mode: screen;
+  transition: opacity 220ms ease;
+}
+
+body.light-on::before {
+  opacity: 1;
 }
 
 .stage {
   position: relative;
   width: min(760px, calc(100vw - 28px));
+  min-height: 100vh;
+  min-height: 100svh;
   margin: 0 auto;
-  padding: 28px 0 44px;
+  padding: 1px 0 44px;
 }
 
 .sky-scene {
@@ -57,12 +98,24 @@ body::before {
   transition: filter 400ms ease, opacity 400ms ease;
 }
 
+body.weather-cloudy .sky-scene {
+  filter: saturate(0.78) brightness(0.92);
+}
+
+body.weather-rain .sky-scene {
+  filter: saturate(0.62) brightness(0.78);
+}
+
+body.weather-snow .sky-scene {
+  filter: saturate(0.72) brightness(1.04);
+}
+
 .sky-scene.terror-mode {
   filter: contrast(1.08) brightness(0.72);
 }
 
 body.terror-night {
-  background: linear-gradient(180deg, #2b0000 0%, #4f0808 38%, #5f1212 58%, #341010 100%);
+  background: linear-gradient(180deg, #2b0000 0%, #4f0808 38%, #5f1212 var(--ground-line), #341010 100%);
 }
 
 body.terror-night .grass {
@@ -72,31 +125,63 @@ body.terror-night .grass {
 .sky-sun,
 .sky-moon {
   position: absolute;
-  left: 50%;
-  top: 88px;
+  left: 0;
+  top: 0;
   width: 108px;
   height: 108px;
-  margin-left: -54px;
-  transition: transform 800ms ease, opacity 800ms ease, filter 600ms ease;
+  margin-left: 0;
+  animation: celestial-cross 60s linear forwards;
+  animation-play-state: paused;
+  transition: opacity 800ms ease, filter 600ms ease;
 }
 
 .sky-sun {
-  transform: translateY(0);
   opacity: 1;
 }
 
 .sky-moon {
-  transform: translateY(180px);
   opacity: 0;
 }
 
+.sky-bubble {
+  position: absolute;
+  left: 86px;
+  top: 12px;
+  min-width: 52px;
+  padding: 8px 10px;
+  border-radius: 14px 14px 14px 4px;
+  background: #4aa3ff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(4px) scale(0.96);
+  transition: opacity 180ms ease, transform 180ms ease;
+  box-shadow: 0 8px 16px rgba(20, 80, 150, 0.24);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sky-bubble::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 22px;
+  border: 7px solid transparent;
+  border-right-color: #4aa3ff;
+}
+
+.sky-bubble.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 body.night-mode .sky-sun {
-  transform: translateY(180px);
   opacity: 0;
 }
 
 body.night-mode .sky-moon {
-  transform: translateY(0);
   opacity: 1;
 }
 
@@ -121,8 +206,8 @@ body.night-mode .sky-moon {
   height: 10px;
   border-radius: 50%;
   background: #2e2400;
-  animation: eye-shift 3.4s ease-in-out infinite;
-  transition: transform 240ms ease;
+  transform: translate(var(--sky-eye-look-x, 0px), var(--sky-eye-look-y, 0px));
+  transition: transform 90ms linear;
 }
 
 .sun-eye-left,
@@ -133,6 +218,18 @@ body.night-mode .sky-moon {
 .sun-eye-right,
 .moon-eye-right {
   right: 31px;
+}
+
+.sun-eye {
+  top: 38px;
+}
+
+.sun-eye-left {
+  left: 40px;
+}
+
+.sun-eye-right {
+  right: 40px;
 }
 
 .sun-mouth,
@@ -172,14 +269,14 @@ body.night-mode .sky-moon {
 
 .sky-sun.sun-looking-computer .sun-eye-left,
 .sky-sun.sun-looking-computer .sun-eye-right {
-  transform: translateX(7px) translateY(1px);
+  transform: translate(var(--sky-eye-look-x, 0px), var(--sky-eye-look-y, 0px));
 }
 
 .sky-sun.sun-looking-computer .sun-mouth {
   transform: translateX(4px) rotate(4deg);
 }
 
-.sky-sun.sun-swaying {
+.sky-sun.sun-swaying .sun-core {
   animation: sun-sway 2.8s ease-in-out;
 }
 
@@ -204,13 +301,89 @@ body:not(.night-mode) .sky-moon.moon-crescent .moon-face::after {
 }
 
 .cloud {
+  --cloud-scale: 1;
   position: absolute;
   display: block;
   width: 110px;
   height: 34px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.95);
-  animation: drift-left 28s linear infinite;
+  animation: drift-east-west 28s linear infinite;
+}
+
+body.weather-cloudy .cloud,
+body.weather-rain .cloud,
+body.weather-snow .cloud {
+  opacity: 1;
+  filter: grayscale(0.35) brightness(0.92);
+}
+
+body.weather-cloudy .cloud::before,
+body.weather-cloudy .cloud::after,
+body.weather-rain .cloud::before,
+body.weather-rain .cloud::after,
+body.weather-snow .cloud::before,
+body.weather-snow .cloud::after {
+  filter: grayscale(0.35) brightness(0.92);
+}
+
+body.weather-cloudy .cloud-one,
+body.weather-rain .cloud-one,
+body.weather-snow .cloud-one {
+  --cloud-scale: 1.2;
+}
+
+body.weather-cloudy .cloud-two,
+body.weather-rain .cloud-two,
+body.weather-snow .cloud-two {
+  --cloud-scale: 1.08;
+}
+
+body.weather-cloudy .cloud-three,
+body.weather-rain .cloud-three,
+body.weather-snow .cloud-three {
+  --cloud-scale: 1.32;
+}
+
+body.weather-cloudy .cloud-four,
+body.weather-rain .cloud-four,
+body.weather-snow .cloud-four {
+  --cloud-scale: 0.92;
+}
+
+.rain-field {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(110deg, rgba(255, 255, 255, 0.55) 0 2px, transparent 2px 18px);
+  background-size: 90px 90px;
+  animation: rain-fall 0.42s linear infinite;
+  transition: opacity 300ms ease;
+}
+
+body.weather-rain .rain-field {
+  opacity: 0.62;
+}
+
+.snow-field {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 3px, transparent 4px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.7) 0 2px, transparent 3px);
+  background-size: 92px 92px, 136px 136px, 188px 188px;
+  background-position: 0 -92px, 42px -136px, 90px -188px;
+  animation: snow-fall 7s linear infinite;
+  transition: opacity 300ms ease;
+}
+
+body.weather-snow .snow-field {
+  opacity: 0.82;
 }
 
 .cloud-eye {
@@ -346,27 +519,30 @@ body.terror-night .sun-eye-right {
 
 .cloud-one {
   top: 72px;
-  right: -120px;
+  left: -150px;
+  animation-delay: -6s;
 }
 
 .cloud-two {
   top: 140px;
-  right: -180px;
-  transform: scale(0.8);
+  left: -210px;
+  --cloud-scale: 0.8;
   animation-duration: 34s;
+  animation-delay: -16s;
 }
 
 .cloud-three {
   top: 46px;
-  right: -220px;
-  transform: scale(1.15);
+  left: -260px;
+  --cloud-scale: 1.15;
   animation-duration: 40s;
+  animation-delay: -24s;
 }
 
 .cloud-four {
   top: 200px;
-  right: -140px;
-  transform: scale(0.72);
+  left: -170px;
+  --cloud-scale: 0.72;
   animation-duration: 30s;
   animation-delay: -12s;
 }
@@ -399,8 +575,9 @@ body.terror-night .sun-eye-right {
   --shell-state-y: 0px;
   --shell-rotate: 0deg;
   position: relative;
+  z-index: 5;
   max-width: 300px;
-  margin: 300px auto 0;
+  margin: clamp(168px, 25svh, 230px) auto 0;
   padding: 34px 0 0;
   border-radius: 0;
   background: transparent;
@@ -410,6 +587,53 @@ body.terror-night .sun-eye-right {
   transition: transform 360ms ease, margin-top 280ms ease;
   touch-action: none;
   user-select: none;
+}
+
+.computer-shell::before,
+.computer-shell::after {
+  content: "";
+  position: absolute;
+  left: 42px;
+  top: 54px;
+  width: 216px;
+  height: 190px;
+  border-radius: 28px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 9;
+}
+
+.computer-shell::before {
+  background:
+    radial-gradient(circle at 24px 18px, #ffffff 0 5px, transparent 6px),
+    radial-gradient(circle at 74px 8px, #eef8ff 0 4px, transparent 5px),
+    radial-gradient(circle at 132px 22px, #ffffff 0 6px, transparent 7px),
+    radial-gradient(circle at 180px 12px, #eef8ff 0 4px, transparent 5px),
+    radial-gradient(circle at 44px 74px, rgba(255, 255, 255, 0.92) 0 4px, transparent 5px),
+    radial-gradient(circle at 166px 92px, rgba(255, 255, 255, 0.9) 0 5px, transparent 6px);
+}
+
+.computer-shell.snow-covered::before {
+  opacity: 1;
+}
+
+.computer-shell::after {
+  background:
+    radial-gradient(ellipse at 42px 42px, rgba(98, 198, 255, 0.86) 0 5px, transparent 6px),
+    radial-gradient(ellipse at 92px 18px, rgba(178, 231, 255, 0.9) 0 4px, transparent 5px),
+    radial-gradient(ellipse at 152px 58px, rgba(98, 198, 255, 0.78) 0 6px, transparent 7px),
+    radial-gradient(ellipse at 188px 112px, rgba(178, 231, 255, 0.86) 0 4px, transparent 5px),
+    linear-gradient(180deg, transparent 0 12px, rgba(105, 205, 255, 0.34) 13px 56px, transparent 57px 100%);
+  background-size: auto, auto, auto, auto, 8px 70px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 34px 22px;
+}
+
+.computer-shell.wet::after {
+  opacity: 1;
+}
+
+.computer-shell.sun-drying::after {
+  animation: sun-dry 1.9s ease-out forwards;
 }
 
 .back-plug {
@@ -573,6 +797,109 @@ body.terror-night .sun-eye-right {
   transform: translate(0, 0);
 }
 
+.computer-shell.blinking .eye {
+  transform: translate(var(--eye-look-x, 0px), var(--eye-look-y, 0px)) scaleY(0.12);
+}
+
+.computer-shell.rain-squint .eye {
+  width: 26px;
+  height: 26px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 24px;
+  text-align: center;
+}
+
+.computer-shell.rain-squint .eye::before {
+  display: block;
+  transform: translateY(-3px);
+}
+
+.computer-shell.rain-squint .eye:first-child::before {
+  content: ">";
+}
+
+.computer-shell.rain-squint .eye:last-child::before {
+  content: "<";
+}
+
+.computer-shell.rain-squint.blinking .eye {
+  transform: translate(var(--eye-look-x, 0px), var(--eye-look-y, 0px));
+}
+
+.computer-shell.rained-on .screen-bezel {
+  animation: rain-shiver 0.34s ease-in-out infinite;
+}
+
+.computer-shell.rain-error .screen-bezel {
+  animation: rain-error-shake 0.12s linear infinite;
+}
+
+.computer-shell.rain-code-mode {
+  animation: rain-code-sway 3.4s ease-in-out infinite;
+}
+
+.computer-shell.rain-code-mode .screen-bezel {
+  animation: none;
+}
+
+.computer-shell.rain-code-mode .mood-panel {
+  animation: code-screen-color 2.8s ease-in-out infinite;
+}
+
+.computer-shell.rain-error .screen-subtitle {
+  color: #ff4d4d;
+  font-size: 28px;
+  font-weight: 900;
+  text-shadow:
+    2px 0 #ffffff,
+    -2px 0 #ffffff,
+    0 0 14px rgba(255, 0, 0, 0.75);
+  animation: error-flash 0.24s steps(2, end) infinite;
+}
+
+.computer-shell.rain-code-mode .screen-subtitle {
+  width: 150px;
+  color: #ffdddd;
+  font-size: 15px;
+  line-height: 1.28;
+  word-break: break-all;
+}
+
+.rain-error-code {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  z-index: 4;
+  display: none;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  color: #93ff9d;
+  font-family: "Courier New", monospace;
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: left;
+  text-shadow: 0 0 8px rgba(125, 255, 143, 0.7);
+  pointer-events: none;
+}
+
+.rain-error-code::after {
+  content: "X X X X X X X X X X X X X X X X";
+  color: #ff5252;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.computer-shell.rain-code-mode .rain-error-code {
+  display: grid;
+  animation: code-glitch 0.16s steps(2, end) infinite;
+}
+
 .computer-shell.sleepy .mouth-triangle,
 .computer-shell.sleepy .mouth-open {
   width: 24px;
@@ -680,9 +1007,10 @@ body.terror-night .head-hat {
 
 .screen-bezel {
   position: relative;
+  z-index: 2;
   width: 202px;
   margin: 0 auto;
-  padding: 12px 12px 30px;
+  padding: 12px 12px 0;
   border-radius: 0;
   background: transparent;
   border: 0;
@@ -692,6 +1020,7 @@ body.terror-night .head-hat {
 .screen-bezel::before {
   content: "";
   position: absolute;
+  z-index: -1;
   left: 50%;
   bottom: -18px;
   width: 18px;
@@ -703,6 +1032,7 @@ body.terror-night .head-hat {
 .screen-bezel::after {
   content: "";
   position: absolute;
+  z-index: -1;
   left: 50%;
   bottom: -36px;
   width: 74px;
@@ -735,7 +1065,14 @@ body.terror-night .head-hat {
   text-align: center;
   align-content: center;
   position: relative;
+  overflow: hidden;
   box-shadow: none;
+}
+
+body.light-on .mood-panel {
+  box-shadow:
+    0 0 18px rgba(255, 246, 157, 0.62),
+    0 0 46px rgba(255, 225, 91, 0.36);
 }
 
 .computer-shell.powered-off .mood-panel {
@@ -841,16 +1178,23 @@ body.terror-night .head-hat {
   width: 100%;
   margin-top: 6px;
   animation: float-face 2.6s ease-in-out infinite;
+  transform: translate(var(--face-peek-x, 0px), var(--face-peek-y, 0px));
 }
 
 .terror-mask {
   position: absolute;
-  inset: 26px 24px 34px;
-  border-radius: 20px 20px 26px 26px;
-  background: linear-gradient(180deg, #e9e9e9 0%, #bfc3c8 100%);
-  border: 3px solid #73787d;
+  left: 50%;
+  top: 26px;
+  width: 112px;
+  height: 112px;
+  transform: translateX(-50%);
+  border-radius: 8px;
+  background: #eeeeee;
+  border: 4px solid #2f3337;
   display: none;
-  box-shadow: 0 10px 16px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    inset 0 -10px 0 rgba(0, 0, 0, 0.08),
+    0 0 18px rgba(255, 255, 255, 0.18);
 }
 
 .terror-mask-eye,
@@ -860,28 +1204,30 @@ body.terror-night .head-hat {
 }
 
 .terror-mask-eye {
-  top: 34px;
-  width: 20px;
-  height: 14px;
-  clip-path: polygon(0 50%, 18% 0, 100% 0, 82% 100%, 0 100%);
+  top: 32px;
+  width: 26px;
+  height: 28px;
+  border-radius: 50% 50% 46% 46%;
 }
 
 .terror-mask-eye-left {
-  left: 20px;
+  left: 22px;
 }
 
 .terror-mask-eye-right {
-  right: 20px;
-  transform: scaleX(-1);
+  right: 22px;
 }
 
 .terror-mask-mouth {
   left: 50%;
   bottom: 22px;
-  width: 42px;
-  height: 12px;
-  margin-left: -21px;
-  border-radius: 999px;
+  width: 48px;
+  height: 20px;
+  margin-left: -24px;
+  border-radius: 0 0 18px 18px;
+  background:
+    linear-gradient(90deg, transparent 0 14%, #eeeeee 14% 20%, transparent 20% 36%, #eeeeee 36% 42%, transparent 42% 58%, #eeeeee 58% 64%, transparent 64% 80%, #eeeeee 80% 86%, transparent 86% 100%),
+    #161616;
 }
 
 .face-eyes {
@@ -910,55 +1256,51 @@ body.terror-night .head-hat {
   align-items: center;
   width: 112px;
   animation: cheek-bounce 2.6s ease-in-out infinite;
+  transform: translate(var(--face-look-x, 0px), var(--face-look-y, 0px));
+  transition: transform 90ms linear;
 }
 
 .cheek {
   position: relative;
-  width: 18px;
-  height: 12px;
-}
-
-.cheek::before,
-.cheek::after,
-.cheek > span {
-  content: "";
-  position: absolute;
-  top: 1px;
-  width: 2px;
-  height: 10px;
-  background: #ffffff;
-  transform: rotate(35deg);
+  width: 22px;
+  height: 14px;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 14px;
+  text-align: center;
 }
 
 .cheek::before {
-  left: 2px;
-}
-
-.cheek::after {
-  left: 8px;
+  content: "M";
+  position: absolute;
+  inset: 0;
 }
 
 .cheek-left {
-  transform: scaleX(-1);
+  transform: none;
 }
 
 .mouth {
   transition: transform 120ms ease, clip-path 120ms ease, width 120ms ease, height 120ms ease;
   background: #ffffff;
+  transform: translate(var(--face-look-x, 0px), var(--face-look-y, 0px));
+  border-radius: 0 0 18px 18px;
 }
 
 .mouth-triangle {
   width: 46px;
   height: 50px;
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  clip-path: polygon(0 0, 100% 0, 58% 82%, 50% 94%, 42% 82%);
   animation: idle-mouth 2.8s ease-in-out infinite;
 }
 
 .mouth-open {
   width: 38px;
   height: 42px;
-  clip-path: polygon(50% 100%, 10% 0, 90% 0);
-  transform: scaleY(0.82);
+  clip-path: polygon(10% 0, 90% 0, 58% 80%, 50% 92%, 42% 80%);
+  transform: translate(var(--face-look-x, 0px), var(--face-look-y, 0px)) scaleY(0.82);
 }
 
 .rainbow-vomit {
@@ -985,8 +1327,17 @@ body.terror-night .face-display {
   animation: float-face 1.2s ease-in-out infinite;
 }
 
+body.terror-night .mood-panel.text-mode .face-display {
+  display: grid;
+}
+
 body.terror-night .face-cheeks {
-  opacity: 0.15;
+  opacity: 0;
+}
+
+body.terror-night .face-eyes,
+body.terror-night #mouth {
+  opacity: 0;
 }
 
 body.terror-night .eye,
@@ -997,7 +1348,14 @@ body.terror-night .mouth {
 
 body.terror-night .terror-mask {
   display: block;
-  animation: terror-mask-shift 0.48s steps(2) infinite;
+  z-index: 3;
+}
+
+body.terror-night .screen-subtitle {
+  position: relative;
+  z-index: 2;
+  max-width: 92px;
+  font-size: 13px;
 }
 
 .screen-subtitle {
@@ -1098,9 +1456,10 @@ body.terror-night .terror-mask {
 
 .desk-wrap {
   position: relative;
+  z-index: 4;
   width: 314px;
-  margin: -6px auto 0;
-  padding-bottom: 176px;
+  margin: 48px auto 0;
+  padding-bottom: 72px;
 }
 
 .desk-leg {
@@ -1126,15 +1485,15 @@ body.terror-night .terror-mask {
 
 .floor-outlet {
   position: absolute;
-  left: 50%;
-  bottom: 356px;
+  top: 52px;
+  right: 34px;
   width: 50px;
   height: 34px;
-  margin-left: -25px;
+  margin-left: 0;
   border-radius: 12px;
   background: #d6d9dd;
   border: 3px solid #8f959b;
-  z-index: 6;
+  z-index: 7;
   box-shadow: 0 8px 14px rgba(0, 0, 0, 0.16);
 }
 
@@ -1270,6 +1629,35 @@ body.terror-night .terror-mask {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 18%, #7ad14a 18%, #5aa432 100%);
   pointer-events: none;
   z-index: 0;
+}
+
+.grass::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18%;
+  height: 46px;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 8% 16px, #ffffff 0 26px, transparent 27px),
+    radial-gradient(ellipse at 28% 12px, #eef8ff 0 30px, transparent 31px),
+    radial-gradient(ellipse at 52% 18px, #ffffff 0 34px, transparent 35px),
+    radial-gradient(ellipse at 78% 13px, #eef8ff 0 28px, transparent 29px),
+    radial-gradient(ellipse at 96% 20px, #ffffff 0 32px, transparent 33px);
+  transition: opacity 300ms ease;
+}
+
+body.weather-rain .grass {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 18%, #6aa6d8 18%, #3f7fb2 100%);
+}
+
+body.weather-snow .grass {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 18%, #f7fbff 18%, #dcecf7 100%);
+}
+
+body.weather-snow .grass::before {
+  opacity: 1;
 }
 
 .food-zone {
@@ -1577,6 +1965,45 @@ body.terror-night .terror-mask {
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
 }
 
+.weather-toggle {
+  position: fixed;
+  right: 22px;
+  top: 22px;
+  bottom: auto;
+  z-index: 8;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #111111;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+.light-toggle {
+  position: fixed;
+  right: 22px;
+  top: 70px;
+  z-index: 8;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 244, 167, 0.92);
+  color: #261c00;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+body.light-on .light-toggle {
+  background: rgba(52, 52, 52, 0.92);
+  color: #fff3b0;
+}
+
 .terror-toggle {
   position: fixed;
   left: 22px;
@@ -1687,10 +2114,10 @@ body.terror-night .tree-right::before {
 @keyframes float-face {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translate(var(--face-peek-x, 0px), var(--face-peek-y, 0px));
   }
   50% {
-    transform: translateY(-4px);
+    transform: translate(var(--face-peek-x, 0px), calc(var(--face-peek-y, 0px) - 4px));
   }
 }
 
@@ -1709,10 +2136,10 @@ body.terror-night .tree-right::before {
 @keyframes cheek-bounce {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translate(var(--face-look-x, 0px), var(--face-look-y, 0px));
   }
   50% {
-    transform: translateY(2px);
+    transform: translate(var(--face-look-x, 0px), calc(var(--face-look-y, 0px) + 2px));
   }
 }
 
@@ -1722,6 +2149,130 @@ body.terror-night .tree-right::before {
   }
   to {
     transform: scaleY(1.04) rotate(2deg);
+  }
+}
+
+@keyframes rain-fall {
+  from {
+    background-position: 0 -90px;
+  }
+  to {
+    background-position: -90px 90px;
+  }
+}
+
+@keyframes snow-fall {
+  from {
+    background-position: 0 -92px, 42px -136px, 90px -188px;
+  }
+  to {
+    background-position: 26px 92px, 14px 136px, 122px 188px;
+  }
+}
+
+@keyframes sun-dry {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  55% {
+    opacity: 0.58;
+    transform: translateY(-8px) scale(0.96);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.86);
+    filter: blur(3px);
+  }
+}
+
+@keyframes rain-shiver {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-3px) rotate(-1deg);
+  }
+  75% {
+    transform: translateX(3px) rotate(1deg);
+  }
+}
+
+@keyframes rain-error-shake {
+  0% {
+    transform: translate(-7px, 2px) rotate(-4deg);
+  }
+  25% {
+    transform: translate(6px, -3px) rotate(3deg);
+  }
+  50% {
+    transform: translate(-5px, -2px) rotate(4deg);
+  }
+  75% {
+    transform: translate(7px, 3px) rotate(-3deg);
+  }
+  100% {
+    transform: translate(-6px, 1px) rotate(2deg);
+  }
+}
+
+@keyframes error-flash {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes code-glitch {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(2px, -1px);
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate(-1px, 1px);
+    opacity: 1;
+  }
+}
+
+@keyframes rain-code-sway {
+  0%,
+  100% {
+    transform: translate(var(--shell-offset-x), calc(var(--shell-offset-y) + var(--shell-state-y))) rotate(0deg);
+  }
+  25% {
+    transform: translate(calc(var(--shell-offset-x) - 10px), calc(var(--shell-offset-y) + var(--shell-state-y))) rotate(-5deg);
+  }
+  50% {
+    transform: translate(var(--shell-offset-x), calc(var(--shell-offset-y) + var(--shell-state-y))) rotate(0deg);
+  }
+  75% {
+    transform: translate(calc(var(--shell-offset-x) + 10px), calc(var(--shell-offset-y) + var(--shell-state-y))) rotate(5deg);
+  }
+}
+
+@keyframes code-screen-color {
+  0%,
+  100% {
+    background: #050505;
+    box-shadow: inset 0 0 28px rgba(255, 0, 0, 0.34);
+  }
+  33% {
+    background: #21070f;
+    box-shadow: inset 0 0 32px rgba(255, 55, 55, 0.48);
+  }
+  66% {
+    background: #071926;
+    box-shadow: inset 0 0 34px rgba(0, 201, 255, 0.42);
   }
 }
 
@@ -1741,10 +2292,10 @@ body.terror-night .tree-right::before {
 @keyframes idle-mouth {
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translate(var(--face-look-x, 0px), var(--face-look-y, 0px)) scale(1);
   }
   50% {
-    transform: translateY(2px) scale(0.96);
+    transform: translate(var(--face-look-x, 0px), calc(var(--face-look-y, 0px) + 2px)) scale(0.96);
   }
 }
 
@@ -1760,12 +2311,27 @@ body.terror-night .tree-right::before {
   }
 }
 
-@keyframes drift-left {
-  from {
-    transform: translateX(0);
+@keyframes celestial-cross {
+  0% {
+    transform: translate(24px, 42vh) scale(0.86);
   }
-  to {
-    transform: translateX(calc(-100vw - 260px));
+  50% {
+    transform: translate(calc(50vw - 54px), 88px) scale(1);
+  }
+  100% {
+    transform: translate(calc(100vw + 132px), 42vh) scale(0.86);
+  }
+}
+
+@keyframes drift-east-west {
+  0% {
+    transform: translate(-20px, 16vh) scale(var(--cloud-scale));
+  }
+  50% {
+    transform: translate(calc(50vw + 40px), -18px) scale(var(--cloud-scale));
+  }
+  100% {
+    transform: translate(calc(100vw + 260px), 16vh) scale(var(--cloud-scale));
   }
 }
 
@@ -1892,10 +2458,10 @@ body.terror-night .tree-right::before {
   }
 
   .keyboard-dock {
-    margin-top: 8px;
+    margin-top: -72px;
   }
 
   .computer-shell {
-    margin-top: 250px;
+    margin-top: clamp(150px, 23svh, 200px);
   }
 }

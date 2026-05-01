@@ -10,6 +10,7 @@ const batteryLevel = document.querySelector("#battery-level");
 const batteryWidget = document.querySelector(".battery-widget");
 const mouth = document.querySelector("#mouth");
 const computerShell = document.querySelector(".computer-shell");
+const screenBezel = document.querySelector(".screen-bezel");
 const hatAssembly = document.querySelector(".hat-assembly");
 const backPlug = document.querySelector("#back-plug");
 const floorOutlet = document.querySelector("#floor-outlet");
@@ -18,8 +19,15 @@ const faceEyes = document.querySelectorAll(".face-eyes .eye");
 const skyScene = document.querySelector(".sky-scene");
 const skySun = document.querySelector("#sky-sun");
 const skyMoon = document.querySelector("#sky-moon");
+const skyLookers = [skySun, skyMoon].filter(Boolean);
+const skyBubbles = {
+  sun: skySun?.querySelector(".sky-bubble"),
+  moon: skyMoon?.querySelector(".sky-bubble")
+};
 const dayNightToggle = document.querySelector("#day-night-toggle");
 const terrorToggle = document.querySelector("#terror-toggle");
+const weatherToggle = document.querySelector("#weather-toggle");
+const lightToggle = document.querySelector("#light-toggle");
 const foodTray = document.querySelector("#food-tray");
 
 const moods = [
@@ -35,6 +43,12 @@ const clearVoiceSettings = {
 };
 
 const replyPatterns = [
+  {
+    match: /唱.*电脑先生之歌|电脑先生之歌/,
+    replies: [
+      "你好，你想不想找一点有趣的内容？来吧，跟我一起唱，一起享受快乐时刻"
+    ]
+  },
   {
     match: /取消恐怖之夜|关闭恐怖之夜|结束恐怖之夜|取消恐怖晚上|关闭恐怖晚上|结束恐怖晚上/,
     replies: [
@@ -172,6 +186,7 @@ let isRecording = false;
 let speakingTimer = null;
 let screenTimer = null;
 let availableVoices = [];
+let speechUnlocked = false;
 let hatTimer = null;
 let forcedFlight = false;
 let isPoweredOff = false;
@@ -184,7 +199,16 @@ let batteryDrainTimer = null;
 let lowPowerWarningShown = false;
 let batteryHintTimer = null;
 let autoSkyCycleTimer = null;
+let skyGreetingTimer = null;
+let skyGoodbyeTimer = null;
+let skyBubbleTimer = null;
 let isTerrorNightActive = false;
+let currentWeather = "sunny";
+let weatherTimer = null;
+let isLightOn = false;
+let sunDryTimer = null;
+let rainErrorTimer = null;
+let rainCodeTimer = null;
 let lastChatActivityAt = Date.now();
 let lastPointerActivityAt = Date.now();
 let hatBumpTimer = null;
@@ -192,6 +216,8 @@ let dizzyTimer = null;
 let rainbowPukeTimer = null;
 let shellDrag = null;
 let hatDrag = null;
+let blinkTimer = null;
+let idleLookTimer = null;
 let shellOffsetX = 0;
 let shellOffsetY = 0;
 let hatDetached = false;
@@ -205,6 +231,8 @@ let plugCharging = false;
 let plugX = 0;
 let plugY = 0;
 let chargeTimer = null;
+let chargingCaptionTimer = null;
+let nightAwakeUntil = 0;
 
 const BATTERY_MAX = 100;
 const LOW_BATTERY_THRESHOLD = 20;
@@ -217,6 +245,15 @@ const AUTO_DAY_DURATION = 60000;
 const AUTO_NIGHT_DURATION = 60000;
 const CHAT_IDLE_GRACE_MS = 9000;
 const SLEEPY_IDLE_MS = 20000;
+const NIGHT_WAKE_DURATION = 15000;
+const WEATHER_CHANGE_INTERVAL = 26000;
+const weatherOrder = ["sunny", "cloudy", "rain", "snow"];
+const weatherLabels = {
+  sunny: "晴天",
+  cloudy: "多云",
+  rain: "下雨",
+  snow: "下雪"
+};
 
 function randomFrom(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -228,10 +265,16 @@ function clamp(value, min, max) {
 
 function markChatActivity() {
   lastChatActivityAt = Date.now();
+  wakeFromNightSleep();
 }
 
 function markPointerActivity() {
   lastPointerActivityAt = Date.now();
+}
+
+function wakeFromNightSleep(duration = NIGHT_WAKE_DURATION) {
+  nightAwakeUntil = Date.now() + duration;
+  computerShell?.classList.remove("sleepy");
 }
 
 function isChatActive() {
@@ -239,7 +282,11 @@ function isChatActive() {
 }
 
 function isSleepyIdle() {
-  return !isRecording && Date.now() - lastPointerActivityAt > SLEEPY_IDLE_MS;
+  return isNightMode && !isRecording && Date.now() - lastPointerActivityAt > SLEEPY_IDLE_MS;
+}
+
+function isNightSleepy() {
+  return isNightMode && !isRecording && !isChatActive() && Date.now() > nightAwakeUntil;
 }
 
 function setMood(nextIndex) {
@@ -256,6 +303,91 @@ function setEyeLook(offsetX = 0, offsetY = 0) {
     eye.style.setProperty("--eye-look-x", `${offsetX}px`);
     eye.style.setProperty("--eye-look-y", `${offsetY}px`);
   });
+
+  faceDisplay?.style.setProperty("--face-look-x", `${offsetX}px`);
+  faceDisplay?.style.setProperty("--face-look-y", `${offsetY}px`);
+}
+
+function setFacePeek(offsetX = 0, offsetY = 0) {
+  faceDisplay?.style.setProperty("--face-peek-x", `${offsetX}px`);
+  faceDisplay?.style.setProperty("--face-peek-y", `${offsetY}px`);
+}
+
+function updateSkyLook(clientX, clientY) {
+  skyLookers.forEach((skyBody) => {
+    updateSingleSkyLook(skyBody, clientX, clientY);
+  });
+}
+
+function updateSingleSkyLook(skyBody, clientX, clientY) {
+  if (!skyBody) return;
+
+    const rect = skyBody.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const deltaX = clientX - centerX;
+    const deltaY = clientY - centerY;
+    const lookX = clamp(deltaX / 34, -7, 7);
+    const lookY = clamp(deltaY / 46, -5, 5);
+
+    skyBody.style.setProperty("--sky-eye-look-x", `${lookX}px`);
+    skyBody.style.setProperty("--sky-eye-look-y", `${lookY}px`);
+}
+
+function getActiveSkyBody() {
+  return isNightMode ? skyMoon : skySun;
+}
+
+function lookAtPoint(clientX, clientY) {
+  if (!computerShell || !faceDisplay) return;
+
+  const shellRect = computerShell.getBoundingClientRect();
+  const centerX = shellRect.left + shellRect.width / 2;
+  const centerY = shellRect.top + shellRect.height * 0.34;
+  const deltaX = clientX - centerX;
+  const deltaY = clientY - centerY;
+  setEyeLook(clamp(deltaX / 22, -5, 5), clamp(deltaY / 34, -4, 4));
+  setFacePeek(0, 0);
+}
+
+function lookAtActiveSkyBody() {
+  if (isPoweredOff || isTerrorNightActive || moodPanel.classList.contains("text-mode") || computerShell.classList.contains("sleepy")) {
+    return;
+  }
+
+  const skyBody = getActiveSkyBody();
+  if (!skyBody) return;
+
+  const skyRect = skyBody.getBoundingClientRect();
+  const skyCenterX = skyRect.left + skyRect.width / 2;
+  const skyCenterY = skyRect.top + skyRect.height / 2;
+  lookAtPoint(skyCenterX, skyCenterY);
+
+  const computerRect = computerShell.getBoundingClientRect();
+  updateSingleSkyLook(
+    skyBody,
+    computerRect.left + computerRect.width / 2,
+    computerRect.top + computerRect.height * 0.34
+  );
+}
+
+function scheduleIdleLook() {
+  if (idleLookTimer) {
+    window.clearTimeout(idleLookTimer);
+  }
+
+  idleLookTimer = window.setTimeout(() => {
+    lookAtActiveSkyBody();
+  }, 1000);
+}
+
+function startIdleLookLoop() {
+  window.setInterval(() => {
+    const idleFor = Date.now() - lastPointerActivityAt;
+    if (idleFor > 900 && idleFor < SLEEPY_IDLE_MS && !isNightSleepy()) {
+      lookAtActiveSkyBody();
+    }
+  }, 500);
 }
 
 function updateShellPosition() {
@@ -278,14 +410,26 @@ function updatePlugPosition() {
 }
 
 function getPlugAnchorPoint() {
+  if (!screenBezel && !moodPanel && !computerShell) {
+    return { x: 0, y: 0 };
+  }
+
+  const shellRect = (screenBezel || moodPanel || computerShell).getBoundingClientRect();
+  return {
+    x: shellRect.left + shellRect.width / 2,
+    y: shellRect.bottom + 32
+  };
+}
+
+function getPlugCoordinateOrigin() {
   if (!computerShell) {
     return { x: 0, y: 0 };
   }
 
   const shellRect = computerShell.getBoundingClientRect();
   return {
-    x: shellRect.right - 8,
-    y: shellRect.top + 156
+    x: shellRect.left,
+    y: shellRect.top
   };
 }
 
@@ -300,38 +444,50 @@ function updatePlugCable() {
 
   const anchor = getPlugAnchorPoint();
   const plugRect = backPlug.getBoundingClientRect();
-  const dx = plugRect.right - anchor.x;
-  const dy = plugRect.top + plugRect.height / 2 - anchor.y;
+  const dx = anchor.x - plugRect.left;
+  const dy = anchor.y - (plugRect.top + plugRect.height / 2);
   const distance = Math.max(24, Math.hypot(dx, dy));
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
   backPlug.style.setProperty("--plug-cable-length", `${distance}px`);
   backPlug.style.setProperty("--plug-cable-angle", `${angle}deg`);
 }
 
-function stopPlugCharging() {
+function stopPlugCharging(showFace = false) {
   if (chargeTimer) {
     window.clearInterval(chargeTimer);
     chargeTimer = null;
   }
+  if (chargingCaptionTimer) {
+    window.clearTimeout(chargingCaptionTimer);
+    chargingCaptionTimer = null;
+  }
   plugCharging = false;
   backPlug?.classList.remove("charging");
   floorOutlet?.classList.remove("charging");
+  if (!isPoweredOff && batteryPercent > LOW_BATTERY_THRESHOLD) {
+    setBatteryVisible(false);
+  }
+  if (showFace && !isPoweredOff) {
+    showFaceOnly();
+    setMood(0);
+  }
 }
 
 function dockPlugToOutlet() {
   if (!backPlug || !floorOutlet) return;
   const outletRect = floorOutlet.getBoundingClientRect();
+  const origin = getPlugCoordinateOrigin();
   plugDetached = true;
   plugInserted = true;
   backPlug.classList.add("detached", "plugged-in");
-  plugX = outletRect.left + outletRect.width - 20;
-  plugY = outletRect.top + 5;
+  plugX = outletRect.left - origin.x + outletRect.width - 20;
+  plugY = outletRect.top - origin.y + 5;
   updatePlugPosition();
 }
 
 function undockPlug() {
   plugInserted = false;
-  stopPlugCharging();
+  stopPlugCharging(true);
   if (!backPlug) return;
   backPlug.classList.remove("plugged-in");
   if (!plugDetached) {
@@ -345,12 +501,24 @@ function startPlugCharging() {
   plugCharging = true;
   backPlug?.classList.add("charging");
   floorOutlet?.classList.add("charging");
-  showSubtitle("滴，插上电了，正在充电。", false);
+  showSubtitle("正在充电", false);
+  setBatteryVisible(true);
   showBatteryMomentarily(2400);
+  if (chargingCaptionTimer) {
+    window.clearTimeout(chargingCaptionTimer);
+  }
+  chargingCaptionTimer = window.setTimeout(() => {
+    chargingCaptionTimer = null;
+    if (plugCharging && !isPoweredOff && screenSubtitle.textContent === "正在充电") {
+      showFaceOnly();
+      setMood(0);
+    }
+  }, 5000);
 
   chargeTimer = window.setInterval(() => {
     if (batteryPercent >= BATTERY_MAX) {
-      stopPlugCharging();
+      updateBatteryUI();
+      setBatteryVisible(true);
       return;
     }
 
@@ -373,6 +541,11 @@ function startPlugCharging() {
       }, 1500);
     }
   }, BATTERY_CHARGE_INTERVAL);
+}
+
+function parkPlugAtChargingCorner() {
+  if (!backPlug || !floorOutlet || plugDrag || plugCharging) return;
+  startPlugCharging();
 }
 
 function updateBatteryUI() {
@@ -400,7 +573,7 @@ function showBatteryMomentarily(duration = 2200) {
     window.clearTimeout(batteryHintTimer);
   }
   batteryHintTimer = window.setTimeout(() => {
-    if (!isPoweredOff && batteryPercent > LOW_BATTERY_THRESHOLD) {
+    if (!plugCharging && !isPoweredOff && batteryPercent > LOW_BATTERY_THRESHOLD) {
       setBatteryVisible(false);
     }
     batteryHintTimer = null;
@@ -468,6 +641,20 @@ function loadVoices() {
   availableVoices = window.speechSynthesis.getVoices();
 }
 
+function unlockSpeech() {
+  if (speechUnlocked || !("speechSynthesis" in window)) return;
+  loadVoices();
+  const utterance = new SpeechSynthesisUtterance(" ");
+  utterance.lang = clearVoiceSettings.lang;
+  utterance.volume = 0.01;
+  const selectedVoice = pickVoice();
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+  window.speechSynthesis.speak(utterance);
+  speechUnlocked = true;
+}
+
 function pickVoice() {
   if (!availableVoices.length) return null;
   return (
@@ -481,6 +668,180 @@ function topicMakesHatSpin(text) {
   return /节奏盒子|节奏|拍子|混音|音乐|loop|looping|beat|角色|人物|声音|音色|做歌|编曲|搭配|组合|喜欢/.test(text);
 }
 
+function pickNextWeather() {
+  const options = currentWeather === "sunny"
+    ? ["sunny", "cloudy", "rain", "snow"]
+    : ["sunny", "cloudy", "rain", "snow", "sunny"];
+  return randomFrom(options);
+}
+
+function updateWeatherToggleLabel() {
+  if (!weatherToggle) return;
+  const currentIndex = Math.max(0, weatherOrder.indexOf(currentWeather));
+  const nextWeather = weatherOrder[(currentIndex + 1) % weatherOrder.length];
+  weatherToggle.textContent = `切到${weatherLabels[nextWeather]}`;
+}
+
+function updateLightToggleLabel() {
+  if (!lightToggle) return;
+  lightToggle.textContent = isLightOn ? "关灯" : "开灯";
+}
+
+function setLightOn(active) {
+  isLightOn = active;
+  document.body.classList.toggle("light-on", isLightOn);
+  updateLightToggleLabel();
+}
+
+function updateComputerWeatherMarks() {
+  if (sunDryTimer) {
+    window.clearTimeout(sunDryTimer);
+    sunDryTimer = null;
+  }
+
+  computerShell.classList.toggle("snow-covered", currentWeather === "snow");
+
+  if (currentWeather === "rain") {
+    computerShell.classList.add("wet");
+    computerShell.classList.remove("sun-drying");
+    return;
+  }
+
+  if (currentWeather === "sunny" && computerShell.classList.contains("wet")) {
+    computerShell.classList.add("sun-drying");
+    sunDryTimer = window.setTimeout(() => {
+      computerShell.classList.remove("wet", "sun-drying");
+      sunDryTimer = null;
+    }, 1900);
+  }
+}
+
+function setWeather(weather, announce = true) {
+  if (rainErrorTimer) {
+    window.clearTimeout(rainErrorTimer);
+    rainErrorTimer = null;
+  }
+  if (rainCodeTimer) {
+    window.clearTimeout(rainCodeTimer);
+    rainCodeTimer = null;
+  }
+  computerShell.classList.remove("rain-error", "rain-code-mode");
+  currentWeather = weatherOrder.includes(weather) ? weather : "sunny";
+  document.body.classList.toggle("weather-cloudy", currentWeather === "cloudy");
+  document.body.classList.toggle("weather-rain", currentWeather === "rain");
+  document.body.classList.toggle("weather-snow", currentWeather === "snow");
+  computerShell.classList.toggle("rained-on", currentWeather === "rain");
+  updateComputerWeatherMarks();
+  if (currentWeather !== "rain") {
+    computerShell.classList.remove("rain-squint", "rain-error", "rain-code-mode");
+  }
+  updateWeatherToggleLabel();
+
+  if (!announce || isPoweredOff || isTerrorNightActive) return;
+
+  let weatherMessage = "晴天来了，太阳公公又亮起来了。";
+  if (currentWeather === "rain") {
+    weatherMessage = "下雨了，电脑先生被雨淋到了。";
+  } else if (currentWeather === "cloudy") {
+    weatherMessage = "多云了，天上好多云。";
+  } else if (currentWeather === "snow") {
+    weatherMessage = "下雪了，白白的雪飘下来了。";
+  }
+
+  const weatherSpeechDuration = speakAsComputer(weatherMessage, { forceSubtitle: true, colorful: false });
+  if (screenTimer) {
+    window.clearTimeout(screenTimer);
+  }
+  screenTimer = window.setTimeout(() => {
+    showFaceOnly();
+    setMood(0);
+    computerShell.classList.toggle("rain-squint", currentWeather === "rain");
+    if (currentWeather === "rain") {
+      rainErrorTimer = window.setTimeout(() => {
+        rainErrorTimer = null;
+        if (currentWeather !== "rain" || isPoweredOff || isTerrorNightActive) return;
+        computerShell.classList.add("rain-error");
+        showSubtitle("报错", false);
+        rainCodeTimer = window.setTimeout(() => {
+          rainCodeTimer = null;
+          if (currentWeather !== "rain" || isPoweredOff || isTerrorNightActive) return;
+          computerShell.classList.add("rain-code-mode");
+          showSubtitle("太阳公公已出海对话取消无限个取消，下雨了", false);
+        }, 900);
+      }, 850);
+    }
+  }, weatherSpeechDuration);
+}
+
+function scheduleWeatherChange(initialDelay = WEATHER_CHANGE_INTERVAL) {
+  if (weatherTimer) {
+    window.clearTimeout(weatherTimer);
+  }
+
+  weatherTimer = window.setTimeout(() => {
+    if (!isTerrorNightActive) {
+      setWeather(pickNextWeather());
+    }
+    scheduleWeatherChange();
+  }, initialDelay);
+}
+
+function getActiveSkyDuration() {
+  return isNightMode ? AUTO_NIGHT_DURATION : AUTO_DAY_DURATION;
+}
+
+function getSkyKey(night = isNightMode) {
+  return night ? "moon" : "sun";
+}
+
+function showSkyBubble(kind, text) {
+  const bubble = skyBubbles[kind];
+  if (!bubble) return;
+
+  bubble.textContent = text;
+  bubble.classList.add("visible");
+  if (skyBubbleTimer) {
+    window.clearTimeout(skyBubbleTimer);
+  }
+  skyBubbleTimer = window.setTimeout(() => {
+    bubble.classList.remove("visible");
+    skyBubbleTimer = null;
+  }, 2800);
+}
+
+function clearSkyTimers() {
+  if (autoSkyCycleTimer) {
+    window.clearTimeout(autoSkyCycleTimer);
+    autoSkyCycleTimer = null;
+  }
+  if (skyGreetingTimer) {
+    window.clearTimeout(skyGreetingTimer);
+    skyGreetingTimer = null;
+  }
+  if (skyGoodbyeTimer) {
+    window.clearTimeout(skyGoodbyeTimer);
+    skyGoodbyeTimer = null;
+  }
+}
+
+function startSkyJourney(night) {
+  const activeSky = night ? skyMoon : skySun;
+  const inactiveSky = night ? skySun : skyMoon;
+  const duration = night ? AUTO_NIGHT_DURATION : AUTO_DAY_DURATION;
+
+  if (inactiveSky) {
+    inactiveSky.style.animation = "none";
+  }
+
+  if (activeSky) {
+    activeSky.style.animation = "none";
+    void activeSky.offsetWidth;
+    activeSky.style.animation = `celestial-cross ${duration}ms linear forwards`;
+  }
+
+  showSkyBubble(getSkyKey(night), "你好");
+}
+
 function setDayNightMode(night) {
   isNightMode = night;
   document.body.classList.toggle("night-mode", night);
@@ -490,12 +851,16 @@ function setDayNightMode(night) {
   dayNightToggle.textContent = night ? "切到白天" : "切到夜晚";
 
   if (!night) {
+    wakeFromNightSleep();
     startSunBehaviorLoop();
   } else {
+    nightAwakeUntil = Date.now() + 1800;
     stopSunBehaviorLoop();
   }
 
+  startSkyJourney(night);
   scheduleAutoSkyCycle();
+  showFaceOnly();
 }
 
 function updateTerrorToggleLabel() {
@@ -505,19 +870,22 @@ function updateTerrorToggleLabel() {
 }
 
 function stopAutoSkyCycle() {
-  if (autoSkyCycleTimer) {
-    window.clearTimeout(autoSkyCycleTimer);
-    autoSkyCycleTimer = null;
-  }
+  clearSkyTimers();
 }
 
 function scheduleAutoSkyCycle() {
-  stopAutoSkyCycle();
+  clearSkyTimers();
   if (isTerrorNightActive) return;
+
+  const duration = getActiveSkyDuration();
+  const skyKind = getSkyKey();
+  skyGoodbyeTimer = window.setTimeout(() => {
+    showSkyBubble(skyKind, "再见");
+  }, Math.max(1200, duration - 3600));
 
   autoSkyCycleTimer = window.setTimeout(() => {
     setDayNightMode(!isNightMode);
-  }, isNightMode ? AUTO_NIGHT_DURATION : AUTO_DAY_DURATION);
+  }, duration);
 }
 
 function stopSunBehaviorLoop() {
@@ -601,6 +969,7 @@ function setPowerState(powerOn) {
 
 function startTerrorNight() {
   isTerrorNightActive = true;
+  setWeather("sunny", false);
   stopAutoSkyCycle();
   setDayNightMode(true);
   document.body.classList.add("terror-night");
@@ -642,6 +1011,10 @@ function getFlightCommand(text) {
 function speakReply(text) {
   if (!("speechSynthesis" in window) || !text) return;
 
+  loadVoices();
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+  }
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = clearVoiceSettings.lang;
@@ -662,11 +1035,34 @@ function showFaceOnly() {
   moodPanel.classList.remove("text-mode");
   moodPanel.classList.add("face-mode");
   moodPanel.classList.remove("colorful");
+  if (currentWeather !== "rain") {
+    computerShell.classList.remove("rain-squint");
+  }
+  if (currentWeather !== "rain") {
+    computerShell.classList.remove("rain-error", "rain-code-mode");
+  }
   setEyeLook(0, 0);
-  computerShell.classList.toggle("sleepy", isSleepyIdle() && !isPoweredOff && !isTerrorNightActive && !shellDrag);
+  setFacePeek(0, 0);
+  computerShell.classList.toggle("sleepy", (isSleepyIdle() || isNightSleepy()) && !isPoweredOff && !isTerrorNightActive && !shellDrag);
   if (!forcedFlight) {
     computerShell.classList.add("grounded");
   }
+}
+
+function startBlinkLoop() {
+  if (blinkTimer) {
+    window.clearTimeout(blinkTimer);
+  }
+
+  blinkTimer = window.setTimeout(() => {
+    if (!isPoweredOff && !isTerrorNightActive && !computerShell.classList.contains("sleepy")) {
+      computerShell.classList.add("blinking");
+      window.setTimeout(() => {
+        computerShell.classList.remove("blinking");
+      }, 150);
+    }
+    startBlinkLoop();
+  }, 1800 + Math.random() * 3600);
 }
 
 function setDizzy(active) {
@@ -687,6 +1083,7 @@ function setRainbowPuke(active) {
 
 function bumpHat() {
   if (isPoweredOff || isTerrorNightActive || hatDetached || shellDrag) return;
+  wakeFromNightSleep();
   if (hatBumpTimer) {
     window.clearTimeout(hatBumpTimer);
   }
@@ -702,8 +1099,17 @@ function bumpHat() {
 function setupInteractiveFace() {
   window.addEventListener("pointermove", (event) => {
     markPointerActivity();
+    updateSkyLook(event.clientX, event.clientY);
+    scheduleIdleLook();
+    if (isNightSleepy()) {
+      computerShell.classList.add("sleepy");
+      setEyeLook(0, 0);
+      setFacePeek(0, 0);
+      return;
+    }
     if (isPoweredOff || moodPanel.classList.contains("text-mode")) {
       setEyeLook(0, 0);
+      setFacePeek(0, 0);
       return;
     }
 
@@ -720,10 +1126,20 @@ function setupInteractiveFace() {
     const lookX = Math.max(-limit, Math.min(limit, deltaX / 22));
     const lookY = Math.max(-4, Math.min(4, deltaY / 34));
     setEyeLook(lookX, lookY);
+
+    const distance = Math.hypot(deltaX, deltaY);
+    if (distance > 260) {
+      const peekX = clamp(deltaX / 14, -18, 18);
+      const peekY = clamp(deltaY / 16, -26, 26);
+      setFacePeek(peekX, peekY);
+    } else {
+      setFacePeek(0, 0);
+    }
   });
 
   computerShell.addEventListener("pointerdown", (event) => {
     markPointerActivity();
+    wakeFromNightSleep();
     if (event.target.closest("#chat-form")) return;
     if (event.target.closest(".hat-assembly")) return;
     bumpHat();
@@ -739,6 +1155,7 @@ function startShellDrop() {
   if (!droppedFromHigh) return;
 
   computerShell.classList.remove("sleepy");
+  wakeFromNightSleep();
   setDizzy(true);
   setRainbowPuke(true);
   rainbowPukeTimer = window.setTimeout(() => {
@@ -762,6 +1179,7 @@ function setupDragInteractions() {
 
   const onWindowPointerMove = (event) => {
     markPointerActivity();
+    wakeFromNightSleep();
     if (shellDrag) {
       shellOffsetX = event.clientX - shellDrag.startX + shellDrag.originX;
       shellOffsetY = event.clientY - shellDrag.startY + shellDrag.originY;
@@ -777,8 +1195,9 @@ function setupDragInteractions() {
     }
 
     if (plugDrag) {
-      plugX = event.clientX - plugDrag.offsetX;
-      plugY = event.clientY - plugDrag.offsetY;
+      const origin = getPlugCoordinateOrigin();
+      plugX = event.clientX - origin.x - plugDrag.offsetX;
+      plugY = event.clientY - origin.y - plugDrag.offsetY;
       updatePlugPosition();
     }
   };
@@ -804,10 +1223,10 @@ function setupDragInteractions() {
         event.clientY >= outletRect.top - 28 &&
         event.clientY <= outletRect.bottom + 28;
 
-      if (isNearOutlet && (isPoweredOff || batteryPercent <= LOW_BATTERY_THRESHOLD)) {
+      if (isNearOutlet) {
         startPlugCharging();
       } else {
-        stopPlugCharging();
+        stopPlugCharging(true);
         plugInserted = false;
         if (backPlug) {
           backPlug.classList.remove("plugged-in");
@@ -826,6 +1245,7 @@ function setupDragInteractions() {
 
   computerShell.addEventListener("pointerdown", (event) => {
     markPointerActivity();
+    wakeFromNightSleep();
     if (event.target.closest(".hat-assembly") || event.target.closest("#chat-form") || event.target.closest(".back-plug")) return;
     event.preventDefault();
     setDizzy(false);
@@ -840,6 +1260,7 @@ function setupDragInteractions() {
 
   hatAssembly.addEventListener("pointerdown", (event) => {
     markPointerActivity();
+    wakeFromNightSleep();
     event.preventDefault();
     const rect = hatAssembly.getBoundingClientRect();
 
@@ -859,19 +1280,21 @@ function setupDragInteractions() {
 
   backPlug?.addEventListener("pointerdown", (event) => {
     markPointerActivity();
+    wakeFromNightSleep();
     event.preventDefault();
-    stopPlugCharging();
+    stopPlugCharging(true);
     const rect = backPlug.getBoundingClientRect();
     plugDetached = true;
     plugInserted = false;
     backPlug.classList.add("detached");
     backPlug.classList.remove("plugged-in");
-    plugX = rect.left;
-    plugY = rect.top;
+    const origin = getPlugCoordinateOrigin();
+    plugX = rect.left - origin.x;
+    plugY = rect.top - origin.y;
     updatePlugPosition();
     plugDrag = {
-      offsetX: event.clientX - plugX,
-      offsetY: event.clientY - plugY
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top
     };
   });
 }
@@ -885,11 +1308,40 @@ function showSubtitle(text, colorful = false) {
 }
 
 function shouldUseColorfulSubtitle(text) {
+  if (/一起享受快乐时刻|电脑先生之歌/.test(text)) {
+    return true;
+  }
+
   if (/好吃好吃|开心|笑|喜欢|太棒了|太好了/.test(text)) {
     return Math.random() < 0.35;
   }
 
   return Math.random() < 0.12;
+}
+
+function speakAsComputer(text, options = {}) {
+  const duration = Math.min(3200, 900 + text.length * 90);
+  const colorful = options.colorful ?? shouldUseColorfulSubtitle(text);
+  const useSubtitle = options.forceSubtitle ?? Math.random() < 0.82;
+
+  if (useSubtitle) {
+    showSubtitle(text, colorful);
+  } else {
+    showFaceOnly();
+    moodPanel.classList.toggle("colorful", colorful);
+  }
+
+  startMouthTalking(duration);
+  speakReply(text);
+  return duration;
+}
+
+function setupSpeechUnlock() {
+  if (!("speechSynthesis" in window)) return;
+  const unlock = () => unlockSpeech();
+  window.addEventListener("pointerdown", unlock, { once: true });
+  window.addEventListener("touchstart", unlock, { once: true });
+  window.addEventListener("click", unlock, { once: true });
 }
 
 function startMouthTalking(duration = 1800) {
@@ -957,16 +1409,14 @@ function answerUser(text) {
     stopTerrorNight();
     markChatActivity();
     const reply = generateReply(cleaned);
-    showSubtitle(reply, false);
-    startMouthTalking(Math.min(2600, 900 + reply.length * 90));
-    speakReply(reply);
+    const replyDuration = speakAsComputer(reply);
     if (screenTimer) {
       window.clearTimeout(screenTimer);
     }
     screenTimer = window.setTimeout(() => {
       showFaceOnly();
       setMood(0);
-    }, 2600);
+    }, replyDuration);
     return;
   }
 
@@ -994,9 +1444,10 @@ function answerUser(text) {
   window.setTimeout(() => {
     markChatActivity();
     const reply = generateReply(cleaned);
-    showSubtitle(reply, shouldUseColorfulSubtitle(reply));
-    startMouthTalking(Math.min(2600, 900 + reply.length * 90));
-    speakReply(reply);
+    const replyDuration = speakAsComputer(reply, {
+      forceSubtitle: /一起享受快乐时刻/.test(reply),
+      colorful: shouldUseColorfulSubtitle(reply)
+    });
     if (!forcedFlight) {
       setHatSpinning(topicMakesHatSpin(cleaned) || topicMakesHatSpin(reply));
     }
@@ -1008,7 +1459,7 @@ function answerUser(text) {
     screenTimer = window.setTimeout(() => {
       showFaceOnly();
       setMood(0);
-    }, 2600);
+    }, replyDuration);
   }, 420);
 }
 
@@ -1036,16 +1487,18 @@ function feedComputer() {
   if (!activeFood) return;
   markChatActivity();
   const wasPoweredOff = isPoweredOff;
+  const tastyFlight = Math.random() < 0.45;
+  const tastyText = tastyFlight ? "好吃到飞起" : "好吃";
   changeBattery(BATTERY_FEED_GAIN);
   if (wasPoweredOff) {
     setPowerState(true);
   }
   activeFood.classList.add("eating");
-  startMouthTalking(900);
-  showSubtitle("好吃", shouldUseColorfulSubtitle("好吃"));
-  speakReply("好吃");
-  if (!forcedFlight && !isPoweredOff) {
-    setHatSpinning(true, 1200);
+  startMouthTalking(tastyFlight ? 1200 : 900);
+  showSubtitle(tastyText, shouldUseColorfulSubtitle(tastyText));
+  speakReply(tastyText);
+  if (tastyFlight && !forcedFlight && !isPoweredOff) {
+    setHatSpinning(true, 1600);
   }
   if (screenTimer) {
     window.clearTimeout(screenTimer);
@@ -1248,6 +1701,17 @@ terrorToggle?.addEventListener("click", () => {
   startTerrorNight();
 });
 
+weatherToggle?.addEventListener("click", () => {
+  const currentIndex = Math.max(0, weatherOrder.indexOf(currentWeather));
+  const nextWeather = weatherOrder[(currentIndex + 1) % weatherOrder.length];
+  setWeather(nextWeather);
+  scheduleWeatherChange();
+});
+
+lightToggle?.addEventListener("click", () => {
+  setLightOn(!isLightOn);
+});
+
 window.setInterval(() => {
   if (isRecording || screenSubtitle.style.display === "block") return;
   moodIndex = (moodIndex + 1) % moods.length;
@@ -1260,6 +1724,7 @@ showFaceOnly();
 setPowerState(true);
 setDayNightMode(false);
 setupSpeechRecognition();
+setupSpeechUnlock();
 setupFoodDrag();
 loadVoices();
 startSunBehaviorLoop();
@@ -1267,8 +1732,21 @@ updateBatteryUI();
 startBatteryDrain();
 setBatteryVisible(false);
 updateTerrorToggleLabel();
+updateLightToggleLabel();
 setupInteractiveFace();
 setupDragInteractions();
+parkPlugAtChargingCorner();
+startBlinkLoop();
+scheduleIdleLook();
+startIdleLookLoop();
+setWeather("sunny", false);
+scheduleWeatherChange(5000);
+
+window.addEventListener("resize", () => {
+  if (plugInserted && !plugDrag) {
+    parkPlugAtChargingCorner();
+  }
+});
 
 if ("speechSynthesis" in window) {
   window.speechSynthesis.onvoiceschanged = loadVoices;

@@ -1,0 +1,1802 @@
+:root {
+  color-scheme: dark;
+  --bg-1: #08111f;
+  --bg-2: #13253c;
+  --panel: rgba(7, 17, 29, 0.74);
+  --panel-strong: rgba(9, 23, 38, 0.92);
+  --screen: linear-gradient(180deg, #d9fffa 0%, #87f5dd 46%, #41c4b6 100%);
+  --ink: #10222a;
+  --accent: #ffd166;
+  --accent-2: #ff7b72;
+  --line: rgba(255, 255, 255, 0.1);
+  --text: #edf7ff;
+  --muted: #9db7ca;
+  --glow: 0 0 40px rgba(94, 226, 209, 0.25);
+  --shadow: 0 22px 80px rgba(0, 0, 0, 0.45);
+  font-family: "Hiragino Sans GB", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #7fd6ff 0%, #b8ecff 58%, #87d65b 58%, #64b03f 100%);
+  color: var(--text);
+  overflow-x: hidden;
+  transition: background 500ms ease;
+}
+
+body.night-mode {
+  background: linear-gradient(180deg, #071326 0%, #18253d 58%, #355b2a 58%, #274420 100%);
+}
+
+body.night-mode .grass {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 18%, #416b2f 18%, #1f3d18 100%);
+}
+
+body::before {
+  display: none;
+}
+
+.stage {
+  position: relative;
+  width: min(760px, calc(100vw - 28px));
+  margin: 0 auto;
+  padding: 28px 0 44px;
+}
+
+.sky-scene {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 62vh;
+  pointer-events: none;
+  overflow: hidden;
+  transition: filter 400ms ease, opacity 400ms ease;
+}
+
+.sky-scene.terror-mode {
+  filter: contrast(1.08) brightness(0.72);
+}
+
+body.terror-night {
+  background: linear-gradient(180deg, #2b0000 0%, #4f0808 38%, #5f1212 58%, #341010 100%);
+}
+
+body.terror-night .grass {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 18%, #355126 18%, #13240f 100%);
+}
+
+.sky-sun,
+.sky-moon {
+  position: absolute;
+  left: 50%;
+  top: 88px;
+  width: 108px;
+  height: 108px;
+  margin-left: -54px;
+  transition: transform 800ms ease, opacity 800ms ease, filter 600ms ease;
+}
+
+.sky-sun {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.sky-moon {
+  transform: translateY(180px);
+  opacity: 0;
+}
+
+body.night-mode .sky-sun {
+  transform: translateY(180px);
+  opacity: 0;
+}
+
+body.night-mode .sky-moon {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.sun-core,
+.moon-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.sun-core {
+  background: radial-gradient(circle, #fff675 0%, #ffd73d 58%, #ffb200 100%);
+  box-shadow: 0 0 42px rgba(255, 211, 77, 0.5);
+  animation: sun-bob 4.4s ease-in-out infinite;
+}
+
+.sun-eye,
+.moon-eye {
+  position: absolute;
+  top: 35px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2e2400;
+  animation: eye-shift 3.4s ease-in-out infinite;
+  transition: transform 240ms ease;
+}
+
+.sun-eye-left,
+.moon-eye-left {
+  left: 31px;
+}
+
+.sun-eye-right,
+.moon-eye-right {
+  right: 31px;
+}
+
+.sun-mouth,
+.moon-mouth {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  width: 24px;
+  height: 11px;
+  margin-left: -12px;
+  border-bottom: 4px solid #2e2400;
+  border-radius: 0 0 24px 24px;
+  transition: transform 240ms ease;
+}
+
+.sun-ray {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 38px;
+  margin-left: -11px;
+  margin-top: -55px;
+  background: linear-gradient(180deg, #ff7f00, #ff9f00);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  transform-origin: center 64px;
+}
+
+.sun-ray-1 { transform: rotate(0deg); }
+.sun-ray-2 { transform: rotate(45deg); }
+.sun-ray-3 { transform: rotate(90deg); }
+.sun-ray-4 { transform: rotate(135deg); }
+.sun-ray-5 { transform: rotate(180deg); }
+.sun-ray-6 { transform: rotate(225deg); }
+.sun-ray-7 { transform: rotate(270deg); }
+.sun-ray-8 { transform: rotate(315deg); }
+
+.sky-sun.sun-looking-computer .sun-eye-left,
+.sky-sun.sun-looking-computer .sun-eye-right {
+  transform: translateX(7px) translateY(1px);
+}
+
+.sky-sun.sun-looking-computer .sun-mouth {
+  transform: translateX(4px) rotate(4deg);
+}
+
+.sky-sun.sun-swaying {
+  animation: sun-sway 2.8s ease-in-out;
+}
+
+.moon-face {
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #dfe8ff 62%, #9caecc 100%);
+  box-shadow: 0 0 28px rgba(180, 198, 255, 0.28);
+}
+
+.sky-moon.moon-crescent .moon-face::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #18253d;
+}
+
+body:not(.night-mode) .sky-moon.moon-crescent .moon-face::after {
+  background: #b8ecff;
+}
+
+.cloud {
+  position: absolute;
+  display: block;
+  width: 110px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  animation: drift-left 28s linear infinite;
+}
+
+.cloud-eye {
+  position: absolute;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0f1626;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.left-eye {
+  left: 38px;
+}
+
+.right-eye {
+  right: 38px;
+}
+
+.sky-scene.terror-mode .cloud-eye {
+  opacity: 1;
+}
+
+body.terror-night .cloud-eye {
+  top: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f6f2ea;
+  box-shadow: 0 0 0 2px rgba(38, 0, 0, 0.35);
+}
+
+body.terror-night .cloud-eye::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: #120000;
+  animation: cloud-look 1.5s ease-in-out infinite;
+}
+
+body.terror-night .left-eye {
+  left: 32px;
+}
+
+body.terror-night .right-eye {
+  right: 32px;
+}
+
+body.terror-night .cloud,
+body.terror-night .cloud::before,
+body.terror-night .cloud::after {
+  background: rgba(176, 32, 32, 0.96);
+}
+
+body.terror-night .sun-core {
+  background: radial-gradient(circle, #f8f1c7 0%, #d7ccb2 40%, #6a0000 100%);
+  box-shadow: 0 0 52px rgba(255, 70, 70, 0.72);
+}
+
+body.terror-night .sun-eye,
+body.terror-night .moon-eye {
+  background: #3a0000;
+  box-shadow: 0 0 10px rgba(255, 60, 60, 0.45);
+}
+
+body.terror-night .sun-mouth {
+  opacity: 0;
+}
+
+body.terror-night .sun-ray {
+  opacity: 0;
+}
+
+body.terror-night .sun-eye-left {
+  left: 50%;
+  top: 25px;
+  width: 50px;
+  height: 50px;
+  margin-left: -25px;
+  border-radius: 50%;
+  background: #fbfbfb;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.35);
+  animation: none;
+}
+
+body.terror-night .sun-eye-left::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: #280000;
+  animation: cloud-look 1.4s ease-in-out infinite;
+}
+
+body.terror-night .sun-eye-right {
+  opacity: 0;
+}
+
+.cloud::before,
+.cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.cloud::before {
+  width: 34px;
+  height: 34px;
+  left: 16px;
+  top: -14px;
+}
+
+.cloud::after {
+  width: 50px;
+  height: 50px;
+  right: 18px;
+  top: -22px;
+}
+
+.cloud-one {
+  top: 72px;
+  right: -120px;
+}
+
+.cloud-two {
+  top: 140px;
+  right: -180px;
+  transform: scale(0.8);
+  animation-duration: 34s;
+}
+
+.cloud-three {
+  top: 46px;
+  right: -220px;
+  transform: scale(1.15);
+  animation-duration: 40s;
+}
+
+.cloud-four {
+  top: 200px;
+  right: -140px;
+  transform: scale(0.72);
+  animation-duration: 30s;
+  animation-delay: -12s;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.intro h1 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 0.96;
+}
+
+.subtitle {
+  width: min(520px, 100%);
+  margin: 10px auto 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.computer-shell {
+  --shell-offset-x: 0px;
+  --shell-offset-y: 0px;
+  --shell-state-y: 0px;
+  --shell-rotate: 0deg;
+  position: relative;
+  max-width: 300px;
+  margin: 300px auto 0;
+  padding: 34px 0 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  transform: translate(var(--shell-offset-x), calc(var(--shell-offset-y) + var(--shell-state-y))) rotate(var(--shell-rotate));
+  transition: transform 360ms ease, margin-top 280ms ease;
+  touch-action: none;
+  user-select: none;
+}
+
+.computer-shell.grounded {
+  --shell-state-y: 0px;
+  --shell-rotate: 0deg;
+}
+
+.computer-shell.hat-spinning {
+  --shell-state-y: -52px;
+}
+
+.computer-shell.hat-bump .bamboo-copter,
+.computer-shell.hat-bump .head-hat {
+  animation: hat-bump 0.7s ease-out;
+}
+
+.computer-shell.terror-flicker {
+  animation: terror-flicker 0.22s linear 4;
+}
+
+.computer-shell.powered-off {
+  --shell-state-y: 118px;
+  --shell-rotate: 10deg;
+}
+
+.computer-shell.dragging {
+  transition: none;
+}
+
+.computer-shell.dizzy {
+  --shell-state-y: 52px;
+  --shell-rotate: -16deg;
+}
+
+.computer-shell.dizzy .eye {
+  position: relative;
+  background: transparent;
+  box-shadow: none;
+  width: 28px;
+  height: 18px;
+}
+
+.computer-shell.dizzy .eye::before,
+.computer-shell.dizzy .eye::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #f6f6f6;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.computer-shell.dizzy .eye::before {
+  left: 1px;
+  box-shadow:
+    9px 2px 0 -1px rgba(246, 246, 246, 0.95),
+    18px 0 0 -1px rgba(246, 246, 246, 0.95);
+}
+
+.computer-shell.dizzy .eye::after {
+  left: 5px;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  box-shadow:
+    9px 0 0 -1px rgba(246, 246, 246, 0.95),
+    18px 1px 0 -1px rgba(246, 246, 246, 0.95);
+}
+
+.computer-shell.dizzy .mouth {
+  transform: rotate(180deg) translateY(-2px);
+}
+
+.computer-shell.sleepy .eye {
+  width: 20px;
+  height: 4px;
+  border-radius: 999px;
+  background: #f4f4f4;
+  box-shadow: none;
+  transform: translate(0, 0);
+}
+
+.computer-shell.sleepy .mouth-triangle,
+.computer-shell.sleepy .mouth-open {
+  width: 24px;
+  height: 16px;
+  clip-path: polygon(50% 100%, 12% 0, 88% 0);
+  transform: scaleY(0.72);
+}
+
+.hat-assembly {
+  position: absolute;
+  inset: 0 auto auto 50%;
+  width: 126px;
+  height: 116px;
+  transform: translateX(-50%);
+  z-index: 4;
+  touch-action: none;
+}
+
+.hat-assembly.detached {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translate(var(--hat-x, 0px), var(--hat-y, 0px));
+}
+
+.hat-assembly.detached .bamboo-copter,
+.hat-assembly.detached .head-hat {
+  cursor: grab;
+}
+
+.bamboo-copter {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  width: 94px;
+  height: 44px;
+  transform: translateX(-50%);
+}
+
+.computer-shell.hat-spinning .bamboo-copter {
+  animation: hover-copter 0.9s linear infinite;
+}
+
+.computer-shell.hat-spinning .copter-blade {
+  animation: spin-blade 0.16s linear infinite;
+  transform-origin: center;
+}
+
+.computer-shell.hat-spinning .blade-left {
+  left: 12px;
+  transform: scaleX(-1);
+}
+
+.computer-shell.hat-spinning .blade-right {
+  right: 12px;
+}
+
+.head-hat {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 126px;
+  height: 72px;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+body.terror-night .head-hat {
+  opacity: 0;
+}
+
+.copter-stick {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  width: 7px;
+  height: 24px;
+  transform: translateX(-50%);
+  background: #ff2020;
+}
+
+.copter-blade {
+  position: absolute;
+  top: 16px;
+  width: 34px;
+  height: 8px;
+  background: #1d27ff;
+  clip-path: polygon(0 50%, 100% 0, 88% 100%);
+  box-shadow: none;
+}
+
+.blade-left {
+  left: 12px;
+  transform: scaleX(-1);
+}
+
+.blade-right {
+  right: 12px;
+}
+
+.speaker,
+.screen-topbar {
+  display: none;
+}
+
+.screen-bezel {
+  position: relative;
+  width: 202px;
+  margin: 0 auto;
+  padding: 12px 12px 30px;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  margin-top: 22px;
+}
+
+.screen-bezel::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  width: 18px;
+  height: 20px;
+  transform: translateX(-50%);
+  background: #bfc3c8;
+}
+
+.screen-bezel::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -36px;
+  width: 74px;
+  height: 20px;
+  transform: translateX(-50%);
+  background: #bfc3c8;
+  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+}
+
+.screen-body {
+  display: block;
+  min-height: 0;
+  margin-top: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #f7f7f7;
+  box-shadow: none;
+}
+
+.mood-panel {
+  background: #050505;
+  border: 10px solid #c3c7cb;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  width: 178px;
+  min-height: 178px;
+  padding: 18px 8px 12px;
+  text-align: center;
+  align-content: center;
+  position: relative;
+  box-shadow: none;
+}
+
+.computer-shell.powered-off .mood-panel {
+  background: #000000;
+}
+
+.battery-widget {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.battery-widget.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.battery-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.battery-shell {
+  position: relative;
+  width: 32px;
+  height: 14px;
+  border: 2px solid #ffffff;
+  border-radius: 4px;
+}
+
+.battery-shell::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 3px;
+  width: 3px;
+  height: 6px;
+  border-radius: 0 2px 2px 0;
+  background: #ffffff;
+}
+
+.battery-level {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #8dff90 0%, #d7ff70 100%);
+  transition: width 240ms ease, background 240ms ease;
+}
+
+.mood-panel.text-mode .face-display {
+  display: none;
+}
+
+.mood-panel.face-mode .screen-subtitle {
+  display: none;
+}
+
+.hat-ball {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 10px;
+  height: 12px;
+  transform: translateX(-50%);
+  background: #ff2020;
+}
+
+.hat-top {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  width: 108px;
+  height: 46px;
+  transform: translateX(-50%);
+  border-radius: 54px 54px 0 0;
+  background: linear-gradient(90deg, #ff1c16 0 33%, #ffd919 33% 66%, #2637ff 66% 100%);
+}
+
+.hat-brim {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 122px;
+  height: 22px;
+  transform: translateX(-50%);
+  border-radius: 0 0 18px 18px;
+  background: #11ff18;
+  clip-path: polygon(0 60%, 100% 0, 86% 100%, 12% 100%);
+}
+
+.face-display {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 6px;
+  animation: float-face 2.6s ease-in-out infinite;
+}
+
+.terror-mask {
+  position: absolute;
+  inset: 26px 24px 34px;
+  border-radius: 20px 20px 26px 26px;
+  background: linear-gradient(180deg, #e9e9e9 0%, #bfc3c8 100%);
+  border: 3px solid #73787d;
+  display: none;
+  box-shadow: 0 10px 16px rgba(0, 0, 0, 0.18);
+}
+
+.terror-mask-eye,
+.terror-mask-mouth {
+  position: absolute;
+  background: #161616;
+}
+
+.terror-mask-eye {
+  top: 34px;
+  width: 20px;
+  height: 14px;
+  clip-path: polygon(0 50%, 18% 0, 100% 0, 82% 100%, 0 100%);
+}
+
+.terror-mask-eye-left {
+  left: 20px;
+}
+
+.terror-mask-eye-right {
+  right: 20px;
+  transform: scaleX(-1);
+}
+
+.terror-mask-mouth {
+  left: 50%;
+  bottom: 22px;
+  width: 42px;
+  height: 12px;
+  margin-left: -21px;
+  border-radius: 999px;
+}
+
+.face-eyes {
+  display: flex;
+  gap: 42px;
+  align-items: center;
+  justify-content: center;
+  animation: eye-sway 3.2s ease-in-out infinite;
+}
+
+.eye {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.22);
+  animation: none;
+  transform: translate(var(--eye-look-x, 0px), var(--eye-look-y, 0px));
+  transition: transform 90ms linear;
+}
+
+.face-cheeks {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 112px;
+  animation: cheek-bounce 2.6s ease-in-out infinite;
+}
+
+.cheek {
+  position: relative;
+  width: 18px;
+  height: 12px;
+}
+
+.cheek::before,
+.cheek::after,
+.cheek > span {
+  content: "";
+  position: absolute;
+  top: 1px;
+  width: 2px;
+  height: 10px;
+  background: #ffffff;
+  transform: rotate(35deg);
+}
+
+.cheek::before {
+  left: 2px;
+}
+
+.cheek::after {
+  left: 8px;
+}
+
+.cheek-left {
+  transform: scaleX(-1);
+}
+
+.mouth {
+  transition: transform 120ms ease, clip-path 120ms ease, width 120ms ease, height 120ms ease;
+  background: #ffffff;
+}
+
+.mouth-triangle {
+  width: 46px;
+  height: 50px;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  animation: idle-mouth 2.8s ease-in-out infinite;
+}
+
+.mouth-open {
+  width: 38px;
+  height: 42px;
+  clip-path: polygon(50% 100%, 10% 0, 90% 0);
+  transform: scaleY(0.82);
+}
+
+.rainbow-vomit {
+  position: absolute;
+  left: 50%;
+  top: 118px;
+  width: 18px;
+  height: 0;
+  margin-left: -9px;
+  border-radius: 0 0 18px 18px;
+  background: linear-gradient(180deg, #ff3b30 0%, #ff9500 18%, #ffd60a 36%, #34c759 58%, #0a84ff 78%, #bf5af2 100%);
+  opacity: 0;
+  transform-origin: top center;
+  transition: opacity 120ms ease, height 180ms ease;
+}
+
+.computer-shell.rainbow-puke .rainbow-vomit {
+  height: 54px;
+  opacity: 0.95;
+  animation: rainbow-drip 0.45s ease-in-out infinite alternate;
+}
+
+body.terror-night .face-display {
+  animation: float-face 1.2s ease-in-out infinite;
+}
+
+body.terror-night .face-cheeks {
+  opacity: 0.15;
+}
+
+body.terror-night .eye,
+body.terror-night .mouth {
+  background: #ff4f4f;
+  box-shadow: 0 0 12px rgba(255, 66, 66, 0.6);
+}
+
+body.terror-night .terror-mask {
+  display: block;
+  animation: terror-mask-shift 0.48s steps(2) infinite;
+}
+
+.screen-subtitle {
+  display: none;
+  margin: 0;
+  max-width: 142px;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 700;
+  color: #ffffff;
+  animation: subtitle-pop 1.8s ease-in-out infinite;
+}
+
+.mood-panel.text-mode .screen-subtitle {
+  display: block;
+}
+
+.mood-panel.colorful .screen-subtitle,
+.mood-panel.colorful .hat-top,
+.mood-panel.colorful .hat-brim {
+  background: linear-gradient(90deg, #60efff, #6aff91, #ffd166, #ff7b72);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+
+.voice-box,
+.mic-button,
+.send-button {
+  border-radius: 20px;
+  border: 1px solid var(--line);
+}
+
+.keyboard-dock {
+  width: 220px;
+  margin: -76px auto 0;
+  position: relative;
+  z-index: 4;
+}
+
+.keyboard-shell {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.keyboard-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.voice-box {
+  display: block;
+  padding: 6px 8px;
+  background: #aeb2b7;
+  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+}
+
+.voice-title {
+  display: block;
+  font-weight: 700;
+  font-size: 12px;
+  color: #101010;
+}
+
+.voice-hint {
+  display: block;
+  margin-top: 2px;
+  color: rgba(0, 0, 0, 0.68);
+  font-size: 10px;
+  text-align: center;
+}
+
+.voice-box input {
+  width: 100%;
+  margin-top: 6px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #111111;
+  font-size: 12px;
+  text-align: center;
+}
+
+.desk {
+  position: relative;
+  width: 314px;
+  height: 42px;
+  margin: 0 auto;
+  border-radius: 0;
+  background: #9a5b06;
+  box-shadow: none;
+}
+
+.desk-wrap {
+  position: relative;
+  width: 314px;
+  margin: -6px auto 0;
+  padding-bottom: 176px;
+}
+
+.desk-leg {
+  position: absolute;
+  top: 42px;
+  width: 18px;
+  height: 176px;
+  border-radius: 0;
+  background: #9a5b06;
+}
+
+.leg-left {
+  left: 24px;
+}
+
+.leg-right {
+  right: 24px;
+}
+
+.outlet {
+  display: none;
+}
+
+.cables {
+  position: relative;
+  width: 220px;
+  height: 54px;
+  margin: -2px auto 0;
+  z-index: 3;
+}
+
+.cable {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 56px;
+  background: #2a2a2a;
+  border-radius: 999px;
+}
+
+.cable-left {
+  left: 36px;
+  transform: rotate(28deg);
+}
+
+.cable-center {
+  left: 108px;
+}
+
+.cable-right {
+  right: 36px;
+  transform: rotate(-28deg);
+}
+
+.outlet-hole {
+  position: absolute;
+  top: 16px;
+  width: 6px;
+  height: 18px;
+  border-radius: 999px;
+  background: #3c3c3c;
+}
+
+.outlet-hole:first-child {
+  left: 11px;
+}
+
+.outlet-hole:last-child {
+  right: 11px;
+}
+
+.voice-box input::placeholder {
+  color: rgba(0, 0, 0, 0.46);
+}
+
+.key-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  margin-top: 4px;
+  padding: 0 10px;
+}
+
+.key {
+  height: 10px;
+  border-radius: 2px;
+  background: #eef0f2;
+  box-shadow: none;
+}
+
+.key.wide {
+  grid-column: span 2;
+}
+
+.key.extra-wide {
+  grid-column: span 3;
+}
+
+.keyboard-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.mic-button,
+.send-button {
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  padding: 8px 0;
+}
+
+.mic-button {
+  background: #c3c7cb;
+  color: #111111;
+}
+
+.mic-button.recording {
+  background: #ff7b72;
+  color: white;
+  box-shadow: none;
+}
+
+.send-button {
+  background: #c3c7cb;
+  color: #111111;
+}
+
+.mic-button:hover,
+.send-button:hover {
+  transform: translateY(-1px);
+}
+
+.mic-button:active,
+.send-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.grass {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42vh;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 18%, #7ad14a 18%, #5aa432 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.food-zone {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 130px;
+  z-index: 8;
+}
+
+.food-title {
+  margin: 0 0 6px;
+  color: #ffffff;
+  font-size: 12px;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.food-tray {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  min-height: 118px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2px solid rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+.food-option {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+
+.food-option:active {
+  cursor: grabbing;
+}
+
+.food-option::before,
+.food-option::after {
+  content: "";
+  position: absolute;
+}
+
+.food-apple::before {
+  left: 8px;
+  top: 10px;
+  width: 28px;
+  height: 26px;
+  border-radius: 48% 48% 52% 52%;
+  background: radial-gradient(circle at 35% 35%, #ffb2b2 0%, #ff534d 42%, #cf1818 100%);
+}
+
+.food-apple::after {
+  left: 19px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 0 100% 0 100%;
+  background: #38a93c;
+  transform: rotate(-24deg);
+}
+
+.food-banana::before {
+  left: 7px;
+  top: 14px;
+  width: 30px;
+  height: 14px;
+  border-radius: 18px 18px 12px 12px;
+  border: 5px solid #ffd54a;
+  border-top-color: transparent;
+  border-left-color: #ffea8c;
+  transform: rotate(-18deg);
+}
+
+.food-banana::after {
+  left: 29px;
+  top: 15px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8b5a00;
+}
+
+.food-orange::before {
+  left: 9px;
+  top: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffd89f 0%, #ffa327 46%, #ef6c00 100%);
+}
+
+.food-orange::after {
+  left: 18px;
+  top: 5px;
+  width: 10px;
+  height: 8px;
+  border-radius: 100% 0 100% 0;
+  background: #3ea64e;
+  transform: rotate(10deg);
+}
+
+.food-cookie::before {
+  left: 8px;
+  top: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f5d7a0 0%, #d8ab62 100%);
+  box-shadow:
+    7px 6px 0 -4px #8b5a2b,
+    16px 9px 0 -4px #8b5a2b,
+    10px 17px 0 -4px #8b5a2b,
+    18px 19px 0 -4px #8b5a2b;
+}
+
+.food-piece {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  z-index: 20;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+}
+
+.food-piece::before,
+.food-piece::after {
+  content: "";
+  position: absolute;
+}
+
+.food-piece.food-apple::before {
+  inset: 3px 2px 2px 2px;
+  border-radius: 48% 48% 52% 52%;
+  background: radial-gradient(circle at 35% 35%, #ffb2b2 0%, #ff534d 42%, #cf1818 100%);
+}
+
+.food-piece.food-apple::after {
+  left: 12px;
+  top: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 0 100% 0 100%;
+  background: #38a93c;
+  transform: rotate(-20deg);
+}
+
+.food-piece.food-banana::before {
+  left: 4px;
+  top: 10px;
+  width: 26px;
+  height: 12px;
+  border-radius: 18px 18px 12px 12px;
+  border: 5px solid #ffd54a;
+  border-top-color: transparent;
+  border-left-color: #ffea8c;
+  transform: rotate(-18deg);
+}
+
+.food-piece.food-banana::after {
+  left: 24px;
+  top: 11px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8b5a00;
+}
+
+.food-piece.food-orange::before {
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffd89f 0%, #ffa327 46%, #ef6c00 100%);
+}
+
+.food-piece.food-orange::after {
+  left: 11px;
+  top: -1px;
+  width: 10px;
+  height: 8px;
+  border-radius: 100% 0 100% 0;
+  background: #3ea64e;
+}
+
+.food-piece.food-cookie::before {
+  inset: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f5d7a0 0%, #d8ab62 100%);
+  box-shadow:
+    7px 6px 0 -4px #8b5a2b,
+    16px 9px 0 -4px #8b5a2b,
+    10px 17px 0 -4px #8b5a2b,
+    18px 19px 0 -4px #8b5a2b;
+}
+
+.food-piece.eating {
+  transition: transform 320ms ease, opacity 320ms ease;
+  opacity: 0;
+  transform: scale(0.2);
+}
+
+.sprout-tree {
+  position: fixed;
+  width: 46px;
+  height: 88px;
+  z-index: 12;
+  touch-action: none;
+  cursor: grab;
+}
+
+.sprout-tree::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 10px;
+  height: 42px;
+  transform: translateX(-50%);
+  background: #7b4a16;
+  border-radius: 4px;
+}
+
+.sprout-tree::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  width: 42px;
+  height: 42px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #2fa643;
+  box-shadow:
+    -12px 14px 0 #39b44c,
+    12px 14px 0 #259036,
+    0 24px 0 #2d9d3f;
+}
+
+.sprout-tree .tree-fruit {
+  position: absolute;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.sprout-tree .tree-fruit.fruit-left {
+  left: 7px;
+  top: 32px;
+}
+
+.sprout-tree .tree-fruit.fruit-mid {
+  left: 18px;
+  top: 22px;
+}
+
+.sprout-tree .tree-fruit.fruit-right {
+  right: 7px;
+  top: 34px;
+}
+
+.sprout-tree.tree-apple .tree-fruit,
+.sprout-tree.tree-apple .tree-fruit::after {
+  background: #e33939;
+}
+
+.sprout-tree.tree-orange .tree-fruit,
+.sprout-tree.tree-orange .tree-fruit::after {
+  background: #ff9822;
+}
+
+.sprout-tree .tree-fruit::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: -3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 0 100% 0 100%;
+  background: #39a03e;
+}
+
+.day-night-toggle {
+  position: fixed;
+  right: 22px;
+  bottom: 118px;
+  z-index: 8;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #111111;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+.terror-toggle {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 8;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(124, 10, 10, 0.9);
+  color: #fff4f4;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+.terror-toggle.active {
+  background: rgba(40, 40, 40, 0.92);
+}
+
+.trees {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 18vh;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tree {
+  position: absolute;
+  width: 72px;
+  height: 150px;
+}
+
+.tree-small {
+  transform: scale(0.76);
+}
+
+.tree-large {
+  transform: scale(1.26);
+}
+
+.tree::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 16px;
+  height: 64px;
+  transform: translateX(-50%);
+  background: #7b4a16;
+}
+
+.tree::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 74px;
+  height: 92px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #2dac37;
+  box-shadow:
+    -22px 24px 0 #36bb42,
+    22px 26px 0 #24982d,
+    0 36px 0 #2daa36;
+}
+
+.tree-left {
+  left: 4%;
+}
+
+.tree-left-mid {
+  left: 18%;
+}
+
+.tree-mid {
+  left: 42%;
+}
+
+.tree-right-mid {
+  right: 21%;
+}
+
+.tree-right {
+  right: 4%;
+}
+
+body.terror-night .tree-mid::after {
+  box-shadow:
+    -22px 24px 0 #2d6a33,
+    22px 26px 0 #275c2d,
+    0 36px 0 #295f30;
+  filter: brightness(0.82);
+}
+
+body.terror-night .tree-right::before {
+  box-shadow:
+    inset 0 0 0 2px #4b2710,
+    0 -46px 0 -22px #f1e4bc,
+    0 -46px 0 -20px #7f1111,
+    0 -24px 0 -20px #d8c394;
+}
+
+@keyframes float-face {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes blink-eye {
+  0%,
+  44%,
+  52%,
+  100% {
+    transform: scaleY(1);
+  }
+  48% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes cheek-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+@keyframes rainbow-drip {
+  from {
+    transform: scaleY(0.96) rotate(-2deg);
+  }
+  to {
+    transform: scaleY(1.04) rotate(2deg);
+  }
+}
+
+@keyframes eye-sway {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes idle-mouth {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(2px) scale(0.96);
+  }
+}
+
+@keyframes subtitle-pop {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.92;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes drift-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100vw - 260px));
+  }
+}
+
+@keyframes sun-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(3px) rotate(4deg);
+  }
+}
+
+@keyframes sun-sway {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+  80% {
+    transform: rotate(-4deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes eye-shift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes cloud-look {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes spin-blade {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hover-copter {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-2px);
+  }
+}
+
+@keyframes hat-bump {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  35% {
+    transform: translateX(-50%) translateY(-18px);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes terror-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0.45;
+  }
+  60% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes terror-mask-shift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(1px, -1px) rotate(-1deg);
+  }
+}
+
+@media (max-width: 820px) {
+  .mood-panel {
+    width: 178px;
+    min-height: 178px;
+  }
+
+  .keyboard-top {
+    grid-template-columns: 1fr;
+  }
+
+  .bamboo-copter {
+    transform: translateX(-50%) scale(0.9);
+  }
+
+  .keyboard-dock {
+    margin-top: 8px;
+  }
+
+  .computer-shell {
+    margin-top: 250px;
+  }
+}

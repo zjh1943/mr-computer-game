@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>电脑先生</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="sky-scene" aria-hidden="true">
+      <div id="sky-sun" class="sky-sun active">
+        <span class="sun-core">
+          <span class="sun-eye sun-eye-left"></span>
+          <span class="sun-eye sun-eye-right"></span>
+          <span class="sun-mouth"></span>
+        </span>
+        <span class="sun-ray sun-ray-1"></span>
+        <span class="sun-ray sun-ray-2"></span>
+        <span class="sun-ray sun-ray-3"></span>
+        <span class="sun-ray sun-ray-4"></span>
+        <span class="sun-ray sun-ray-5"></span>
+        <span class="sun-ray sun-ray-6"></span>
+        <span class="sun-ray sun-ray-7"></span>
+        <span class="sun-ray sun-ray-8"></span>
+      </div>
+      <div id="sky-moon" class="sky-moon moon-round">
+        <span class="moon-face">
+          <span class="moon-eye moon-eye-left"></span>
+          <span class="moon-eye moon-eye-right"></span>
+          <span class="moon-mouth"></span>
+        </span>
+      </div>
+      <span class="cloud cloud-one"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <span class="cloud cloud-two"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <span class="cloud cloud-three"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <span class="cloud cloud-four"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+    </div>
+    <main class="stage">
+      <section class="computer-shell grounded" aria-label="电脑先生">
+        <div class="hat-assembly" aria-hidden="true">
+          <div class="bamboo-copter">
+            <span class="copter-stick"></span>
+            <span class="copter-blade blade-left"></span>
+            <span class="copter-blade blade-right"></span>
+          </div>
+          <div class="head-hat">
+            <span class="hat-ball"></span>
+            <span class="hat-top"></span>
+            <span class="hat-brim"></span>
+          </div>
+        </div>
+        <div class="speaker speaker-left" aria-hidden="true"></div>
+        <div class="speaker speaker-right" aria-hidden="true"></div>
+
+        <div class="screen-bezel">
+          <div class="screen-body">
+            <div id="mood-panel" class="mood-panel" aria-live="polite">
+              <div class="battery-widget" aria-hidden="true">
+                <span id="battery-label" class="battery-label">100%</span>
+                <span class="battery-shell">
+                  <span id="battery-level" class="battery-level"></span>
+                </span>
+              </div>
+              <div id="face-display" class="face-display">
+                <div class="face-eyes" aria-hidden="true">
+                  <span class="eye"></span>
+                  <span class="eye"></span>
+                </div>
+                <div class="face-cheeks" aria-hidden="true">
+                  <span class="cheek cheek-left"></span>
+                  <span class="cheek cheek-right"></span>
+                </div>
+                <div id="mouth" class="mouth mouth-triangle" aria-hidden="true"></div>
+                <div id="rainbow-vomit" class="rainbow-vomit" aria-hidden="true"></div>
+                <div class="terror-mask" aria-hidden="true">
+                  <span class="terror-mask-eye terror-mask-eye-left"></span>
+                  <span class="terror-mask-eye terror-mask-eye-right"></span>
+                  <span class="terror-mask-mouth"></span>
+                </div>
+              </div>
+              <p id="screen-subtitle" class="screen-subtitle">滴。我在听。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="desk-wrap" aria-hidden="true">
+        <div class="desk">
+          <span class="desk-leg leg-left"></span>
+          <span class="desk-leg leg-right"></span>
+          <div class="outlet">
+            <span class="outlet-hole"></span>
+            <span class="outlet-hole"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cables" aria-hidden="true">
+        <span class="cable cable-left"></span>
+        <span class="cable cable-center"></span>
+        <span class="cable cable-right"></span>
+      </div>
+
+      <form id="chat-form" class="keyboard-dock">
+        <div class="keyboard-shell">
+          <div class="keyboard-top">
+            <label class="voice-box" for="message-input">
+              <span class="voice-title">键盘输入</span>
+              <span id="voice-hint" class="voice-hint">支持语音识别；也可以直接在这里输入</span>
+              <input
+                id="message-input"
+                name="message"
+                type="text"
+                autocomplete="off"
+                placeholder="对电脑先生说点什么……"
+              />
+            </label>
+            <div class="keyboard-actions">
+              <button id="mic-button" class="mic-button" type="button">开始语音</button>
+              <button class="send-button" type="submit">发送</button>
+            </div>
+          </div>
+          <div class="key-grid" aria-hidden="true">
+            <span class="key wide"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key wide"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key wide"></span>
+            <span class="key extra-wide"></span>
+          </div>
+        </div>
+      </form>
+      <div class="trees" aria-hidden="true">
+        <span class="tree tree-left"></span>
+        <span class="tree tree-left-mid tree-small"></span>
+        <span class="tree tree-mid tree-large"></span>
+        <span class="tree tree-right-mid tree-small"></span>
+        <span class="tree tree-right"></span>
+      </div>
+      <div class="grass" aria-hidden="true"></div>
+      <section class="food-zone" aria-label="食物区">
+        <p class="food-title">食物区</p>
+        <div id="food-tray" class="food-tray">
+          <button class="food-option food-apple" type="button" data-food-type="apple" aria-label="苹果"></button>
+          <button class="food-option food-banana" type="button" data-food-type="banana" aria-label="香蕉"></button>
+          <button class="food-option food-orange" type="button" data-food-type="orange" aria-label="橘子"></button>
+          <button class="food-option food-cookie" type="button" data-food-type="cookie" aria-label="饼干"></button>
+        </div>
+      </section>
+      <button id="terror-toggle" class="terror-toggle" type="button">开启恐怖之夜</button>
+      <button id="day-night-toggle" class="day-night-toggle" type="button">切到夜晚</button>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

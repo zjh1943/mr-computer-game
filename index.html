@@ -165,7 +165,37 @@
         <span class="tree tree-right-mid tree-small"></span>
         <span class="tree tree-right"></span>
       </div>
+      <div id="computer-house" class="computer-house" aria-hidden="true">
+        <span class="house-roof"></span>
+        <span class="house-body"></span>
+        <span class="house-door"></span>
+        <span class="house-window"></span>
+        <span class="house-computer"></span>
+        <span class="house-item house-bed"></span>
+        <span class="house-item house-lamp"></span>
+        <span class="house-item house-sofa"></span>
+        <span class="house-item house-table"></span>
+      </div>
       <div class="grass" aria-hidden="true"></div>
+      <div class="home-window-view" aria-hidden="true">
+        <span class="home-window-sun">
+          <span class="window-sun-eye eye-left"></span>
+          <span class="window-sun-eye eye-right"></span>
+          <span class="window-sun-mouth"></span>
+        </span>
+        <span class="home-window-moon">
+          <span class="window-moon-eye eye-left"></span>
+          <span class="window-moon-eye eye-right"></span>
+          <span class="window-moon-mouth"></span>
+        </span>
+        <span class="home-window-cloud"></span>
+        <span class="home-window-rain"></span>
+        <span class="home-window-snow"></span>
+      </div>
+      <div id="home-outlet" class="home-outlet" aria-hidden="true">
+        <span class="outlet-hole"></span>
+        <span class="outlet-hole"></span>
+      </div>
       <section class="food-zone" aria-label="食物区">
         <p class="food-title">食物区</p>
         <div id="food-tray" class="food-tray">
@@ -175,10 +205,43 @@
           <button class="food-option food-cookie" type="button" data-food-type="cookie" aria-label="饼干"></button>
         </div>
       </section>
+      <section id="sales-basket" class="sales-basket" aria-label="销售篮">
+        <p class="sales-title">销售篮</p>
+        <div class="basket-bowl" aria-hidden="true"></div>
+      </section>
       <button id="terror-toggle" class="terror-toggle" type="button">开启恐怖之夜</button>
       <button id="day-night-toggle" class="day-night-toggle" type="button">切到夜晚</button>
       <button id="weather-toggle" class="weather-toggle" type="button">切到多云</button>
       <button id="light-toggle" class="light-toggle" type="button">开灯</button>
+      <button id="yard-toggle" class="yard-toggle" type="button">回草坪</button>
+      <button id="home-toggle" class="home-toggle" type="button">回家</button>
+      <button id="call-back-toggle" class="call-back-toggle" type="button" hidden>叫回来</button>
+      <div id="money-display" class="money-display" aria-live="polite">钱：0</div>
+      <button id="mine-toggle" class="mine-toggle" type="button">挖矿</button>
+      <button id="shop-toggle" class="shop-toggle" type="button">商城</button>
+      <section id="mine-panel" class="mine-panel" aria-label="挖矿面板" hidden>
+        <div class="mine-toolbar">
+          <strong>小矿场</strong>
+          <button id="sell-minerals" class="sell-minerals" type="button">销售</button>
+        </div>
+        <div id="mine-grid" class="mine-grid" aria-label="矿洞格子"></div>
+        <div class="bag-toolbar">
+          <span>背包</span>
+          <button id="buy-house" class="buy-house" type="button" hidden>买房子</button>
+        </div>
+        <div id="inventory-grid" class="inventory-grid" aria-label="背包格子"></div>
+      </section>
+      <section id="shop-panel" class="shop-panel" aria-label="商城面板" hidden>
+        <div class="shop-toolbar">
+          <strong>电脑先生商城</strong>
+          <button id="move-home" class="move-home" type="button" hidden>入住</button>
+        </div>
+        <label class="shop-search-wrap">
+          <span>搜索</span>
+          <input id="shop-search" class="shop-search" type="search" placeholder="想买什么都可以搜" autocomplete="off" />
+        </label>
+        <div id="shop-grid" class="shop-grid" aria-label="商城商品"></div>
+      </section>
     </main>
 
     <script src="./app.js"></script>

@@ -14,6 +14,7 @@ const screenBezel = document.querySelector(".screen-bezel");
 const hatAssembly = document.querySelector(".hat-assembly");
 const backPlug = document.querySelector("#back-plug");
 const floorOutlet = document.querySelector("#floor-outlet");
+const homeOutlet = document.querySelector("#home-outlet");
 const faceDisplay = document.querySelector("#face-display");
 const faceEyes = document.querySelectorAll(".face-eyes .eye");
 const skyScene = document.querySelector(".sky-scene");
@@ -29,6 +30,23 @@ const terrorToggle = document.querySelector("#terror-toggle");
 const weatherToggle = document.querySelector("#weather-toggle");
 const lightToggle = document.querySelector("#light-toggle");
 const foodTray = document.querySelector("#food-tray");
+const salesBasket = document.querySelector("#sales-basket");
+const moneyDisplay = document.querySelector("#money-display");
+const mineToggle = document.querySelector("#mine-toggle");
+const minePanel = document.querySelector("#mine-panel");
+const mineGrid = document.querySelector("#mine-grid");
+const inventoryGrid = document.querySelector("#inventory-grid");
+const sellMineralsButton = document.querySelector("#sell-minerals");
+const buyHouseButton = document.querySelector("#buy-house");
+const computerHouse = document.querySelector("#computer-house");
+const shopToggle = document.querySelector("#shop-toggle");
+const shopPanel = document.querySelector("#shop-panel");
+const shopSearch = document.querySelector("#shop-search");
+const shopGrid = document.querySelector("#shop-grid");
+const moveHomeButton = document.querySelector("#move-home");
+const yardToggle = document.querySelector("#yard-toggle");
+const homeToggle = document.querySelector("#home-toggle");
+const callBackToggle = document.querySelector("#call-back-toggle");
 
 const moods = [
   { status: "待机微笑中", colorful: false },
@@ -224,7 +242,9 @@ let hatDetached = false;
 let hatX = 0;
 let hatY = 0;
 let foodDrag = null;
+let treeDrag = null;
 let plugDrag = null;
+let furnitureDrag = null;
 let plugDetached = false;
 let plugInserted = false;
 let plugCharging = false;
@@ -232,7 +252,17 @@ let plugX = 0;
 let plugY = 0;
 let chargeTimer = null;
 let chargingCaptionTimer = null;
+let hatTakeStep = 0;
 let nightAwakeUntil = 0;
+let money = 0;
+let minedItems = [];
+let minePanelOpen = false;
+let houseBought = false;
+let shopPanelOpen = false;
+let computerMovedIn = false;
+let isAtHome = false;
+const ownedShopItems = new Set();
+let customShopItems = [];
 
 const BATTERY_MAX = 100;
 const LOW_BATTERY_THRESHOLD = 20;
@@ -247,6 +277,7 @@ const CHAT_IDLE_GRACE_MS = 9000;
 const SLEEPY_IDLE_MS = 20000;
 const NIGHT_WAKE_DURATION = 15000;
 const WEATHER_CHANGE_INTERVAL = 26000;
+const SAVE_KEY = "mr-computer-game-save-v1";
 const weatherOrder = ["sunny", "cloudy", "rain", "snow"];
 const weatherLabels = {
   sunny: "晴天",
@@ -254,6 +285,33 @@ const weatherLabels = {
   rain: "下雨",
   snow: "下雪"
 };
+const HOUSE_PRICE = 120;
+const MINE_CELL_COUNT = 18;
+const INVENTORY_SLOT_COUNT = 12;
+const mineralTypes = [
+  { id: "stone", label: "石头", icon: "●", value: 3, chance: 42 },
+  { id: "copper", label: "铜", icon: "◆", value: 8, chance: 28 },
+  { id: "silver", label: "银", icon: "◇", value: 15, chance: 18 },
+  { id: "gold", label: "金", icon: "★", value: 28, chance: 9 },
+  { id: "gem", label: "宝石", icon: "✦", value: 45, chance: 3 }
+];
+const shopItems = [
+  { id: "house", label: "木房子", icon: "家", price: HOUSE_PRICE, type: "house", keywords: "家 房子 木屋 小家" },
+  { id: "bed", label: "小床", icon: "床", price: 35, type: "furniture", keywords: "床 小床 睡觉" },
+  { id: "lamp", label: "台灯", icon: "灯", price: 25, type: "furniture", keywords: "灯 台灯 灯光" },
+  { id: "sofa", label: "沙发", icon: "沙", price: 45, type: "furniture", keywords: "沙发 椅子 坐" },
+  { id: "table", label: "小桌子", icon: "桌", price: 30, type: "furniture", keywords: "桌子 小桌子 桌" },
+  { id: "bookshelf", label: "书架", icon: "书", price: 32, type: "furniture", keywords: "书架 书 本子" },
+  { id: "rug", label: "地毯", icon: "毯", price: 18, type: "furniture", keywords: "地毯 毯子" },
+  { id: "tv", label: "电视", icon: "电", price: 55, type: "furniture", keywords: "电视 屏幕 动画" },
+  { id: "fridge", label: "冰箱", icon: "冰", price: 50, type: "furniture", keywords: "冰箱 冷饮 食物" },
+  { id: "plant", label: "小花", icon: "花", price: 16, type: "furniture", keywords: "花 植物 盆栽 草" },
+  { id: "clock", label: "时钟", icon: "钟", price: 22, type: "furniture", keywords: "时钟 钟 表 时间" },
+  { id: "toy", label: "玩具", icon: "玩", price: 20, type: "furniture", keywords: "玩具 游戏 好玩" },
+  { id: "outlet", label: "插座", icon: "插", price: 28, type: "furniture", kind: "outlet", keywords: "插座 充电 电源 插口" },
+  { id: "mr-computer", label: "电脑先生", icon: "电", price: 500, type: "furniture", kind: "computer", keywords: "电脑先生 电脑 小电脑 屏幕" },
+  { id: "big-window", label: "大窗户", icon: "窗", price: 180, type: "furniture", kind: "big-window", keywords: "大窗户 大窗 大玻璃 天气" }
+];
 
 function randomFrom(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -261,6 +319,532 @@ function randomFrom(items) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function getAllShopItems() {
+  return [...shopItems, ...customShopItems];
+}
+
+function inferFurnitureKind(label) {
+  if (/电脑先生|电脑|computer/i.test(label)) return "computer";
+  if (/大窗|大窗户|大玻璃|big window/i.test(label)) return "big-window";
+  if (/窗|window/i.test(label)) return "window";
+  if (/床|bed/i.test(label)) return "bed";
+  if (/灯|light|lamp/i.test(label)) return "lamp";
+  if (/桌|table/i.test(label)) return "table";
+  if (/沙发|椅|sofa|chair/i.test(label)) return "sofa";
+  if (/电视|屏幕|tv/i.test(label)) return "tv";
+  if (/冰箱|fridge/i.test(label)) return "fridge";
+  if (/花|草|树|植物|plant/i.test(label)) return "plant";
+  if (/书|书架|book/i.test(label)) return "bookshelf";
+  if (/地毯|毯|rug/i.test(label)) return "rug";
+  if (/钟|表|clock/i.test(label)) return "clock";
+  if (/玩具|娃娃|球|toy/i.test(label)) return "toy";
+  if (/插座|插口|充电|电源|outlet|plug/i.test(label)) return "outlet";
+  if (/门|door/i.test(label)) return "door";
+  return "decor";
+}
+
+function makeCustomShopItem(searchText) {
+  const label = searchText.trim().slice(0, 12);
+  if (!label) return null;
+  const kind = inferFurnitureKind(label);
+  const code = Array.from(label)
+    .map((char) => char.codePointAt(0).toString(36))
+    .join("-");
+  return {
+    id: `custom-${code}`,
+    label,
+    icon: label.slice(0, 1),
+    price: clamp(12 + label.length * 4, 16, 80),
+    type: "furniture",
+    kind,
+    custom: true,
+    keywords: label
+  };
+}
+
+function rememberCustomShopItem(item) {
+  if (!item?.custom || customShopItems.some((entry) => entry.id === item.id)) return;
+  customShopItems.push(item);
+}
+
+function isShopItemOwned(item) {
+  return item.type === "house" ? houseBought : ownedShopItems.has(item.id);
+}
+
+function getFurnitureElement(itemId) {
+  return document.querySelector(`.house-${itemId}`) || null;
+}
+
+function createFurnitureElement(item) {
+  if (!item || item.type === "house") return null;
+  const element = document.createElement("span");
+  const kind = item.kind || inferFurnitureKind(item.label || "");
+  element.className = `house-item house-${item.id} custom-shop-furniture custom-kind-${kind}`;
+  element.dataset.itemId = item.id;
+  element.dataset.kind = kind;
+  element.textContent = item.icon || item.label.slice(0, 1);
+  element.setAttribute("aria-hidden", "true");
+  if (kind === "outlet") {
+    element.textContent = "";
+    element.append(document.createElement("span"), document.createElement("span"));
+    element.firstElementChild.className = "outlet-hole";
+    element.lastElementChild.className = "outlet-hole";
+  } else if (kind === "computer") {
+    element.textContent = "";
+    ["screen", "eye left", "eye right", "mouth", "stand", "hat"].forEach((part) => {
+      const piece = document.createElement("span");
+      piece.className = part.startsWith("eye")
+        ? `mini-computer-eye ${part.split(" ")[1]}`
+        : `mini-computer-${part}`;
+      element.appendChild(piece);
+    });
+  }
+  computerHouse?.appendChild(element);
+  return element;
+}
+
+function activateFurniture(itemId) {
+  const item = getAllShopItems().find((entry) => entry.id === itemId);
+  let element = getFurnitureElement(itemId);
+  if (!element) {
+    element = createFurnitureElement(item);
+  }
+  if (!element) return;
+  const kind = item?.kind || inferFurnitureKind(item?.label || "");
+  computerHouse?.classList.add(`has-${itemId}`);
+  element.dataset.itemId = itemId;
+  element.classList.add("movable", "owned-furniture");
+  element.classList.add(`custom-kind-${kind}`);
+  element.dataset.kind = kind;
+  if (element.parentElement !== document.body) {
+    document.body.appendChild(element);
+  }
+}
+
+function saveGameState() {
+  const furniture = {};
+  getAllShopItems().forEach((item) => {
+    if (item.type === "house") return;
+    const element = getFurnitureElement(item.id);
+    if (!element || !element.classList.contains("custom-placed")) return;
+    furniture[item.id] = {
+      left: element.style.left,
+      top: element.style.top
+    };
+  });
+
+  const saveData = {
+    money,
+    minedItems: minedItems.map((item) => item.id),
+    houseBought,
+    computerMovedIn,
+    isAtHome,
+    ownedShopItems: Array.from(ownedShopItems),
+    customShopItems,
+    shellPosition: {
+      x: shellOffsetX,
+      y: shellOffsetY
+    },
+    furniture
+  };
+
+  try {
+    window.localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+  } catch {
+    // Safari private mode can block localStorage; the game still works without saving.
+  }
+}
+
+function restoreFurniturePosition(itemId, position) {
+  const element = getFurnitureElement(itemId);
+  if (!element || !position?.left || !position?.top) return;
+  element.style.position = "fixed";
+  element.style.left = position.left;
+  element.style.top = position.top;
+  element.style.right = "auto";
+  element.style.bottom = "auto";
+  element.classList.add("custom-placed");
+}
+
+function loadGameState() {
+  let saveData = null;
+  try {
+    saveData = JSON.parse(window.localStorage.getItem(SAVE_KEY) || "null");
+  } catch {
+    saveData = null;
+  }
+  if (!saveData) return;
+
+  money = Number.isFinite(saveData.money) ? saveData.money : 0;
+  minedItems = Array.isArray(saveData.minedItems)
+    ? saveData.minedItems
+        .map((id) => mineralTypes.find((item) => item.id === id))
+        .filter(Boolean)
+    : [];
+  houseBought = Boolean(saveData.houseBought);
+  computerMovedIn = Boolean(saveData.computerMovedIn);
+  isAtHome = Boolean(saveData.isAtHome && computerMovedIn);
+  if (saveData.shellPosition && Number.isFinite(saveData.shellPosition.x) && Number.isFinite(saveData.shellPosition.y)) {
+    shellOffsetX = saveData.shellPosition.x;
+    shellOffsetY = saveData.shellPosition.y;
+    updateShellPosition();
+  }
+  customShopItems = Array.isArray(saveData.customShopItems)
+    ? saveData.customShopItems
+        .filter((item) => item?.id && item?.label)
+        .map((item) => ({
+          id: item.id,
+          label: item.label,
+          icon: item.icon || item.label.slice(0, 1),
+          price: Number.isFinite(item.price) ? item.price : 24,
+          type: "furniture",
+          kind: item.kind || inferFurnitureKind(item.label),
+          custom: true,
+          keywords: item.keywords || item.label
+        }))
+    : [];
+
+  ownedShopItems.clear();
+  if (Array.isArray(saveData.ownedShopItems)) {
+    saveData.ownedShopItems.forEach((itemId) => {
+      if (getAllShopItems().some((item) => item.id === itemId)) {
+        ownedShopItems.add(itemId);
+      }
+    });
+  }
+
+  if (houseBought) {
+    computerHouse?.classList.add("visible");
+  }
+  if (computerMovedIn) {
+    computerHouse?.classList.add("occupied");
+  }
+  if (isAtHome) {
+    document.body.classList.add("home-mode");
+    computerShell.classList.add("visiting-house");
+  }
+
+  ownedShopItems.forEach((itemId) => {
+    activateFurniture(itemId);
+    restoreFurniturePosition(itemId, saveData.furniture?.[itemId]);
+  });
+}
+
+function weightedRandomMineral() {
+  const totalChance = mineralTypes.reduce((sum, item) => sum + item.chance, 0);
+  let roll = Math.random() * totalChance;
+  for (const item of mineralTypes) {
+    roll -= item.chance;
+    if (roll <= 0) return item;
+  }
+  return mineralTypes[0];
+}
+
+function updateMoneyUI() {
+  if (moneyDisplay) {
+    moneyDisplay.textContent = `钱：${money}`;
+  }
+  if (buyHouseButton) {
+    buyHouseButton.hidden = true;
+  }
+  updateShopButtons();
+}
+
+function updateHomeTravelButtons() {
+  if (yardToggle) {
+    yardToggle.hidden = false;
+    yardToggle.disabled = !isAtHome;
+    yardToggle.classList.toggle("active", isAtHome);
+  }
+  if (homeToggle) {
+    homeToggle.hidden = false;
+    homeToggle.disabled = !computerMovedIn || isAtHome;
+    homeToggle.classList.toggle("active", computerMovedIn && !isAtHome);
+  }
+}
+
+function updateShopButtons() {
+  if (moveHomeButton) {
+    moveHomeButton.hidden = !houseBought || computerMovedIn;
+  }
+  updateHomeTravelButtons();
+
+  if (!shopGrid) return;
+  shopGrid.querySelectorAll(".shop-buy").forEach((button) => {
+    const item = getAllShopItems().find((entry) => entry.id === button.dataset.itemId);
+    if (!item) return;
+    const owned = isShopItemOwned(item);
+    button.disabled = owned || money < item.price;
+    button.textContent = owned ? "已买" : `${item.price}`;
+  });
+}
+
+function renderShop() {
+  if (!shopGrid) return;
+  const searchText = shopSearch?.value.trim() || "";
+  const searchNeedle = searchText.toLowerCase();
+  let visibleItems = getAllShopItems().filter((item) => {
+    if (!searchNeedle) return true;
+    return `${item.label} ${item.keywords || ""}`.toLowerCase().includes(searchNeedle);
+  });
+  const customSearchItem = searchText ? makeCustomShopItem(searchText) : null;
+  if (customSearchItem && !getAllShopItems().some((item) => item.id === customSearchItem.id)) {
+    visibleItems = [customSearchItem, ...visibleItems];
+  }
+
+  shopGrid.innerHTML = "";
+  visibleItems.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = `shop-card shop-${item.id}`;
+
+    const icon = document.createElement("span");
+    icon.className = "shop-icon";
+    icon.textContent = item.icon;
+
+    const name = document.createElement("span");
+    name.className = "shop-name";
+    name.textContent = item.label;
+
+    const button = document.createElement("button");
+    button.className = "shop-buy";
+    button.type = "button";
+    button.dataset.itemId = item.id;
+    button.disabled = isShopItemOwned(item) || money < item.price;
+    button.textContent = isShopItemOwned(item) ? "已买" : `${item.price}`;
+    button.addEventListener("click", () => buyShopItem(item.id, item));
+
+    card.append(icon, name, button);
+    shopGrid.appendChild(card);
+  });
+  if (!visibleItems.length) {
+    const empty = document.createElement("p");
+    empty.className = "shop-empty";
+    empty.textContent = "换个名字搜一搜。";
+    shopGrid.appendChild(empty);
+  }
+  updateShopButtons();
+}
+
+function renderInventory() {
+  if (!inventoryGrid) return;
+  inventoryGrid.innerHTML = "";
+  for (let index = 0; index < INVENTORY_SLOT_COUNT; index += 1) {
+    const slot = document.createElement("span");
+    slot.className = "inventory-slot";
+    const item = minedItems[index];
+    if (item) {
+      slot.classList.add(`mineral-${item.id}`);
+      slot.textContent = item.icon;
+      slot.title = `${item.label}，价值 ${item.value}`;
+    }
+    inventoryGrid.appendChild(slot);
+  }
+}
+
+function renderMineGrid() {
+  if (!mineGrid) return;
+  mineGrid.innerHTML = "";
+  for (let index = 0; index < MINE_CELL_COUNT; index += 1) {
+    const cell = document.createElement("button");
+    cell.className = "mine-cell";
+    cell.type = "button";
+    cell.setAttribute("aria-label", `矿洞格子 ${index + 1}`);
+    cell.textContent = "土";
+    cell.addEventListener("click", () => mineCell(cell));
+    mineGrid.appendChild(cell);
+  }
+}
+
+function mineCell(cell) {
+  markChatActivity();
+  wakeFromNightSleep();
+  if (minedItems.length >= INVENTORY_SLOT_COUNT) {
+    speakAsComputer("背包满了，先按销售换钱。", { forceSubtitle: true, colorful: false });
+    return;
+  }
+
+  const mineral = weightedRandomMineral();
+  minedItems.push(mineral);
+  cell.className = `mine-cell mined mineral-${mineral.id}`;
+  cell.textContent = mineral.icon;
+  cell.disabled = true;
+  renderInventory();
+  updateMoneyUI();
+  saveGameState();
+  const message = mineral.id === "gem" || mineral.id === "gold"
+    ? `挖到${mineral.label}了，好闪。`
+    : `挖到${mineral.label}了。`;
+  speakAsComputer(message, { forceSubtitle: true, colorful: mineral.id === "gem" || mineral.id === "gold" });
+}
+
+function sellMinedItems() {
+  markChatActivity();
+  if (!minedItems.length) {
+    speakAsComputer("背包还是空的，先挖几格矿。", { forceSubtitle: true, colorful: false });
+    return;
+  }
+
+  const earned = minedItems.reduce((sum, item) => sum + item.value, 0);
+  minedItems = [];
+  money += earned;
+  renderInventory();
+  renderMineGrid();
+  updateMoneyUI();
+  saveGameState();
+  speakAsComputer(`销售成功，得到 ${earned} 块钱。`, { forceSubtitle: true, colorful: earned >= 40 });
+}
+
+function buyHouseForComputer() {
+  markChatActivity();
+  if (houseBought) return;
+  if (money < HOUSE_PRICE) {
+    speakAsComputer(`还差 ${HOUSE_PRICE - money} 块钱才能买房子。`, { forceSubtitle: true, colorful: false });
+    return;
+  }
+
+  money -= HOUSE_PRICE;
+  houseBought = true;
+  computerHouse?.classList.add("visible");
+  renderShop();
+  updateMoneyUI();
+  saveGameState();
+  speakAsComputer("哇，电脑先生有自己的小房子了。", { forceSubtitle: true, colorful: true });
+}
+
+function enterHomeMode() {
+  computerMovedIn = true;
+  isAtHome = true;
+  document.body.classList.add("home-mode");
+  computerHouse?.classList.add("occupied");
+  computerShell.classList.add("visiting-house");
+  clearRainErrorState();
+  updateComputerWeatherMarks();
+  parkPlugAtChargingCorner();
+  updateHomeTravelButtons();
+  updateShopButtons();
+  saveGameState();
+}
+
+function moveComputerIntoHouse() {
+  markChatActivity();
+  if (!houseBought) {
+    speakAsComputer("还没有房子，先攒钱买房子。", { forceSubtitle: true, colorful: false });
+    return;
+  }
+  if (isAtHome) return;
+
+  enterHomeMode();
+  speakAsComputer("电脑先生入住啦，小房子亮起来了。", { forceSubtitle: true, colorful: true });
+}
+
+function returnToYard() {
+  markChatActivity();
+  if (!isAtHome) {
+    speakAsComputer("电脑先生已经在草坪上了。", { forceSubtitle: true, colorful: false });
+    return;
+  }
+  isAtHome = false;
+  document.body.classList.remove("home-mode");
+  computerShell.classList.remove("visiting-house");
+  updateHomeTravelButtons();
+  updateShopButtons();
+  if (currentWeather === "rain") {
+    computerShell.classList.add("rained-on");
+    updateComputerWeatherMarks();
+  }
+  parkPlugAtChargingCorner();
+  saveGameState();
+  speakAsComputer("电脑先生回到草坪上了。", { forceSubtitle: true, colorful: false });
+}
+
+function returnHomeFromYard() {
+  markChatActivity();
+  if (!houseBought || !computerMovedIn) {
+    speakAsComputer("还没有家，先买房子再入住。", { forceSubtitle: true, colorful: false });
+    return;
+  }
+  if (isAtHome) {
+    speakAsComputer("电脑先生已经在家里了。", { forceSubtitle: true, colorful: false });
+    return;
+  }
+  enterHomeMode();
+  speakAsComputer("电脑先生回家了，雨淋不到他。", { forceSubtitle: true, colorful: true });
+}
+
+function buyShopItem(itemId, visibleItem = null) {
+  markChatActivity();
+  const item = visibleItem || getAllShopItems().find((entry) => entry.id === itemId);
+  if (!item) return;
+  if (item.type === "house") {
+    buyHouseForComputer();
+    return;
+  }
+  if (ownedShopItems.has(itemId)) return;
+  if (money < item.price) {
+    speakAsComputer(`还差 ${item.price - money} 块钱才能买${item.label}。`, { forceSubtitle: true, colorful: false });
+    return;
+  }
+
+  money -= item.price;
+  rememberCustomShopItem(item);
+  ownedShopItems.add(itemId);
+  activateFurniture(itemId);
+  renderShop();
+  updateMoneyUI();
+  saveGameState();
+  speakAsComputer(`${item.label}买好了，可以拖到房间里任何地方。`, { forceSubtitle: true, colorful: itemId === "lamp" });
+}
+
+function setMinePanelOpen(open) {
+  minePanelOpen = open;
+  if (open) {
+    setShopPanelOpen(false);
+  }
+  if (minePanel) {
+    minePanel.hidden = !minePanelOpen;
+  }
+  mineToggle?.classList.toggle("active", minePanelOpen);
+  if (mineToggle) {
+    mineToggle.textContent = minePanelOpen ? "收起矿场" : "挖矿";
+  }
+}
+
+function setShopPanelOpen(open) {
+  shopPanelOpen = open;
+  if (open) {
+    setMinePanelOpen(false);
+  }
+  if (shopPanel) {
+    shopPanel.hidden = !shopPanelOpen;
+  }
+  shopToggle?.classList.toggle("active", shopPanelOpen);
+}
+
+function setupMiningGame() {
+  renderMineGrid();
+  renderInventory();
+  renderShop();
+  updateMoneyUI();
+  shopSearch?.addEventListener("input", renderShop);
+  mineToggle?.addEventListener("click", () => {
+    setMinePanelOpen(!minePanelOpen);
+    if (!minePanelOpen) return;
+    speakAsComputer("小矿场打开了，点格子就能挖矿。", { forceSubtitle: true, colorful: false });
+  });
+  sellMineralsButton?.addEventListener("click", sellMinedItems);
+  buyHouseButton?.addEventListener("click", buyHouseForComputer);
+  shopToggle?.addEventListener("click", () => {
+    setShopPanelOpen(!shopPanelOpen);
+    if (shopPanelOpen) {
+      speakAsComputer("商城打开了，搜索想买的东西也可以买。", { forceSubtitle: true, colorful: false });
+      shopSearch?.focus();
+    }
+  });
+  moveHomeButton?.addEventListener("click", moveComputerIntoHouse);
+  yardToggle?.addEventListener("click", returnToYard);
+  homeToggle?.addEventListener("click", returnHomeFromYard);
 }
 
 function markChatActivity() {
@@ -464,6 +1048,8 @@ function stopPlugCharging(showFace = false) {
   plugCharging = false;
   backPlug?.classList.remove("charging");
   floorOutlet?.classList.remove("charging");
+  homeOutlet?.classList.remove("charging");
+  getPurchasedOutlet()?.classList.remove("charging");
   if (!isPoweredOff && batteryPercent > LOW_BATTERY_THRESHOLD) {
     setBatteryVisible(false);
   }
@@ -473,9 +1059,23 @@ function stopPlugCharging(showFace = false) {
   }
 }
 
-function dockPlugToOutlet() {
-  if (!backPlug || !floorOutlet) return;
-  const outletRect = floorOutlet.getBoundingClientRect();
+function getActiveOutlet() {
+  return isAtHome ? (getPurchasedOutlet() || homeOutlet) : floorOutlet;
+}
+
+function getPurchasedOutlet() {
+  const outlet = getFurnitureElement("outlet");
+  if (!outlet || !ownedShopItems.has("outlet") || !isAtHome) return null;
+  return outlet;
+}
+
+function getChargeOutlets() {
+  return [getPurchasedOutlet(), isAtHome ? homeOutlet : floorOutlet].filter(Boolean);
+}
+
+function dockPlugToOutlet(outlet = getActiveOutlet()) {
+  if (!backPlug || !outlet) return;
+  const outletRect = outlet.getBoundingClientRect();
   const origin = getPlugCoordinateOrigin();
   plugDetached = true;
   plugInserted = true;
@@ -495,12 +1095,12 @@ function undockPlug() {
   }
 }
 
-function startPlugCharging() {
-  dockPlugToOutlet();
+function startPlugCharging(outlet = getActiveOutlet()) {
+  dockPlugToOutlet(outlet);
   stopPlugCharging();
   plugCharging = true;
   backPlug?.classList.add("charging");
-  floorOutlet?.classList.add("charging");
+  outlet?.classList.add("charging");
   showSubtitle("正在充电", false);
   setBatteryVisible(true);
   showBatteryMomentarily(2400);
@@ -544,7 +1144,7 @@ function startPlugCharging() {
 }
 
 function parkPlugAtChargingCorner() {
-  if (!backPlug || !floorOutlet || plugDrag || plugCharging) return;
+  if (!backPlug || !getActiveOutlet() || plugDrag || plugCharging) return;
   startPlugCharging();
 }
 
@@ -713,6 +1313,11 @@ function updateComputerWeatherMarks() {
 
   computerShell.classList.toggle("snow-covered", currentWeather === "snow");
 
+  if (isAtHome) {
+    computerShell.classList.remove("wet", "snow-covered", "sun-drying", "rained-on", "rain-squint", "rain-error", "rain-code-mode");
+    return;
+  }
+
   if (currentWeather === "rain") {
     computerShell.classList.add("wet");
     computerShell.classList.remove("sun-drying");
@@ -734,7 +1339,7 @@ function setWeather(weather, announce = true) {
   document.body.classList.toggle("weather-cloudy", currentWeather === "cloudy");
   document.body.classList.toggle("weather-rain", currentWeather === "rain");
   document.body.classList.toggle("weather-snow", currentWeather === "snow");
-  computerShell.classList.toggle("rained-on", currentWeather === "rain");
+  computerShell.classList.toggle("rained-on", currentWeather === "rain" && !isAtHome);
   updateComputerWeatherMarks();
   updateWeatherToggleLabel();
 
@@ -756,16 +1361,17 @@ function setWeather(weather, announce = true) {
   screenTimer = window.setTimeout(() => {
     showFaceOnly();
     setMood(0);
-    computerShell.classList.toggle("rain-squint", currentWeather === "rain");
-    if (currentWeather === "rain") {
+    updateComputerWeatherMarks();
+    computerShell.classList.toggle("rain-squint", currentWeather === "rain" && !isAtHome);
+    if (currentWeather === "rain" && !isAtHome) {
       rainErrorTimer = window.setTimeout(() => {
         rainErrorTimer = null;
-        if (currentWeather !== "rain" || isPoweredOff || isTerrorNightActive) return;
+        if (currentWeather !== "rain" || isAtHome || isPoweredOff || isTerrorNightActive) return;
         computerShell.classList.add("rain-error");
         showSubtitle("报错", false);
         rainCodeTimer = window.setTimeout(() => {
           rainCodeTimer = null;
-          if (currentWeather !== "rain" || isPoweredOff || isTerrorNightActive) return;
+          if (currentWeather !== "rain" || isAtHome || isPoweredOff || isTerrorNightActive) return;
           computerShell.classList.add("rain-code-mode");
           showSubtitle("太阳公公已出海对话取消无限个取消，下雨了", false);
         }, 900);
@@ -953,12 +1559,60 @@ function setHatSpinning(active, duration = 3200) {
   }
 }
 
+function setCallBackVisible(visible) {
+  if (callBackToggle) {
+    if (visible) {
+      callBackToggle.hidden = false;
+      callBackToggle.removeAttribute("hidden");
+      callBackToggle.style.display = "block";
+    } else {
+      callBackToggle.hidden = true;
+      callBackToggle.style.display = "";
+    }
+  }
+  document.body.classList.toggle("computer-away", visible);
+}
+
+function attachHatToComputer() {
+  hatDetached = false;
+  hatDrag = null;
+  hatX = 0;
+  hatY = 0;
+  hatAssembly.classList.remove("detached");
+  updateHatPosition();
+}
+
+function flyAwayWithHat() {
+  attachHatToComputer();
+  forcedFlight = true;
+  computerShell.classList.add("fly-away");
+  setHatSpinning(true, null);
+  setCallBackVisible(true);
+  speakAsComputer("帽子戴好了，我飞走啦。", { forceSubtitle: true, colorful: true });
+}
+
+function callComputerBack() {
+  markChatActivity();
+  wakeFromNightSleep();
+  computerShell.classList.remove("fly-away");
+  forcedFlight = false;
+  hatTakeStep = 0;
+  attachHatToComputer();
+  setHatSpinning(false);
+  setCallBackVisible(false);
+  showFaceOnly();
+  speakAsComputer("我回来啦，帽子也戴好了。", { forceSubtitle: true, colorful: true });
+}
+
 function setPowerState(powerOn) {
   isPoweredOff = !powerOn;
   computerShell.classList.toggle("powered-off", !powerOn);
 
   if (powerOn) {
     lowPowerWarningShown = false;
+    computerShell.classList.remove("fly-away");
+    forcedFlight = false;
+    setCallBackVisible(false);
     computerShell.classList.add("grounded");
     computerShell.classList.remove("hat-spinning");
     faceDisplay.style.display = "";
@@ -1157,9 +1811,8 @@ function setupInteractiveFace() {
 
 function startShellDrop() {
   const droppedFromHigh = shellOffsetY < -90;
-  shellOffsetX = 0;
-  shellOffsetY = 0;
   updateShellPosition();
+  saveGameState();
 
   if (!droppedFromHigh) return;
 
@@ -1189,9 +1842,32 @@ function setupDragInteractions() {
   const onWindowPointerMove = (event) => {
     markPointerActivity();
     wakeFromNightSleep();
+    if (furnitureDrag) {
+      const nextLeft = clamp(
+        event.clientX - furnitureDrag.offsetX,
+        8,
+        Math.max(8, window.innerWidth - furnitureDrag.width - 8)
+      );
+      const nextTop = clamp(
+        event.clientY - furnitureDrag.offsetY,
+        8,
+        Math.max(8, window.innerHeight - furnitureDrag.height - 8)
+      );
+      furnitureDrag.element.style.left = `${nextLeft}px`;
+      furnitureDrag.element.style.top = `${nextTop}px`;
+      furnitureDrag.element.style.right = "auto";
+      furnitureDrag.element.style.bottom = "auto";
+      furnitureDrag.element.style.position = "fixed";
+      furnitureDrag.element.classList.add("custom-placed");
+      salesBasket?.classList.toggle("ready", isNearSalesBasket(event.clientX, event.clientY));
+      return;
+    }
+
     if (shellDrag) {
-      shellOffsetX = event.clientX - shellDrag.startX + shellDrag.originX;
-      shellOffsetY = event.clientY - shellDrag.startY + shellDrag.originY;
+      const nextX = event.clientX - shellDrag.startX + shellDrag.originX;
+      const nextY = event.clientY - shellDrag.startY + shellDrag.originY;
+      shellOffsetX = clamp(nextX, shellDrag.minX, shellDrag.maxX);
+      shellOffsetY = clamp(nextY, shellDrag.minY, shellDrag.maxY);
       updateShellPosition();
       return;
     }
@@ -1213,6 +1889,18 @@ function setupDragInteractions() {
 
   const onWindowPointerUp = (event) => {
     markPointerActivity();
+    if (furnitureDrag) {
+      furnitureDrag.element.classList.remove("dragging");
+      salesBasket?.classList.remove("ready");
+      if (isNearSalesBasket(event.clientX, event.clientY)) {
+        sellFurnitureItem(furnitureDrag.element);
+        furnitureDrag = null;
+        return;
+      }
+      furnitureDrag = null;
+      saveGameState();
+    }
+
     if (shellDrag) {
       computerShell.classList.remove("dragging");
       shellDrag = null;
@@ -1223,17 +1911,19 @@ function setupDragInteractions() {
       hatDrag = null;
     }
 
-    if (plugDrag) {
-      const outletRect = floorOutlet?.getBoundingClientRect();
-      const isNearOutlet =
-        outletRect &&
-        event.clientX >= outletRect.left - 34 &&
-        event.clientX <= outletRect.right + 34 &&
-        event.clientY >= outletRect.top - 28 &&
-        event.clientY <= outletRect.bottom + 28;
+  if (plugDrag) {
+      const activeOutlet = getChargeOutlets().find((outlet) => {
+        const outletRect = outlet.getBoundingClientRect();
+        return (
+          event.clientX >= outletRect.left - 34 &&
+          event.clientX <= outletRect.right + 34 &&
+          event.clientY >= outletRect.top - 28 &&
+          event.clientY <= outletRect.bottom + 28
+        );
+      });
 
-      if (isNearOutlet) {
-        startPlugCharging();
+      if (activeOutlet) {
+        startPlugCharging(activeOutlet);
       } else {
         stopPlugCharging(true);
         plugInserted = false;
@@ -1252,18 +1942,50 @@ function setupDragInteractions() {
   window.addEventListener("pointermove", onWindowPointerMove);
   window.addEventListener("pointerup", onWindowPointerUp);
 
+  document.body.addEventListener("pointerdown", (event) => {
+    const item = event.target.closest(".house-item.movable");
+    if (!item || !isAtHome) return;
+    event.preventDefault();
+    markPointerActivity();
+    wakeFromNightSleep();
+    const rect = item.getBoundingClientRect();
+    item.classList.add("dragging");
+    item.style.left = `${rect.left}px`;
+    item.style.top = `${rect.top}px`;
+    item.style.right = "auto";
+    item.style.bottom = "auto";
+    item.style.width = `${rect.width}px`;
+    item.style.height = `${rect.height}px`;
+    item.style.position = "fixed";
+    item.classList.add("custom-placed");
+    furnitureDrag = {
+      element: item,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+  });
+
   computerShell.addEventListener("pointerdown", (event) => {
     markPointerActivity();
     wakeFromNightSleep();
     if (event.target.closest(".hat-assembly") || event.target.closest("#chat-form") || event.target.closest(".back-plug")) return;
     event.preventDefault();
     setDizzy(false);
+    const rect = computerShell.getBoundingClientRect();
+    const baseLeft = rect.left - shellOffsetX;
+    const baseTop = rect.top - shellOffsetY;
     computerShell.classList.add("dragging");
     shellDrag = {
       startX: event.clientX,
       startY: event.clientY,
       originX: shellOffsetX,
-      originY: shellOffsetY
+      originY: shellOffsetY,
+      minX: 8 - baseLeft,
+      maxX: window.innerWidth - rect.width - 8 - baseLeft,
+      minY: 8 - baseTop,
+      maxY: window.innerHeight - rect.height - 8 - baseTop
     };
   });
 
@@ -1272,6 +1994,24 @@ function setupDragInteractions() {
     wakeFromNightSleep();
     event.preventDefault();
     const rect = hatAssembly.getBoundingClientRect();
+
+    if (hatDetached) {
+      flyAwayWithHat();
+      return;
+    }
+
+    hatTakeStep += 1;
+    if (hatTakeStep === 1) {
+      speakAsComputer("还我帽子，跳一跳", { forceSubtitle: true, colorful: false });
+      computerShell.classList.add("hat-bump");
+      if (hatBumpTimer) {
+        window.clearTimeout(hatBumpTimer);
+      }
+      hatBumpTimer = window.setTimeout(() => {
+        computerShell.classList.remove("hat-bump");
+        hatBumpTimer = null;
+      }, 760);
+    }
 
     if (!hatDetached) {
       hatDetached = true;
@@ -1306,6 +2046,8 @@ function setupDragInteractions() {
       offsetY: event.clientY - rect.top
     };
   });
+
+  callBackToggle?.addEventListener("click", callComputerBack);
 }
 
 function showSubtitle(text, colorful = false) {
@@ -1535,6 +2277,58 @@ function isNearGrass(y) {
   return y >= window.innerHeight * 0.6;
 }
 
+function randomSaleValue() {
+  return 50 + Math.floor(Math.random() * 51);
+}
+
+function isNearSalesBasket(x, y) {
+  const basketRect = salesBasket?.getBoundingClientRect();
+  if (!basketRect) return false;
+  return (
+    x >= basketRect.left - 18 &&
+    x <= basketRect.right + 18 &&
+    y >= basketRect.top - 18 &&
+    y <= basketRect.bottom + 18
+  );
+}
+
+function sellNatureItem(label) {
+  const earned = randomSaleValue();
+  money += earned;
+  updateMoneyUI();
+  saveGameState();
+  salesBasket?.classList.add("selling");
+  window.setTimeout(() => {
+    salesBasket?.classList.remove("selling");
+  }, 520);
+  speakAsComputer(`${label}销售成功，得到 ${earned} 块钱。`, { forceSubtitle: true, colorful: earned >= 80 });
+}
+
+function sellFurnitureItem(element) {
+  const itemId = element?.dataset.itemId;
+  if (!itemId) return;
+  const item = getAllShopItems().find((entry) => entry.id === itemId);
+  const label = item?.label || "家具";
+
+  if (itemId === "outlet") {
+    stopPlugCharging(true);
+  }
+  ownedShopItems.delete(itemId);
+  computerHouse?.classList.remove(`has-${itemId}`);
+  element.remove();
+
+  const earned = randomSaleValue();
+  money += earned;
+  updateMoneyUI();
+  renderShop();
+  saveGameState();
+  salesBasket?.classList.add("selling");
+  window.setTimeout(() => {
+    salesBasket?.classList.remove("selling");
+  }, 520);
+  speakAsComputer(`${label}卖掉了，得到 ${earned} 块钱。`, { forceSubtitle: true, colorful: earned >= 80 });
+}
+
 function spawnTree(x, y, foodType) {
   const tree = document.createElement("div");
   tree.className = `sprout-tree tree-${foodType}`;
@@ -1557,11 +2351,13 @@ function setupFoodDrag() {
   const onPointerMove = (event) => {
     if (!foodDrag || !activeFood) return;
     moveFood(event.clientX - foodDrag.offsetX + 13, event.clientY - foodDrag.offsetY + 13);
+    salesBasket?.classList.toggle("ready", isNearSalesBasket(event.clientX, event.clientY));
   };
 
   const onPointerUp = (event) => {
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
+    salesBasket?.classList.remove("ready");
 
     if (!activeFood || !foodDrag) return;
     activeFood.classList.remove("dragging");
@@ -1579,7 +2375,12 @@ function setupFoodDrag() {
       event.clientY >= hatRect.top - 28 &&
       event.clientY <= hatRect.bottom + 28;
 
-    if (isNearMouth || (isPoweredOff && isNearHat)) {
+    if (isNearSalesBasket(event.clientX, event.clientY)) {
+      const label = canPlantFood(foodDrag.foodType) ? "果子" : "食物";
+      activeFood.remove();
+      activeFood = null;
+      sellNatureItem(label);
+    } else if (isNearMouth || (isPoweredOff && isNearHat)) {
       feedComputer();
     } else if (canPlantFood(foodDrag.foodType) && isNearGrass(event.clientY)) {
       spawnTree(event.clientX, event.clientY, foodDrag.foodType);
@@ -1591,6 +2392,27 @@ function setupFoodDrag() {
     }
 
     foodDrag = null;
+  };
+
+  const onTreePointerMove = (event) => {
+    if (!treeDrag) return;
+    treeDrag.tree.style.left = `${event.clientX - treeDrag.offsetX}px`;
+    treeDrag.tree.style.top = `${event.clientY - treeDrag.offsetY}px`;
+    treeDrag.tree.classList.add("dragging");
+    salesBasket?.classList.toggle("ready", isNearSalesBasket(event.clientX, event.clientY));
+  };
+
+  const onTreePointerUp = (event) => {
+    window.removeEventListener("pointermove", onTreePointerMove);
+    window.removeEventListener("pointerup", onTreePointerUp);
+    salesBasket?.classList.remove("ready");
+    if (!treeDrag) return;
+    treeDrag.tree.classList.remove("dragging");
+    if (isNearSalesBasket(event.clientX, event.clientY)) {
+      treeDrag.tree.remove();
+      sellNatureItem("树");
+    }
+    treeDrag = null;
   };
 
   const beginFoodDrag = (event, foodType, existingFood = null) => {
@@ -1606,6 +2428,21 @@ function setupFoodDrag() {
     };
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
+  };
+
+  const beginTreeDrag = (event, tree) => {
+    markPointerActivity();
+    event.preventDefault();
+    const rect = tree.getBoundingClientRect();
+    treeDrag = {
+      tree,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top
+    };
+    tree.style.left = `${rect.left}px`;
+    tree.style.top = `${rect.top}px`;
+    window.addEventListener("pointermove", onTreePointerMove);
+    window.addEventListener("pointerup", onTreePointerUp);
   };
 
   foodTray.addEventListener("pointerdown", (event) => {
@@ -1625,11 +2462,15 @@ function setupFoodDrag() {
     const tree = event.target.closest(".sprout-tree");
     if (!tree) return;
 
-    const rect = tree.getBoundingClientRect();
     const foodType = tree.dataset.foodType || "apple";
-    tree.remove();
-    beginFoodDrag(event, foodType);
-    moveFood(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    const fruit = event.target.closest(".tree-fruit");
+    if (fruit) {
+      fruit.remove();
+      beginFoodDrag(event, foodType);
+      return;
+    }
+
+    beginTreeDrag(event, tree);
   });
 }
 
@@ -1732,9 +2573,11 @@ setMood(moodIndex);
 showFaceOnly();
 setPowerState(true);
 setDayNightMode(false);
+loadGameState();
 setupSpeechRecognition();
 setupSpeechUnlock();
 setupFoodDrag();
+setupMiningGame();
 loadVoices();
 startSunBehaviorLoop();
 updateBatteryUI();

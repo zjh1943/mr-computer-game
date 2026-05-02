@@ -863,9 +863,9 @@ body.terror-night .sun-eye-right {
 }
 
 .computer-shell.rain-code-mode .screen-subtitle {
-  width: 150px;
+  width: 138px;
   color: #ffdddd;
-  font-size: 15px;
+  font-size: 12px;
   line-height: 1.28;
   word-break: break-all;
 }
@@ -881,18 +881,26 @@ body.terror-night .sun-eye-right {
   gap: 2px;
   color: #93ff9d;
   font-family: "Courier New", monospace;
-  font-size: 9px;
+  font-size: 7px;
   line-height: 1.1;
   text-align: left;
   text-shadow: 0 0 8px rgba(125, 255, 143, 0.7);
   pointer-events: none;
+  overflow: hidden;
 }
 
 .rain-error-code::after {
-  content: "X X X X X X X X X X X X X X X X";
+  content: "X X X X X X X X X X";
   color: #ff5252;
-  font-size: 11px;
+  font-size: 9px;
   letter-spacing: 1px;
+}
+
+.rain-error-code span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .computer-shell.rain-code-mode .rain-error-code {
@@ -1967,10 +1975,11 @@ body.weather-snow .grass::before {
 
 .weather-toggle {
   position: fixed;
-  right: 22px;
-  top: 22px;
+  left: max(14px, env(safe-area-inset-left));
+  right: auto;
+  top: max(14px, env(safe-area-inset-top));
   bottom: auto;
-  z-index: 8;
+  z-index: 100;
   border: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.9);
@@ -1984,9 +1993,10 @@ body.weather-snow .grass::before {
 
 .light-toggle {
   position: fixed;
-  right: 22px;
-  top: 70px;
-  z-index: 8;
+  left: max(14px, env(safe-area-inset-left));
+  right: auto;
+  top: calc(max(14px, env(safe-area-inset-top)) + 48px);
+  z-index: 100;
   border: 0;
   border-radius: 999px;
   background: rgba(255, 244, 167, 0.92);

@@ -693,6 +693,18 @@ function setLightOn(active) {
   updateLightToggleLabel();
 }
 
+function clearRainErrorState() {
+  if (rainErrorTimer) {
+    window.clearTimeout(rainErrorTimer);
+    rainErrorTimer = null;
+  }
+  if (rainCodeTimer) {
+    window.clearTimeout(rainCodeTimer);
+    rainCodeTimer = null;
+  }
+  computerShell.classList.remove("rained-on", "rain-squint", "rain-error", "rain-code-mode");
+}
+
 function updateComputerWeatherMarks() {
   if (sunDryTimer) {
     window.clearTimeout(sunDryTimer);
@@ -717,24 +729,13 @@ function updateComputerWeatherMarks() {
 }
 
 function setWeather(weather, announce = true) {
-  if (rainErrorTimer) {
-    window.clearTimeout(rainErrorTimer);
-    rainErrorTimer = null;
-  }
-  if (rainCodeTimer) {
-    window.clearTimeout(rainCodeTimer);
-    rainCodeTimer = null;
-  }
-  computerShell.classList.remove("rain-error", "rain-code-mode");
+  clearRainErrorState();
   currentWeather = weatherOrder.includes(weather) ? weather : "sunny";
   document.body.classList.toggle("weather-cloudy", currentWeather === "cloudy");
   document.body.classList.toggle("weather-rain", currentWeather === "rain");
   document.body.classList.toggle("weather-snow", currentWeather === "snow");
   computerShell.classList.toggle("rained-on", currentWeather === "rain");
   updateComputerWeatherMarks();
-  if (currentWeather !== "rain") {
-    computerShell.classList.remove("rain-squint", "rain-error", "rain-code-mode");
-  }
   updateWeatherToggleLabel();
 
   if (!announce || isPoweredOff || isTerrorNightActive) return;
@@ -771,6 +772,14 @@ function setWeather(weather, announce = true) {
       }, 850);
     }
   }, weatherSpeechDuration);
+}
+
+function resetOpeningWeatherState() {
+  clearRainErrorState();
+  computerShell.classList.remove("wet", "snow-covered", "sun-drying");
+  setWeather("sunny", false);
+  showFaceOnly();
+  setMood(0);
 }
 
 function scheduleWeatherChange(initialDelay = WEATHER_CHANGE_INTERVAL) {
@@ -1739,8 +1748,13 @@ parkPlugAtChargingCorner();
 startBlinkLoop();
 scheduleIdleLook();
 startIdleLookLoop();
-setWeather("sunny", false);
-scheduleWeatherChange(5000);
+resetOpeningWeatherState();
+scheduleWeatherChange(18000);
+
+window.addEventListener("pageshow", () => {
+  resetOpeningWeatherState();
+  scheduleWeatherChange(18000);
+});
 
 window.addEventListener("resize", () => {
   if (plugInserted && !plugDrag) {

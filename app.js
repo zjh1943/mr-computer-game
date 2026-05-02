@@ -865,6 +865,7 @@ function markPointerActivity() {
 function wakeFromNightSleep(duration = NIGHT_WAKE_DURATION) {
   nightAwakeUntil = Date.now() + duration;
   computerShell?.classList.remove("sleepy");
+  updateMiniComputerSleepState(false);
 }
 
 function isChatActive() {
@@ -877,6 +878,19 @@ function isSleepyIdle() {
 
 function isNightSleepy() {
   return isNightMode && !isRecording && !isChatActive() && Date.now() > nightAwakeUntil;
+}
+
+function updateMiniComputerSleepState(forceAwake = null) {
+  const shouldSleep = forceAwake === null
+    ? (isSleepyIdle() || isNightSleepy()) && !isPoweredOff && !isTerrorNightActive
+    : !forceAwake;
+
+  document.querySelectorAll(".custom-kind-computer").forEach((miniComputer) => {
+    miniComputer.classList.toggle("mini-sleepy", shouldSleep);
+    if (shouldSleep) {
+      miniComputer.classList.remove("mini-chatting", "mini-eating");
+    }
+  });
 }
 
 function setMood(nextIndex) {
@@ -1730,6 +1744,7 @@ function showFaceOnly() {
   setEyeLook(0, 0);
   setFacePeek(0, 0);
   computerShell.classList.toggle("sleepy", (isSleepyIdle() || isNightSleepy()) && !isPoweredOff && !isTerrorNightActive && !shellDrag);
+  updateMiniComputerSleepState();
   if (!forcedFlight) {
     computerShell.classList.add("grounded");
   }
@@ -1741,6 +1756,7 @@ function startBlinkLoop() {
   }
 
   blinkTimer = window.setTimeout(() => {
+    updateMiniComputerSleepState();
     if (!isPoweredOff && !isTerrorNightActive && !computerShell.classList.contains("sleepy")) {
       computerShell.classList.add("blinking");
       window.setTimeout(() => {
@@ -1790,6 +1806,7 @@ function setupInteractiveFace() {
     scheduleIdleLook();
     if (isNightSleepy()) {
       computerShell.classList.add("sleepy");
+      updateMiniComputerSleepState();
       setEyeLook(0, 0);
       setFacePeek(0, 0);
       return;
@@ -1803,6 +1820,7 @@ function setupInteractiveFace() {
     if (computerShell.classList.contains("sleepy")) {
       computerShell.classList.remove("sleepy");
     }
+    updateMiniComputerSleepState(false);
 
     const shellRect = computerShell.getBoundingClientRect();
     const centerX = shellRect.left + shellRect.width / 2;

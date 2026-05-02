@@ -3342,6 +3342,31 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer.mini-food-fly {
   opacity: 0;
 }
 
+.custom-kind-computer.mini-sleepy .mini-computer-screen::before,
+.custom-kind-computer.mini-sleepy .mini-computer-screen::after {
+  transform: translateY(1px);
+  opacity: 0.72;
+}
+
+.custom-kind-computer.mini-sleepy .mini-computer-eye,
+.custom-kind-computer.mini-sleepy .mini-computer-eye-left,
+.custom-kind-computer.mini-sleepy .mini-computer-eye-right {
+  height: 4px;
+  border-radius: 999px;
+  box-shadow: none;
+  animation: none;
+  transform: translate(var(--mini-eye-look-x, 0px), var(--mini-eye-look-y, 0px));
+}
+
+.custom-kind-computer.mini-sleepy .mini-computer-mouth {
+  top: 80px;
+  width: 18px;
+  height: 10px;
+  border-radius: 0 0 999px 999px;
+  clip-path: none;
+  animation: mini-sleep-breathe 2.2s ease-in-out infinite;
+}
+
 .custom-kind-computer .mini-computer-eye,
 .custom-kind-computer .mini-computer-eye-left,
 .custom-kind-computer .mini-computer-eye-right {
@@ -4033,6 +4058,16 @@ body.terror-night .tree-right::before {
   }
   62% {
     transform: translateY(-92px) rotate(5deg);
+  }
+}
+
+@keyframes mini-sleep-breathe {
+  0%,
+  100% {
+    transform: translateX(-50%) scaleX(1);
+  }
+  50% {
+    transform: translateX(-50%) scaleX(1.18);
   }
 }
 

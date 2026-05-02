@@ -3331,6 +3331,13 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   animation: mini-chat-pop 1.4s ease-in-out infinite;
 }
 
+.custom-kind-computer.mini-chatting .mini-computer-eye,
+.custom-kind-computer.mini-chatting .mini-computer-eye-left,
+.custom-kind-computer.mini-chatting .mini-computer-eye-right,
+.custom-kind-computer.mini-chatting .mini-computer-mouth {
+  opacity: 0;
+}
+
 .custom-kind-computer .mini-computer-eye,
 .custom-kind-computer .mini-computer-eye-left,
 .custom-kind-computer .mini-computer-eye-right {

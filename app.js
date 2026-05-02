@@ -252,6 +252,7 @@ let plugX = 0;
 let plugY = 0;
 let chargeTimer = null;
 let chargingCaptionTimer = null;
+let miniChatTimer = null;
 let hatTakeStep = 0;
 let nightAwakeUntil = 0;
 let money = 0;
@@ -398,6 +399,11 @@ function createFurnitureElement(item) {
       piece.className = part.startsWith("eye")
         ? `mini-computer-eye ${part.split(" ")[1]}`
         : `mini-computer-${part}`;
+      if (part === "screen") {
+        const chat = document.createElement("span");
+        chat.className = "mini-computer-chat";
+        piece.appendChild(chat);
+      }
       element.appendChild(piece);
     });
   }
@@ -2076,6 +2082,61 @@ function showSubtitle(text, colorful = false) {
   moodPanel.classList.toggle("colorful", colorful);
 }
 
+function getMiniComputerReply(text) {
+  if (/你好/.test(text)) return "你好呀";
+  if (/下雨/.test(text)) return "我不淋雨";
+  if (/下雪/.test(text)) return "雪白白";
+  if (/晴天/.test(text)) return "太阳好亮";
+  if (/多云/.test(text)) return "云来了";
+  if (/买好了|入住|回家/.test(text)) return "我也喜欢";
+  if (/销售成功|得到/.test(text)) return "钱加一";
+  if (/好吃/.test(text)) return "我也想吃";
+  return "收到呀";
+}
+
+function ensureMiniComputerChat(miniComputer) {
+  let screen = miniComputer.querySelector(".mini-computer-screen");
+  if (!screen) {
+    screen = document.createElement("span");
+    screen.className = "mini-computer-screen";
+    miniComputer.prepend(screen);
+  }
+
+  let chat = screen.querySelector(".mini-computer-chat");
+  if (!chat) {
+    chat = document.createElement("span");
+    chat.className = "mini-computer-chat";
+    screen.appendChild(chat);
+  }
+
+  return chat;
+}
+
+function showMiniComputerReply(text, duration) {
+  const reply = getMiniComputerReply(text);
+  const miniComputers = document.querySelectorAll(".custom-kind-computer");
+  if (!miniComputers.length) return;
+
+  if (miniChatTimer) {
+    window.clearTimeout(miniChatTimer);
+  }
+
+  miniComputers.forEach((miniComputer) => {
+    const chat = ensureMiniComputerChat(miniComputer);
+    chat.textContent = reply;
+    miniComputer.classList.add("mini-chatting");
+  });
+
+  miniChatTimer = window.setTimeout(() => {
+    document.querySelectorAll(".custom-kind-computer.mini-chatting").forEach((miniComputer) => {
+      const chat = ensureMiniComputerChat(miniComputer);
+      chat.textContent = "";
+      miniComputer.classList.remove("mini-chatting");
+    });
+    miniChatTimer = null;
+  }, Math.max(1400, Math.min(duration + 500, 4200)));
+}
+
 function shouldUseColorfulSubtitle(text) {
   if (/一起享受快乐时刻|电脑先生之歌/.test(text)) {
     return true;
@@ -2095,6 +2156,7 @@ function speakAsComputer(text, options = {}) {
 
   if (useSubtitle) {
     showSubtitle(text, colorful);
+    showMiniComputerReply(text, duration);
   } else {
     showFaceOnly();
     moodPanel.classList.toggle("colorful", colorful);

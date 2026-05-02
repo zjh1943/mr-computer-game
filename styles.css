@@ -3265,6 +3265,9 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   border-radius: 16px;
   background: #050505;
   border: 7px solid #c3c7cb;
+  display: grid;
+  place-items: center;
+  text-align: center;
 }
 
 .custom-kind-computer .mini-computer-screen::before,
@@ -3283,6 +3286,26 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
 
 .custom-kind-computer .mini-computer-screen::after {
   right: 15px;
+}
+
+.custom-kind-computer.mini-chatting .mini-computer-screen::before,
+.custom-kind-computer.mini-chatting .mini-computer-screen::after {
+  opacity: 0;
+}
+
+.mini-computer-chat {
+  display: none;
+  max-width: 62px;
+  color: #ffffff;
+  font: 900 14px/1.2 Arial, sans-serif;
+  text-shadow: 0 0 7px rgba(255, 255, 255, 0.66);
+  z-index: 2;
+  word-break: keep-all;
+}
+
+.custom-kind-computer.mini-chatting .mini-computer-chat {
+  display: block;
+  animation: mini-chat-pop 1.4s ease-in-out infinite;
 }
 
 .custom-kind-computer .mini-computer-eye,
@@ -3923,6 +3946,16 @@ body.terror-night .tree-right::before {
   }
   50% {
     transform: translateY(2px);
+  }
+}
+
+@keyframes mini-chat-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
   }
 }
 

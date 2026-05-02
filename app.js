@@ -394,7 +394,7 @@ function createFurnitureElement(item) {
     element.lastElementChild.className = "outlet-hole";
   } else if (kind === "computer") {
     element.textContent = "";
-    ["screen", "eye left", "eye right", "mouth", "stand", "hat"].forEach((part) => {
+    ["screen", "eye left", "eye right", "mouth", "stand", "hat", "hat-brim"].forEach((part) => {
       const piece = document.createElement("span");
       piece.className = part.startsWith("eye")
         ? `mini-computer-eye ${part.split(" ")[1]}`

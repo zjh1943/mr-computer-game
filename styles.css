@@ -3393,24 +3393,36 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
 .custom-kind-computer .mini-computer-hat {
   position: absolute;
   left: 50%;
-  top: 2px;
-  width: 78px;
+  top: -18px;
+  width: 86px;
   height: 44px;
   transform: translateX(-50%);
   border-radius: 40px 40px 0 0;
   background:
     linear-gradient(90deg, #ff1c16 0 33%, #ffd919 33% 66%, #2637ff 66% 100%);
-  box-shadow:
-    0 -10px 0 -7px #ff2020,
-    0 38px 0 -18px #3fe730;
+  box-shadow: 0 -10px 0 -7px #ff2020;
   animation: mini-hat-bob 1.4s ease-in-out infinite;
+}
+
+.custom-kind-computer .mini-computer-hat-brim {
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  width: 94px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 0 0 14px 14px;
+  background: #11ff18;
+  clip-path: polygon(0 60%, 100% 0, 86% 100%, 12% 100%);
+  z-index: 1;
+  animation: mini-brim-bob 1.4s ease-in-out infinite;
 }
 
 .custom-kind-computer .mini-computer-hat::before {
   content: "";
   position: absolute;
   left: 50%;
-  top: -20px;
+  top: -18px;
   width: 6px;
   height: 22px;
   transform: translateX(-50%);
@@ -3422,7 +3434,7 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   content: "";
   position: absolute;
   left: 50%;
-  top: -23px;
+  top: -22px;
   width: 74px;
   height: 8px;
   margin-left: -37px;
@@ -4008,6 +4020,16 @@ body.terror-night .tree-right::before {
 }
 
 @keyframes mini-hat-bob {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+@keyframes mini-brim-bob {
   0%,
   100% {
     transform: translateX(-50%) translateY(0);

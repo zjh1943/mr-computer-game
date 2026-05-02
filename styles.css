@@ -3278,6 +3278,10 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   box-shadow: none;
 }
 
+body.home-mode .house-item.owned-furniture.custom-kind-computer.mini-food-fly {
+  animation: mini-computer-food-fly 1.8s ease-in-out;
+}
+
 .custom-kind-computer .mini-computer-screen {
   position: absolute;
   left: 50%;
@@ -3297,18 +3301,18 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
 .custom-kind-computer .mini-computer-screen::after {
   content: "M";
   position: absolute;
-  bottom: 18px;
+  bottom: 12px;
   color: #ffffff;
   font: 900 13px/1 Arial, sans-serif;
   animation: mini-cheek-bounce 2.6s ease-in-out infinite;
 }
 
 .custom-kind-computer .mini-computer-screen::before {
-  left: 15px;
+  left: 12px;
 }
 
 .custom-kind-computer .mini-computer-screen::after {
-  right: 15px;
+  right: 12px;
 }
 
 .custom-kind-computer.mini-chatting .mini-computer-screen::before,
@@ -3342,9 +3346,9 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
 .custom-kind-computer .mini-computer-eye-left,
 .custom-kind-computer .mini-computer-eye-right {
   position: absolute;
-  top: 58px;
-  width: 12px;
-  height: 12px;
+  top: 52px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #ffffff;
   z-index: 1;
@@ -3355,20 +3359,20 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
 
 .custom-kind-computer .mini-computer-eye.left,
 .custom-kind-computer .mini-computer-eye-left {
-  left: 32px;
+  left: 34px;
 }
 
 .custom-kind-computer .mini-computer-eye.right,
 .custom-kind-computer .mini-computer-eye-right {
-  right: 32px;
+  right: 34px;
 }
 
 .custom-kind-computer .mini-computer-mouth {
   position: absolute;
   left: 50%;
-  top: 80px;
-  width: 24px;
-  height: 28px;
+  top: 76px;
+  width: 22px;
+  height: 22px;
   transform: translateX(-50%);
   background: #ffffff;
   clip-path: polygon(0 0, 100% 0, 58% 82%, 50% 94%, 42% 82%);
@@ -3393,9 +3397,9 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
 .custom-kind-computer .mini-computer-hat {
   position: absolute;
   left: 50%;
-  top: -18px;
-  width: 86px;
-  height: 44px;
+  top: -12px;
+  width: 72px;
+  height: 36px;
   transform: translateX(-50%);
   border-radius: 40px 40px 0 0;
   background:
@@ -3408,8 +3412,8 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   position: absolute;
   left: 50%;
   top: 16px;
-  width: 94px;
-  height: 18px;
+  width: 78px;
+  height: 14px;
   transform: translateX(-50%);
   border-radius: 0 0 14px 14px;
   background: #11ff18;
@@ -3422,9 +3426,9 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   content: "";
   position: absolute;
   left: 50%;
-  top: -18px;
-  width: 6px;
-  height: 22px;
+  top: -16px;
+  width: 5px;
+  height: 18px;
   transform: translateX(-50%);
   border-radius: 999px;
   background: #ff2020;
@@ -3434,10 +3438,10 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   content: "";
   position: absolute;
   left: 50%;
-  top: -22px;
-  width: 74px;
-  height: 8px;
-  margin-left: -37px;
+  top: -20px;
+  width: 62px;
+  height: 7px;
+  margin-left: -31px;
   border-radius: 999px;
   background:
     linear-gradient(90deg, #1d27ff 0 44%, transparent 44% 56%, #1d27ff 56% 100%);
@@ -4016,6 +4020,19 @@ body.terror-night .tree-right::before {
   }
   50% {
     transform: scale(1.08);
+  }
+}
+
+@keyframes mini-computer-food-fly {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-72px) rotate(-5deg);
+  }
+  62% {
+    transform: translateY(-92px) rotate(5deg);
   }
 }
 

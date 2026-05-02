@@ -2113,7 +2113,10 @@ function ensureMiniComputerChat(miniComputer) {
 }
 
 function showMiniComputerReply(text, duration) {
-  const reply = getMiniComputerReply(text);
+  showMiniComputerMessage(getMiniComputerReply(text), duration);
+}
+
+function showMiniComputerMessage(message, duration = 1800) {
   const miniComputers = document.querySelectorAll(".custom-kind-computer");
   if (!miniComputers.length) return;
 
@@ -2123,7 +2126,7 @@ function showMiniComputerReply(text, duration) {
 
   miniComputers.forEach((miniComputer) => {
     const chat = ensureMiniComputerChat(miniComputer);
-    chat.textContent = reply;
+    chat.textContent = message;
     miniComputer.classList.add("mini-chatting");
   });
 
@@ -2349,6 +2352,47 @@ function feedComputer() {
   }, 320);
 }
 
+function getMiniComputerNearPoint(x, y) {
+  const miniComputers = Array.from(document.querySelectorAll(".custom-kind-computer"));
+  return miniComputers.find((miniComputer) => {
+    const screen = miniComputer.querySelector(".mini-computer-screen") || miniComputer;
+    const rect = screen.getBoundingClientRect();
+    return (
+      x >= rect.left - 28 &&
+      x <= rect.right + 28 &&
+      y >= rect.top - 28 &&
+      y <= rect.bottom + 28
+    );
+  }) || null;
+}
+
+function feedMiniComputer(miniComputer) {
+  if (!activeFood || !miniComputer) return;
+  markChatActivity();
+  const tastyFlight = Math.random() < 0.45;
+  const tastyText = tastyFlight ? "好吃到飞起" : "好吃";
+
+  activeFood.classList.add("eating");
+  miniComputer.classList.add("mini-eating");
+  showMiniComputerMessage(tastyText, tastyFlight ? 1900 : 1400);
+
+  if (tastyFlight) {
+    miniComputer.classList.add("mini-food-fly");
+    window.setTimeout(() => {
+      miniComputer.classList.remove("mini-food-fly");
+    }, 1800);
+  }
+
+  window.setTimeout(() => {
+    miniComputer.classList.remove("mini-eating");
+  }, 900);
+
+  window.setTimeout(() => {
+    activeFood?.remove();
+    activeFood = null;
+  }, 320);
+}
+
 function canPlantFood(foodType) {
   return foodType === "apple" || foodType === "orange";
 }
@@ -2454,12 +2498,15 @@ function setupFoodDrag() {
       event.clientX <= hatRect.right + 28 &&
       event.clientY >= hatRect.top - 28 &&
       event.clientY <= hatRect.bottom + 28;
+    const miniComputerNearFood = getMiniComputerNearPoint(event.clientX, event.clientY);
 
     if (isNearSalesBasket(event.clientX, event.clientY)) {
       const label = canPlantFood(foodDrag.foodType) ? "果子" : "食物";
       activeFood.remove();
       activeFood = null;
       sellNatureItem(label);
+    } else if (miniComputerNearFood) {
+      feedMiniComputer(miniComputerNearFood);
     } else if (isNearMouth || (isPoweredOff && isNearHat)) {
       feedComputer();
     } else if (canPlantFood(foodDrag.foodType) && isNearGrass(event.clientY)) {

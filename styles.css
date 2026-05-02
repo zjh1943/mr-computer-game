@@ -3297,6 +3297,7 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer {
   z-index: 1;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.72);
   animation: mini-eye-life 4.2s ease-in-out infinite;
+  transform: translate(var(--mini-eye-look-x, 0px), var(--mini-eye-look-y, 0px));
 }
 
 .custom-kind-computer .mini-computer-eye.left,
@@ -3892,16 +3893,16 @@ body.terror-night .tree-right::before {
   18%,
   24%,
   100% {
-    transform: translate(0, 0) scaleY(1);
+    transform: translate(var(--mini-eye-look-x, 0px), var(--mini-eye-look-y, 0px)) scaleY(1);
   }
   21% {
-    transform: translate(0, 0) scaleY(0.14);
+    transform: translate(var(--mini-eye-look-x, 0px), var(--mini-eye-look-y, 0px)) scaleY(0.14);
   }
   46% {
-    transform: translate(-3px, 1px) scaleY(1);
+    transform: translate(calc(var(--mini-eye-look-x, 0px) - 3px), calc(var(--mini-eye-look-y, 0px) + 1px)) scaleY(1);
   }
   72% {
-    transform: translate(3px, -1px) scaleY(1);
+    transform: translate(calc(var(--mini-eye-look-x, 0px) + 3px), calc(var(--mini-eye-look-y, 0px) - 1px)) scaleY(1);
   }
 }
 

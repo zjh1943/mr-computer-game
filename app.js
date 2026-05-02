@@ -892,6 +892,23 @@ function setEyeLook(offsetX = 0, offsetY = 0) {
   faceDisplay?.style.setProperty("--face-look-y", `${offsetY}px`);
 }
 
+function updateMiniComputerLook(clientX, clientY) {
+  document.querySelectorAll(".custom-kind-computer").forEach((miniComputer) => {
+    const rect = miniComputer.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height * 0.48;
+    const deltaX = clientX - centerX;
+    const deltaY = clientY - centerY;
+    const lookX = clamp(deltaX / 26, -4, 4);
+    const lookY = clamp(deltaY / 36, -3, 3);
+
+    miniComputer.style.setProperty("--mini-eye-look-x", `${lookX}px`);
+    miniComputer.style.setProperty("--mini-eye-look-y", `${lookY}px`);
+  });
+}
+
 function setFacePeek(offsetX = 0, offsetY = 0) {
   faceDisplay?.style.setProperty("--face-peek-x", `${offsetX}px`);
   faceDisplay?.style.setProperty("--face-peek-y", `${offsetY}px`);
@@ -1763,6 +1780,7 @@ function setupInteractiveFace() {
   window.addEventListener("pointermove", (event) => {
     markPointerActivity();
     updateSkyLook(event.clientX, event.clientY);
+    updateMiniComputerLook(event.clientX, event.clientY);
     scheduleIdleLook();
     if (isNightSleepy()) {
       computerShell.classList.add("sleepy");

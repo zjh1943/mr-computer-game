@@ -3282,6 +3282,42 @@ body.home-mode .house-item.owned-furniture.custom-kind-computer.mini-food-fly {
   animation: mini-computer-food-fly 1.8s ease-in-out;
 }
 
+.born-mini-computer {
+  position: fixed;
+  z-index: 28;
+  width: 106px;
+  height: 136px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  box-shadow: none;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+  transform: scale(var(--mini-growth, 1));
+  transform-origin: center bottom;
+}
+
+.born-mini-computer.mini-newborn {
+  animation: born-mini-pop 0.9s cubic-bezier(0.22, 1.35, 0.36, 1);
+}
+
+.born-mini-computer.dragging {
+  cursor: grabbing;
+  z-index: 130;
+}
+
+.custom-kind-computer.mini-growing {
+  animation: mini-grow-pop 0.62s ease-in-out;
+}
+
+.born-mini-computer.mini-food-fly {
+  animation: mini-computer-food-fly 1.8s ease-in-out;
+}
+
 .custom-kind-computer .mini-computer-screen {
   position: absolute;
   left: 50%;
@@ -4058,6 +4094,34 @@ body.terror-night .tree-right::before {
   }
   62% {
     transform: translateY(-92px) rotate(5deg);
+  }
+}
+
+@keyframes born-mini-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.28) rotate(-8deg);
+  }
+
+  58% {
+    opacity: 1;
+    transform: translateY(-14px) scale(1.12) rotate(5deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes mini-grow-pop {
+  0%,
+  100% {
+    transform: scale(var(--mini-growth, 1));
+  }
+
+  50% {
+    transform: scale(calc(var(--mini-growth, 1) + 0.12));
   }
 }
 

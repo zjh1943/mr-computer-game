@@ -243,6 +243,7 @@ let hatX = 0;
 let hatY = 0;
 let foodDrag = null;
 let treeDrag = null;
+let miniDrag = null;
 let plugDrag = null;
 let furnitureDrag = null;
 let plugDetached = false;
@@ -264,6 +265,7 @@ let computerMovedIn = false;
 let isAtHome = false;
 const ownedShopItems = new Set();
 let customShopItems = [];
+let bornMiniComputers = [];
 
 const BATTERY_MAX = 100;
 const LOW_BATTERY_THRESHOLD = 20;
@@ -279,6 +281,9 @@ const SLEEPY_IDLE_MS = 20000;
 const NIGHT_WAKE_DURATION = 15000;
 const WEATHER_CHANGE_INTERVAL = 26000;
 const SAVE_KEY = "mr-computer-game-save-v1";
+const MINI_MIN_GROWTH = 0.42;
+const MINI_GROW_STEP = 0.18;
+const MINI_MAX_GROWTH = 1.9;
 const weatherOrder = ["sunny", "cloudy", "rain", "snow"];
 const weatherLabels = {
   sunny: "晴天",
@@ -378,6 +383,22 @@ function getFurnitureElement(itemId) {
   return document.querySelector(`.house-${itemId}`) || null;
 }
 
+function addMiniComputerParts(element) {
+  element.textContent = "";
+  ["screen", "eye left", "eye right", "mouth", "stand", "hat", "hat-brim"].forEach((part) => {
+    const piece = document.createElement("span");
+    piece.className = part.startsWith("eye")
+      ? `mini-computer-eye ${part.split(" ")[1]}`
+      : `mini-computer-${part}`;
+    if (part === "screen") {
+      const chat = document.createElement("span");
+      chat.className = "mini-computer-chat";
+      piece.appendChild(chat);
+    }
+    element.appendChild(piece);
+  });
+}
+
 function createFurnitureElement(item) {
   if (!item || item.type === "house") return null;
   const element = document.createElement("span");
@@ -393,22 +414,110 @@ function createFurnitureElement(item) {
     element.firstElementChild.className = "outlet-hole";
     element.lastElementChild.className = "outlet-hole";
   } else if (kind === "computer") {
-    element.textContent = "";
-    ["screen", "eye left", "eye right", "mouth", "stand", "hat", "hat-brim"].forEach((part) => {
-      const piece = document.createElement("span");
-      piece.className = part.startsWith("eye")
-        ? `mini-computer-eye ${part.split(" ")[1]}`
-        : `mini-computer-${part}`;
-      if (part === "screen") {
-        const chat = document.createElement("span");
-        chat.className = "mini-computer-chat";
-        piece.appendChild(chat);
-      }
-      element.appendChild(piece);
-    });
+    addMiniComputerParts(element);
   }
   computerHouse?.appendChild(element);
   return element;
+}
+
+function createBornMiniComputer(data = {}) {
+  const miniId = data.id || `born-mini-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const element = document.createElement("div");
+  element.className = "born-mini-computer custom-kind-computer";
+  element.dataset.miniId = miniId;
+  element.dataset.growthLevel = `${Number.isFinite(data.growthLevel) ? data.growthLevel : 1}`;
+  element.setAttribute("aria-hidden", "true");
+  addMiniComputerParts(element);
+  element.style.left = data.left || "50vw";
+  element.style.top = data.top || "62vh";
+  applyMiniComputerGrowth(element);
+  document.body.appendChild(element);
+  return element;
+}
+
+function getMiniComputerGrowth(miniComputer) {
+  return clamp(Number.parseFloat(miniComputer?.dataset.growthLevel || "1") || 1, MINI_MIN_GROWTH, MINI_MAX_GROWTH);
+}
+
+function applyMiniComputerGrowth(miniComputer) {
+  if (!miniComputer) return;
+  miniComputer.style.setProperty("--mini-growth", `${getMiniComputerGrowth(miniComputer)}`);
+}
+
+function saveBornMiniComputer(element) {
+  if (!element) return;
+  const miniId = element.dataset.miniId;
+  if (!miniId) return;
+
+  const record = {
+    id: miniId,
+    left: element.style.left,
+    top: element.style.top,
+    growthLevel: getMiniComputerGrowth(element)
+  };
+  const existingIndex = bornMiniComputers.findIndex((item) => item.id === miniId);
+  if (existingIndex >= 0) {
+    bornMiniComputers[existingIndex] = record;
+  } else {
+    bornMiniComputers.push(record);
+  }
+}
+
+function spawnBornMiniComputerNearComputer() {
+  const shellRect = computerShell.getBoundingClientRect();
+  const baseLeft = shellRect.left + shellRect.width * (0.52 + Math.random() * 0.18);
+  const baseTop = shellRect.top + shellRect.height * 0.72;
+  const miniLeft = clamp(baseLeft, 12, Math.max(12, window.innerWidth - 118));
+  const miniTop = clamp(baseTop, 12, Math.max(12, window.innerHeight - 150));
+  const miniComputer = createBornMiniComputer({
+    left: `${miniLeft}px`,
+    top: `${miniTop}px`
+  });
+
+  miniComputer.classList.add("mini-newborn");
+  showMiniComputerMessage("我出生啦", 2400);
+  window.setTimeout(() => {
+    miniComputer.classList.remove("mini-newborn");
+  }, 900);
+  saveBornMiniComputer(miniComputer);
+  saveGameState();
+}
+
+function spawnTinyMiniComputerNearMini(parentMiniComputer) {
+  if (!parentMiniComputer) return;
+  const parentRect = parentMiniComputer.getBoundingClientRect();
+  const parentGrowth = getMiniComputerGrowth(parentMiniComputer);
+  const babyGrowth = clamp(parentGrowth * 0.62, MINI_MIN_GROWTH, 1);
+  const miniLeft = clamp(parentRect.left + parentRect.width * 0.58, 12, Math.max(12, window.innerWidth - 96));
+  const miniTop = clamp(parentRect.top + parentRect.height * 0.68, 12, Math.max(12, window.innerHeight - 126));
+  const babyComputer = createBornMiniComputer({
+    left: `${miniLeft}px`,
+    top: `${miniTop}px`,
+    growthLevel: babyGrowth
+  });
+
+  babyComputer.classList.add("mini-newborn");
+  showMiniComputerMessage("更小的我来啦", 2400);
+  window.setTimeout(() => {
+    babyComputer.classList.remove("mini-newborn");
+  }, 900);
+  saveBornMiniComputer(babyComputer);
+  saveGameState();
+}
+
+function growMiniComputer(miniComputer) {
+  if (!miniComputer) return;
+  const nextGrowth = clamp(getMiniComputerGrowth(miniComputer) + MINI_GROW_STEP, MINI_MIN_GROWTH, MINI_MAX_GROWTH);
+  miniComputer.dataset.growthLevel = `${nextGrowth}`;
+  applyMiniComputerGrowth(miniComputer);
+  miniComputer.classList.add("mini-growing");
+  window.setTimeout(() => {
+    miniComputer.classList.remove("mini-growing");
+  }, 620);
+  if (miniComputer.classList.contains("born-mini-computer")) {
+    saveBornMiniComputer(miniComputer);
+    saveGameState();
+  }
 }
 
 function activateFurniture(itemId) {
@@ -453,6 +562,7 @@ function saveGameState() {
       x: shellOffsetX,
       y: shellOffsetY
     },
+    bornMiniComputers,
     furniture
   };
 
@@ -511,6 +621,16 @@ function loadGameState() {
           keywords: item.keywords || item.label
         }))
     : [];
+  bornMiniComputers = Array.isArray(saveData.bornMiniComputers)
+    ? saveData.bornMiniComputers
+        .filter((item) => item?.id && item?.left && item?.top)
+        .map((item) => ({
+          id: item.id,
+          left: item.left,
+          top: item.top,
+          growthLevel: Number.isFinite(item.growthLevel) ? item.growthLevel : 1
+        }))
+    : [];
 
   ownedShopItems.clear();
   if (Array.isArray(saveData.ownedShopItems)) {
@@ -535,6 +655,10 @@ function loadGameState() {
   ownedShopItems.forEach((itemId) => {
     activateFurniture(itemId);
     restoreFurniturePosition(itemId, saveData.furniture?.[itemId]);
+  });
+
+  bornMiniComputers.forEach((miniComputer) => {
+    createBornMiniComputer(miniComputer);
   });
 }
 
@@ -1884,6 +2008,23 @@ function setupDragInteractions() {
   const onWindowPointerMove = (event) => {
     markPointerActivity();
     wakeFromNightSleep();
+    if (miniDrag) {
+      const nextLeft = clamp(
+        event.clientX - miniDrag.offsetX,
+        8,
+        Math.max(8, window.innerWidth - miniDrag.width - 8)
+      );
+      const nextTop = clamp(
+        event.clientY - miniDrag.offsetY,
+        8,
+        Math.max(8, window.innerHeight - miniDrag.height - 8)
+      );
+      miniDrag.element.style.left = `${nextLeft}px`;
+      miniDrag.element.style.top = `${nextTop}px`;
+      salesBasket?.classList.toggle("ready", isNearSalesBasket(event.clientX, event.clientY));
+      return;
+    }
+
     if (furnitureDrag) {
       const nextLeft = clamp(
         event.clientX - furnitureDrag.offsetX,
@@ -1931,6 +2072,19 @@ function setupDragInteractions() {
 
   const onWindowPointerUp = (event) => {
     markPointerActivity();
+    if (miniDrag) {
+      miniDrag.element.classList.remove("dragging");
+      salesBasket?.classList.remove("ready");
+      if (isNearSalesBasket(event.clientX, event.clientY)) {
+        sellBornMiniComputer(miniDrag.element);
+        miniDrag = null;
+        return;
+      }
+      saveBornMiniComputer(miniDrag.element);
+      miniDrag = null;
+      saveGameState();
+    }
+
     if (furnitureDrag) {
       furnitureDrag.element.classList.remove("dragging");
       salesBasket?.classList.remove("ready");
@@ -1985,6 +2139,23 @@ function setupDragInteractions() {
   window.addEventListener("pointerup", onWindowPointerUp);
 
   document.body.addEventListener("pointerdown", (event) => {
+    const bornMiniComputer = event.target.closest(".born-mini-computer");
+    if (bornMiniComputer) {
+      event.preventDefault();
+      markPointerActivity();
+      wakeFromNightSleep();
+      const rect = bornMiniComputer.getBoundingClientRect();
+      bornMiniComputer.classList.add("dragging");
+      miniDrag = {
+        element: bornMiniComputer,
+        offsetX: event.clientX - rect.left,
+        offsetY: event.clientY - rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+      return;
+    }
+
     const item = event.target.closest(".house-item.movable");
     if (!item || !isAtHome) return;
     event.preventDefault();
@@ -2339,6 +2510,8 @@ function feedComputer() {
   if (!activeFood) return;
   markChatActivity();
   const wasPoweredOff = isPoweredOff;
+  const foodType = activeFood.dataset.foodType || "";
+  const shouldBirthMiniComputer = canPlantFood(foodType);
   const tastyFlight = Math.random() < 0.45;
   const tastyText = tastyFlight ? "好吃到飞起" : "好吃";
   changeBattery(BATTERY_FEED_GAIN);
@@ -2357,6 +2530,9 @@ function feedComputer() {
   }
   screenTimer = window.setTimeout(() => {
     const batteryText = batteryPercent <= LOW_BATTERY_THRESHOLD ? "没电了" : `电量 ${batteryPercent}%`;
+    if (shouldBirthMiniComputer) {
+      spawnBornMiniComputerNearComputer();
+    }
     showSubtitle(batteryText, false);
     showBatteryMomentarily(batteryPercent <= LOW_BATTERY_THRESHOLD ? 3200 : 2200);
     screenTimer = window.setTimeout(() => {
@@ -2387,12 +2563,18 @@ function getMiniComputerNearPoint(x, y) {
 function feedMiniComputer(miniComputer) {
   if (!activeFood || !miniComputer) return;
   markChatActivity();
+  const foodType = activeFood.dataset.foodType || "";
+  const shouldBirthTinyComputer = canPlantFood(foodType);
   const tastyFlight = Math.random() < 0.45;
-  const tastyText = tastyFlight ? "好吃到飞起" : "好吃";
+  const tastyText = shouldBirthTinyComputer ? "生出更小的电脑" : tastyFlight ? "好吃到飞起" : "好吃";
 
   activeFood.classList.add("eating");
   miniComputer.classList.add("mini-eating");
   showMiniComputerMessage(tastyText, tastyFlight ? 1900 : 1400);
+  if (shouldBirthTinyComputer) {
+    growMiniComputer(miniComputer);
+    spawnTinyMiniComputerNearMini(miniComputer);
+  }
 
   if (tastyFlight) {
     miniComputer.classList.add("mini-food-fly");
@@ -2444,6 +2626,23 @@ function sellNatureItem(label) {
     salesBasket?.classList.remove("selling");
   }, 520);
   speakAsComputer(`${label}销售成功，得到 ${earned} 块钱。`, { forceSubtitle: true, colorful: earned >= 80 });
+}
+
+function sellBornMiniComputer(element) {
+  const miniId = element?.dataset.miniId;
+  if (!miniId) return;
+  bornMiniComputers = bornMiniComputers.filter((item) => item.id !== miniId);
+  element.remove();
+
+  const earned = 50000;
+  money += earned;
+  updateMoneyUI();
+  saveGameState();
+  salesBasket?.classList.add("selling");
+  window.setTimeout(() => {
+    salesBasket?.classList.remove("selling");
+  }, 520);
+  speakAsComputer(`小电脑卖掉了，得到 ${earned} 块钱。`, { forceSubtitle: true, colorful: earned >= 80 });
 }
 
 function sellFurnitureItem(element) {

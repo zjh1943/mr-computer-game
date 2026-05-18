@@ -25,6 +25,7 @@ const skyBubbles = {
   sun: skySun?.querySelector(".sky-bubble"),
   moon: skyMoon?.querySelector(".sky-bubble")
 };
+const beatRunnerBubbles = document.querySelectorAll(".beat-runner-bubble");
 const dayNightToggle = document.querySelector("#day-night-toggle");
 const terrorToggle = document.querySelector("#terror-toggle");
 const weatherToggle = document.querySelector("#weather-toggle");
@@ -220,6 +221,12 @@ let autoSkyCycleTimer = null;
 let skyGreetingTimer = null;
 let skyGoodbyeTimer = null;
 let skyBubbleTimer = null;
+let beatRunnerChatTimer = null;
+let beatRunnerReplyTimer = null;
+let sprunkiAnnoyance = 0;
+let sprunkiBanUntil = 0;
+let sprunkiHaveOwnHouse = false;
+let sprunkiSleeping = false;
 let isTerrorNightActive = false;
 let currentWeather = "sunny";
 let weatherTimer = null;
@@ -227,6 +234,11 @@ let isLightOn = false;
 let sunDryTimer = null;
 let rainErrorTimer = null;
 let rainCodeTimer = null;
+let rainChaosTimer = null;
+let shakerTimer = null;
+let shakerAudioContext = null;
+let rainChaosLineTarget = 4;
+let beatAudioContext = null;
 let lastChatActivityAt = Date.now();
 let lastPointerActivityAt = Date.now();
 let hatBumpTimer = null;
@@ -291,6 +303,20 @@ const weatherLabels = {
   rain: "下雨",
   snow: "下雪"
 };
+const beatRunnerChatLines = [
+  { text: "低音来了", reply: "低音收到" },
+  { text: "换个拍子", reply: "换到第二拍" },
+  { text: "金属节拍", reply: "镲片很亮" },
+  { text: "机器鼓点", reply: "机器人上线" },
+  { text: "藤蔓和声", reply: "和声接住" },
+  { text: "粉色和声", reply: "和声很快乐" },
+  { text: "一起混音", reply: "开始合成" },
+  { text: "别踩空拍", reply: "节拍很稳" }
+];
+const mrComputerSong = {
+  title: "Fun Time",
+  lyric: "你好，要不要唱这首有趣的歌？来吧，跟我一起唱快乐时刻。"
+};
 const HOUSE_PRICE = 120;
 const MINE_CELL_COUNT = 18;
 const INVENTORY_SLOT_COUNT = 12;
@@ -325,6 +351,200 @@ function randomFrom(items) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function pickBeatRunnerLine(bubble, index) {
+  const lastText = bubble.dataset.lastText || "";
+  const offset = Math.floor(Math.random() * beatRunnerChatLines.length);
+  for (let step = 0; step < beatRunnerChatLines.length; step += 1) {
+    const candidate = beatRunnerChatLines[(offset + index + step) % beatRunnerChatLines.length];
+    if (candidate.text !== lastText) {
+      bubble.dataset.lastText = candidate.text;
+      bubble.dataset.reply = candidate.reply;
+      return candidate;
+    }
+  }
+  const fallback = beatRunnerChatLines[index % beatRunnerChatLines.length];
+  bubble.dataset.reply = fallback.reply;
+  return fallback;
+}
+
+function isBeatRunnerAllowedToTalk(runner) {
+  if (!runner || currentWeather === "rain") return false;
+  if (isNightMode || sprunkiSleeping) return false;
+
+  const runnerBox = runner.getBoundingClientRect();
+  if (runnerBox.right < 0 || runnerBox.left > window.innerWidth) return false;
+  if (!runner.classList.contains("making-beat")) return false;
+
+  if (isAtHome) {
+    return runner.classList.contains("visiting-home");
+  }
+
+  const computerBox = computerShell.getBoundingClientRect();
+  const runnerCenterX = runnerBox.left + runnerBox.width / 2;
+  const computerCenterX = computerBox.left + computerBox.width / 2;
+  const runnerFeetY = runnerBox.bottom;
+  const computerFeetY = computerBox.bottom;
+  return Math.abs(runnerCenterX - computerCenterX) < 118 && Math.abs(runnerFeetY - computerFeetY) < 190;
+}
+
+function updateSprunkiHomeVisitor() {
+  const runners = Array.from(document.querySelectorAll(".beat-runner"));
+  if (!runners.length) return;
+
+  if (sprunkiSleeping) {
+    runners.forEach((runner) => runner.classList.remove("visiting-home"));
+    return;
+  }
+
+  if (Date.now() < sprunkiBanUntil) {
+    runners.forEach((runner) => runner.classList.remove("visiting-home"));
+    return;
+  }
+
+  if (!isAtHome || currentWeather === "rain") {
+    runners.forEach((runner) => runner.classList.remove("visiting-home"));
+    return;
+  }
+
+  const currentVisitor = runners.some((runner) => runner.classList.contains("visiting-home"));
+  if (currentVisitor) {
+    if (Math.random() < 0.22) {
+      runners.forEach((runner) => runner.classList.remove("visiting-home"));
+    }
+    return;
+  }
+
+  if (Math.random() < 0.45) {
+    runners.forEach((runner) => runner.classList.add("visiting-home"));
+  }
+}
+
+function swatSprunkiWithOutlet() {
+  sprunkiBanUntil = Date.now() + 18000;
+  sprunkiAnnoyance = 0;
+  document.querySelectorAll(".beat-runner").forEach((runner) => {
+    runner.classList.remove("visiting-home");
+    runner.classList.add("swatted-by-outlet");
+    window.setTimeout(() => {
+      runner.classList.remove("swatted-by-outlet");
+    }, 900);
+  });
+  const reply = "太吵了！电脑先生举起插座把节奏小人全部赶跑。";
+  showSubtitle(reply, false);
+  playSprunkiBeat({ name: "outlet" });
+}
+
+function setSprunkiSleeping(sleeping) {
+  sprunkiSleeping = sleeping;
+  document.body.classList.toggle("sprunki-sleeping", sleeping);
+  if (sleeping) {
+    sprunkiHaveOwnHouse = true;
+    document.querySelectorAll(".beat-runner").forEach((runner) => {
+      runner.classList.remove("visiting-home", "making-beat");
+    });
+  }
+}
+
+function handleSprunkiNightChange(night) {
+  if (night) {
+    const runners = Array.from(document.querySelectorAll(".beat-runner"));
+    runners.forEach((runner) => {
+      const bubble = runner.querySelector(".beat-runner-bubble");
+      if (bubble) {
+        bubble.textContent = `${runner.dataset.sprunkiName || "Sprunki"}：我要回家了`;
+      }
+    });
+    window.setTimeout(() => {
+      if (isNightMode) {
+        setSprunkiSleeping(true);
+      }
+    }, 2200);
+    return;
+  }
+
+  setSprunkiSleeping(false);
+  refreshBeatRunnerChats();
+}
+
+function showBeatRunnerComputerReply(entry) {
+  if (!entry || currentWeather === "rain" || isPoweredOff) return;
+  if (isRecording || Date.now() - lastChatActivityAt < 2400) return;
+
+  sprunkiAnnoyance += 1;
+  if (sprunkiAnnoyance >= 6) {
+    swatSprunkiWithOutlet();
+    return;
+  }
+
+  const reply = isTerrorNightActive
+    ? `${entry.name}放恐怖节奏：${entry.text}。电脑先生低声唱《${mrComputerSong.title}》：滋滋，快乐时刻变成暗暗时刻。`
+    : `${entry.name}放节奏：${entry.text}。电脑先生唱《${mrComputerSong.title}》：${mrComputerSong.lyric}`;
+  playSprunkiBeat(entry);
+  showSubtitle(reply, false);
+
+  if (beatRunnerReplyTimer) {
+    window.clearTimeout(beatRunnerReplyTimer);
+  }
+  beatRunnerReplyTimer = window.setTimeout(() => {
+    if (currentWeather !== "rain" && screenSubtitle.textContent === reply) {
+      showFaceOnly();
+      setMood(0);
+    }
+    beatRunnerReplyTimer = null;
+  }, 1900);
+}
+
+function refreshBeatRunnerChats() {
+  if (!beatRunnerBubbles.length) return;
+
+  document.querySelectorAll(".beat-runner").forEach((runner) => {
+    runner.classList.toggle("making-beat", !isNightMode && !sprunkiSleeping && Math.random() < 0.36);
+  });
+
+  updateSprunkiHomeVisitor();
+
+  if (currentWeather === "rain") {
+    if (beatRunnerReplyTimer) {
+      window.clearTimeout(beatRunnerReplyTimer);
+      beatRunnerReplyTimer = null;
+    }
+    beatRunnerBubbles.forEach((bubble) => {
+      bubble.textContent = "";
+    });
+    return;
+  }
+
+  let nearbyLine = null;
+  beatRunnerBubbles.forEach((bubble, index) => {
+    const runner = bubble.closest(".beat-runner");
+    if (isNightMode) {
+      const sprunkiName = runner?.dataset.sprunkiName || "Sprunki";
+      bubble.textContent = `${sprunkiName}：我要回家了`;
+      return;
+    }
+    const line = pickBeatRunnerLine(bubble, index);
+    const sprunkiName = runner?.dataset.sprunkiName || "Sprunki";
+    const modeWord = isTerrorNightActive ? "恐怖" : "";
+    bubble.textContent = `${sprunkiName}：${modeWord}${line.text}`;
+    if (!nearbyLine && isBeatRunnerAllowedToTalk(runner)) {
+      nearbyLine = { ...line, name: sprunkiName };
+    }
+  });
+  showBeatRunnerComputerReply(nearbyLine);
+}
+
+function scheduleBeatRunnerChats(initialDelay = 900) {
+  if (!beatRunnerBubbles.length) return;
+  if (beatRunnerChatTimer) {
+    window.clearTimeout(beatRunnerChatTimer);
+  }
+
+  beatRunnerChatTimer = window.setTimeout(() => {
+    refreshBeatRunnerChats();
+    scheduleBeatRunnerChats(2200 + Math.floor(Math.random() * 2200));
+  }, initialDelay);
 }
 
 function getAllShopItems() {
@@ -536,6 +756,27 @@ function activateFurniture(itemId) {
   if (element.parentElement !== document.body) {
     document.body.appendChild(element);
   }
+  updateFurnitureWindowView(element);
+}
+
+function updateFurnitureWindowView(element) {
+  if (!element?.classList?.contains("owned-furniture")) return;
+  const kind = element.dataset.kind || "";
+  if (kind !== "window" && kind !== "big-window") return;
+
+  const rect = element.getBoundingClientRect();
+  const centerY = rect.top + rect.height / 2;
+  const skyLine = window.innerHeight * 0.33;
+  const grassLine = window.innerHeight * 0.66;
+  element.classList.toggle("window-view-sky", centerY < skyLine);
+  element.classList.toggle("window-view-grass", centerY > grassLine);
+  element.classList.toggle("window-view-mixed", centerY >= skyLine && centerY <= grassLine);
+}
+
+function updateAllFurnitureWindowViews() {
+  document
+    .querySelectorAll(".house-item.owned-furniture.custom-kind-window, .house-item.owned-furniture.custom-kind-big-window")
+    .forEach(updateFurnitureWindowView);
 }
 
 function saveGameState() {
@@ -582,6 +823,7 @@ function restoreFurniturePosition(itemId, position) {
   element.style.right = "auto";
   element.style.bottom = "auto";
   element.classList.add("custom-placed");
+  updateFurnitureWindowView(element);
 }
 
 function loadGameState() {
@@ -885,6 +1127,7 @@ function returnToYard() {
     updateComputerWeatherMarks();
   }
   parkPlugAtChargingCorner();
+  updateAllFurnitureWindowViews();
   saveGameState();
   speakAsComputer("电脑先生回到草坪上了。", { forceSubtitle: true, colorful: false });
 }
@@ -900,6 +1143,7 @@ function returnHomeFromYard() {
     return;
   }
   enterHomeMode();
+  updateAllFurnitureWindowViews();
   speakAsComputer("电脑先生回家了，雨淋不到他。", { forceSubtitle: true, colorful: true });
 }
 
@@ -1448,6 +1692,129 @@ function updateLightToggleLabel() {
   lightToggle.textContent = isLightOn ? "关灯" : "开灯";
 }
 
+function makeRainGibberish(length = 22) {
+  const chars = "ZXCVBNMASDFGHJKLQWERTYUIOP0123456789_ERR_SYS_GLITCH";
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+}
+
+function updateRainChaosText() {
+  const codePanel = document.querySelector(".rain-error-code");
+  if (!codePanel) return;
+
+  const linesToAdd = Math.max(1, rainChaosLineTarget);
+  for (let index = 0; index < linesToAdd; index += 1) {
+    const line = document.createElement("span");
+    line.textContent = `${makeRainGibberish(7)} ${makeRainGibberish(18 + Math.floor(Math.random() * 12))}`;
+    codePanel.appendChild(line);
+  }
+
+  const lines = Array.from(codePanel.querySelectorAll("span"));
+  if (lines.length > 120) {
+    lines.slice(0, lines.length - 120).forEach((line) => line.remove());
+  }
+  codePanel.scrollTop = codePanel.scrollHeight;
+  rainChaosLineTarget = Math.min(rainChaosLineTarget + 1, 8);
+}
+
+function trimRainChaosText() {
+  const codePanel = document.querySelector(".rain-error-code");
+  if (!codePanel) return;
+  Array.from(codePanel.querySelectorAll("span")).slice(4).forEach((line) => line.remove());
+}
+
+function playShakerTick() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  if (!shakerAudioContext) {
+    shakerAudioContext = new AudioContextClass();
+  }
+
+  const context = shakerAudioContext;
+  if (context.state === "suspended") {
+    context.resume().catch(() => {});
+  }
+
+  const duration = 0.075;
+  const sampleRate = context.sampleRate;
+  const buffer = context.createBuffer(1, Math.floor(sampleRate * duration), sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let index = 0; index < data.length; index += 1) {
+    data[index] = (Math.random() * 2 - 1) * (1 - index / data.length);
+  }
+
+  const source = context.createBufferSource();
+  const filter = context.createBiquadFilter();
+  const gain = context.createGain();
+  source.buffer = buffer;
+  filter.type = "highpass";
+  filter.frequency.value = 2800;
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.16, context.currentTime + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(context.destination);
+  source.start();
+  source.stop(context.currentTime + duration);
+}
+
+function getBeatAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!beatAudioContext) {
+    beatAudioContext = new AudioContextClass();
+  }
+  if (beatAudioContext.state === "suspended") {
+    beatAudioContext.resume().catch(() => {});
+  }
+  return beatAudioContext;
+}
+
+function playSprunkiBeat(entry = {}) {
+  const context = getBeatAudioContext();
+  if (!context) return;
+  const start = context.currentTime;
+  const base = isTerrorNightActive ? 120 : 180;
+  const notes = [base, base * 1.5, base * 2];
+  notes.forEach((frequency, index) => {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = entry.name === "Clukr" || entry.name === "Fun Bot" ? "square" : "triangle";
+    oscillator.frequency.setValueAtTime(frequency, start + index * 0.11);
+    gain.gain.setValueAtTime(0.0001, start + index * 0.11);
+    gain.gain.exponentialRampToValueAtTime(0.12, start + index * 0.11 + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + index * 0.11 + 0.08);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start + index * 0.11);
+    oscillator.stop(start + index * 0.11 + 0.09);
+  });
+}
+
+function stopRainChaosEffects() {
+  if (rainChaosTimer) {
+    window.clearInterval(rainChaosTimer);
+    rainChaosTimer = null;
+  }
+  if (shakerTimer) {
+    window.clearInterval(shakerTimer);
+    shakerTimer = null;
+  }
+  rainChaosLineTarget = 4;
+  trimRainChaosText();
+}
+
+function startRainChaosEffects() {
+  rainChaosLineTarget = 4;
+  trimRainChaosText();
+  updateRainChaosText();
+  stopRainChaosEffects();
+  rainChaosLineTarget = 5;
+  rainChaosTimer = window.setInterval(updateRainChaosText, 160);
+  playShakerTick();
+  shakerTimer = window.setInterval(playShakerTick, 140);
+}
+
 function setLightOn(active) {
   isLightOn = active;
   document.body.classList.toggle("light-on", isLightOn);
@@ -1463,6 +1830,7 @@ function clearRainErrorState() {
     window.clearTimeout(rainCodeTimer);
     rainCodeTimer = null;
   }
+  stopRainChaosEffects();
   computerShell.classList.remove("rained-on", "rain-squint", "rain-error", "rain-code-mode");
 }
 
@@ -1475,6 +1843,7 @@ function updateComputerWeatherMarks() {
   computerShell.classList.toggle("snow-covered", currentWeather === "snow");
 
   if (isAtHome) {
+    stopRainChaosEffects();
     computerShell.classList.remove("wet", "snow-covered", "sun-drying", "rained-on", "rain-squint", "rain-error", "rain-code-mode");
     return;
   }
@@ -1501,6 +1870,7 @@ function setWeather(weather, announce = true) {
   document.body.classList.toggle("weather-rain", currentWeather === "rain");
   document.body.classList.toggle("weather-snow", currentWeather === "snow");
   computerShell.classList.toggle("rained-on", currentWeather === "rain" && !isAtHome);
+  refreshBeatRunnerChats();
   updateComputerWeatherMarks();
   updateWeatherToggleLabel();
 
@@ -1534,7 +1904,7 @@ function setWeather(weather, announce = true) {
           rainCodeTimer = null;
           if (currentWeather !== "rain" || isAtHome || isPoweredOff || isTerrorNightActive) return;
           computerShell.classList.add("rain-code-mode");
-          showSubtitle("太阳公公已出海对话取消无限个取消，下雨了", false);
+          startRainChaosEffects();
         }, 900);
       }, 850);
     }
@@ -1636,6 +2006,7 @@ function setDayNightMode(night) {
 
   startSkyJourney(night);
   scheduleAutoSkyCycle();
+  handleSprunkiNightChange(night);
   showFaceOnly();
 }
 
@@ -2042,6 +2413,7 @@ function setupDragInteractions() {
       furnitureDrag.element.style.bottom = "auto";
       furnitureDrag.element.style.position = "fixed";
       furnitureDrag.element.classList.add("custom-placed");
+      updateFurnitureWindowView(furnitureDrag.element);
       salesBasket?.classList.toggle("ready", isNearSalesBasket(event.clientX, event.clientY));
       return;
     }
@@ -2094,6 +2466,7 @@ function setupDragInteractions() {
         return;
       }
       furnitureDrag = null;
+      updateAllFurnitureWindowViews();
       saveGameState();
     }
 
@@ -2426,6 +2799,48 @@ function answerUser(text) {
 
   if (/开机/.test(cleaned)) {
     setPowerState(true);
+  }
+
+  const openThingMatch = cleaned.match(/打开(.+)/);
+  if (openThingMatch) {
+    const thing = openThingMatch[1].replace(/[。！？!?.，,]/g, "").trim();
+    if (/(付费游戏|收费游戏|要钱的游戏|付费的游戏)/.test(thing)) {
+      const reply = "不支持这个功能，付费的游戏不能帮你打开。";
+      const replyDuration = speakAsComputer(reply, { forceSubtitle: true, colorful: false });
+      if (screenTimer) {
+        window.clearTimeout(screenTimer);
+      }
+      screenTimer = window.setTimeout(() => {
+        showFaceOnly();
+        setMood(0);
+      }, replyDuration);
+      return;
+    }
+
+    const target = thing || "这个东西";
+    const reply = `已在电脑先生屏幕里打开：${target}`;
+    const replyDuration = speakAsComputer(reply, { forceSubtitle: true, colorful: /音乐|网易云|彩灯|视频|动画/.test(target) });
+    if (screenTimer) {
+      window.clearTimeout(screenTimer);
+    }
+    screenTimer = window.setTimeout(() => {
+      showFaceOnly();
+      setMood(0);
+    }, Math.max(replyDuration, 2600));
+    return;
+  }
+
+  if (/玩.*(付费游戏|收费游戏|要钱的游戏|付费的游戏)/.test(cleaned)) {
+    const reply = "不支持这个功能，付费的游戏不能帮你打开。";
+    const replyDuration = speakAsComputer(reply, { forceSubtitle: true, colorful: false });
+    if (screenTimer) {
+      window.clearTimeout(screenTimer);
+    }
+    screenTimer = window.setTimeout(() => {
+      showFaceOnly();
+      setMood(0);
+    }, replyDuration);
+    return;
   }
 
   if (/取消恐怖之夜|关闭恐怖之夜|结束恐怖之夜|取消恐怖晚上|关闭恐怖晚上|结束恐怖晚上/.test(cleaned)) {
@@ -2936,6 +3351,7 @@ startBlinkLoop();
 scheduleIdleLook();
 startIdleLookLoop();
 resetOpeningWeatherState();
+scheduleBeatRunnerChats();
 scheduleWeatherChange(18000);
 
 window.addEventListener("pageshow", () => {
@@ -2947,6 +3363,7 @@ window.addEventListener("resize", () => {
   if (plugInserted && !plugDrag) {
     parkPlugAtChargingCorner();
   }
+  updateAllFurnitureWindowViews();
 });
 
 if ("speechSynthesis" in window) {

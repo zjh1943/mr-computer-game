@@ -209,6 +209,104 @@
         <p class="sales-title">销售篮</p>
         <div class="basket-bowl" aria-hidden="true"></div>
       </section>
+      <section id="rhythm-box" class="rhythm-box" aria-label="节奏盒子">
+        <div class="rhythm-header">
+          <strong>节奏盒子</strong>
+          <span id="rhythm-status">拖上快乐机器人</span>
+          <label class="rhythm-volume" aria-label="节奏音量">
+            <span>音量</span>
+            <input id="rhythm-volume" type="range" min="0" max="100" value="85" />
+          </label>
+        </div>
+        <div class="character-tray" aria-label="角色盘">
+          <button id="happy-robot-picker" class="happy-robot-picker" type="button" aria-label="拖动快乐机器人">
+            <span class="happy-robot-icon" aria-hidden="true">
+              <span class="happy-robot-antenna antenna-left"></span>
+              <span class="happy-robot-antenna antenna-right"></span>
+              <span class="happy-robot-speaker speaker-left"></span>
+              <span class="happy-robot-speaker speaker-right"></span>
+              <span class="happy-robot-head">
+                <span class="happy-robot-eye eye-left"></span>
+                <span class="happy-robot-eye eye-right"></span>
+                <span class="happy-robot-mouth"></span>
+              </span>
+              <span class="happy-robot-neck"></span>
+            </span>
+            <span class="happy-robot-name">快乐机器人</span>
+          </button>
+          <button id="gallod-picker" class="happy-robot-picker gallod-picker" type="button" aria-label="拖动加洛德">
+            <span class="happy-robot-icon gallod-icon" aria-hidden="true">
+              <span class="gallod-dome"></span>
+              <span class="happy-robot-head gallod-head">
+                <span class="gallod-screen"></span>
+              </span>
+              <span class="gallod-mouth"></span>
+              <span class="happy-robot-hand hand-left"></span>
+              <span class="happy-robot-hand hand-right"></span>
+              <span class="happy-robot-neck gallod-neck"></span>
+            </span>
+            <span class="happy-robot-name">加洛德</span>
+          </button>
+          <button id="simon-picker" class="happy-robot-picker simon-picker" type="button" aria-label="拖动西蒙">
+            <span class="happy-robot-icon simon-icon" aria-hidden="true">
+              <span class="simon-antenna antenna-left"></span>
+              <span class="simon-antenna antenna-right"></span>
+              <span class="simon-hair hair-one"></span>
+              <span class="simon-hair hair-two"></span>
+              <span class="simon-hair hair-three"></span>
+              <span class="simon-head">
+                <span class="simon-eye eye-left"></span>
+                <span class="simon-eye eye-right"></span>
+                <span class="simon-mouth"></span>
+              </span>
+              <span class="simon-neck"></span>
+            </span>
+            <span class="happy-robot-name">西蒙</span>
+          </button>
+          <button id="music-box-picker" class="happy-robot-picker music-box-picker" type="button" aria-label="拖动小天">
+            <span class="happy-robot-icon music-box-icon" aria-hidden="true">
+              <span class="music-box-ear ear-left"></span>
+              <span class="music-box-ear ear-right"></span>
+              <span class="music-box-hair"></span>
+              <span class="music-box-head">
+                <span class="music-box-eye eye-left"><span></span></span>
+                <span class="music-box-eye eye-right"><span></span></span>
+                <span class="music-box-mouth"></span>
+              </span>
+              <span class="music-box-neck"></span>
+            </span>
+            <span class="happy-robot-name">小天</span>
+          </button>
+          <button id="sun-picker" class="happy-robot-picker sun-picker" type="button" aria-label="拖动太阳公公">
+            <span class="happy-robot-icon sun-icon" aria-hidden="true">
+              <span class="sun-character-rays"></span>
+              <span class="sun-character-face">
+                <span class="sun-character-eye eye-left"></span>
+                <span class="sun-character-eye eye-right"></span>
+                <span class="sun-character-mouth"></span>
+              </span>
+            </span>
+            <span class="happy-robot-name">太阳公公</span>
+          </button>
+          <button id="moon-picker" class="happy-robot-picker moon-picker" type="button" aria-label="拖动月亮姑姑">
+            <span class="happy-robot-icon moon-icon" aria-hidden="true">
+              <span class="moon-character-face">
+                <span class="moon-character-eye eye-left"></span>
+                <span class="moon-character-eye eye-right"></span>
+                <span class="moon-character-mouth"></span>
+              </span>
+            </span>
+            <span class="happy-robot-name">月亮姑姑</span>
+          </button>
+        </div>
+        <div id="rhythm-stage" class="rhythm-stage" aria-label="音乐角色槽">
+          <button class="rhythm-slot" type="button" data-slot-index="0" aria-label="节奏槽 1"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="1" aria-label="节奏槽 2"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="2" aria-label="节奏槽 3"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="3" aria-label="节奏槽 4"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="4" aria-label="节奏槽 5"></button>
+        </div>
+      </section>
       <button id="terror-toggle" class="terror-toggle" type="button">开启恐怖之夜</button>
       <button id="day-night-toggle" class="day-night-toggle" type="button">切到夜晚</button>
       <button id="weather-toggle" class="weather-toggle" type="button">切到多云</button>
@@ -219,6 +317,7 @@
       <div id="money-display" class="money-display" aria-live="polite">钱：0</div>
       <button id="mine-toggle" class="mine-toggle" type="button">挖矿</button>
       <button id="shop-toggle" class="shop-toggle" type="button">商城</button>
+      <button id="reset-save-toggle" class="reset-save-toggle" type="button">重置</button>
       <section id="mine-panel" class="mine-panel" aria-label="挖矿面板" hidden>
         <div class="mine-toolbar">
           <strong>小矿场</strong>

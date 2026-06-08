@@ -47,6 +47,18 @@ const moveHomeButton = document.querySelector("#move-home");
 const yardToggle = document.querySelector("#yard-toggle");
 const homeToggle = document.querySelector("#home-toggle");
 const callBackToggle = document.querySelector("#call-back-toggle");
+const resetSaveToggle = document.querySelector("#reset-save-toggle");
+const rhythmBox = document.querySelector("#rhythm-box");
+const rhythmStatus = document.querySelector("#rhythm-status");
+const rhythmVolume = document.querySelector("#rhythm-volume");
+const happyRobotPicker = document.querySelector("#happy-robot-picker");
+const gallodPicker = document.querySelector("#gallod-picker");
+const simonPicker = document.querySelector("#simon-picker");
+const musicBoxPicker = document.querySelector("#music-box-picker");
+const sunPicker = document.querySelector("#sun-picker");
+const moonPicker = document.querySelector("#moon-picker");
+const rhythmStage = document.querySelector("#rhythm-stage");
+const rhythmSlots = Array.from(document.querySelectorAll(".rhythm-slot"));
 
 const moods = [
   { status: "待机微笑中", colorful: false },
@@ -59,6 +71,7 @@ const clearVoiceSettings = {
   rate: 1.06,
   volume: 0.95
 };
+const COMPUTER_SONG_LINE = "\u4f60\u597d\uff0c\u4f60\u60f3\u4e0d\u60f3\u627e\u4e00\u70b9\u6709\u8da3\uff1f\u6765\u5427\uff0c\u8ddf\u6211\u4e00\u8d77\u5531\uff0c\u4e00\u8d77\u4eab\u53d7\u5feb\u4e50\u65f6\u523b\u3002";
 
 const replyPatterns = [
   {
@@ -227,6 +240,11 @@ let isLightOn = false;
 let sunDryTimer = null;
 let rainErrorTimer = null;
 let rainCodeTimer = null;
+let rainCodeRefreshTimer = null;
+let rainNoiseContext = null;
+let rainNoiseSource = null;
+let rainNoiseGain = null;
+let rainNoiseFilter = null;
 let lastChatActivityAt = Date.now();
 let lastPointerActivityAt = Date.now();
 let hatBumpTimer = null;
@@ -246,6 +264,12 @@ let treeDrag = null;
 let miniDrag = null;
 let plugDrag = null;
 let furnitureDrag = null;
+let rhythmDrag = null;
+let tvCableDrag = null;
+let tvCableConnectedTo = null;
+let weatherCableDrag = null;
+let weatherCableConnectedTo = null;
+let tvNewGameCaptionDismissed = false;
 let plugDetached = false;
 let plugInserted = false;
 let plugCharging = false;
@@ -266,6 +290,32 @@ let isAtHome = false;
 const ownedShopItems = new Set();
 let customShopItems = [];
 let bornMiniComputers = [];
+const placedRhythmCharacters = new Map();
+let rhythmAudioContext = null;
+let rhythmLoopTimer = null;
+let rhythmStep = 0;
+let rhythmMasterGain = null;
+let rhythmVolumeValue = 1.8;
+let rhythmPraiseTimer = null;
+let rhythmPraiseCooldown = false;
+let lastRhythmDropAt = 0;
+let lastComputerSongAt = 0;
+let computerSongTimer = null;
+const skyBodyAway = {
+  sun: false,
+  moon: false
+};
+let skyDragTerrorActive = false;
+let urgentPianoTimer = null;
+let happyRobotCompanion = null;
+const happyRobotCompanions = [];
+let happyRobotMessageTimer = null;
+let happyRobotCleaningTimer = null;
+let happyRobotCompanionDrag = null;
+let happyRobotCompanionPinned = false;
+let happyRobotSuppressClick = false;
+let happyRobotKissTimer = null;
+let happyRobotUmbrellaActive = false;
 
 const BATTERY_MAX = 100;
 const LOW_BATTERY_THRESHOLD = 20;
@@ -291,6 +341,37 @@ const weatherLabels = {
   rain: "下雨",
   snow: "下雪"
 };
+
+const RAIN_CODE_LINE_COUNT = 24;
+const rainCodeSnippets = [
+  "if (rain) screen.color = RED;",
+  "while (water > 0) reboot();",
+  "ERR_RAIN_PIXEL_404",
+  "color.shift(red, green, blue, purple);",
+  "try { dryScreen(); } catch (water) {}",
+  "0xRAIN_BEEP_BEEP",
+  "const umbrella = null;",
+  "screen.write('X_X');",
+  "warning: cloud overflow",
+  "rgb += thunder.noise();",
+  "for (;;) flashCode();",
+  "SYSTEM_WET_MODE = TRUE",
+  "ERROR: monitor flooded",
+  "pixel[wet] = NaN;",
+  "boot.loop.rain.rain.rain",
+  "WATER_STACK_OVERFLOW",
+  "screen.fill(randomColor);",
+  "signal lost // retry",
+  "RAIN_GLITCH_LEVEL++",
+  "01010111 01000101 01010100",
+  "NO_DRY_DEVICE_FOUND",
+  "console.warn('too wet');",
+  "display: broken;",
+  "drip.drip.exec();",
+  "panic('rain in screen');",
+  "bad color checksum",
+  "GPU_WATER_INTERRUPT"
+];
 const HOUSE_PRICE = 120;
 const MINE_CELL_COUNT = 18;
 const INVENTORY_SLOT_COUNT = 12;
@@ -315,6 +396,7 @@ const shopItems = [
   { id: "clock", label: "时钟", icon: "钟", price: 22, type: "furniture", keywords: "时钟 钟 表 时间" },
   { id: "toy", label: "玩具", icon: "玩", price: 20, type: "furniture", keywords: "玩具 游戏 好玩" },
   { id: "outlet", label: "插座", icon: "插", price: 28, type: "furniture", kind: "outlet", keywords: "插座 充电 电源 插口" },
+  { id: "weather-detector", label: "\u5929\u6c14\u63a2\u6d4b\u5668", icon: "\u5929", price: 38, type: "furniture", kind: "weather-detector", keywords: "\u5929\u6c14 \u63a2\u6d4b\u5668 \u9884\u62a5 \u4e0b\u96e8 \u4e0b\u96ea \u591a\u4e91" },
   { id: "mr-computer", label: "电脑先生", icon: "电", price: 500, type: "furniture", kind: "computer", keywords: "电脑先生 电脑 小电脑 屏幕" },
   { id: "big-window", label: "大窗户", icon: "窗", price: 180, type: "furniture", kind: "big-window", keywords: "大窗户 大窗 大玻璃 天气" }
 ];
@@ -327,11 +409,53 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function setupAutoReload() {
+  const isLocalPreview = ["127.0.0.1", "localhost"].includes(window.location.hostname);
+  if (!isLocalPreview) return;
+
+  const watchedFiles = ["index.html", "styles.css", "app.js"];
+  const snapshots = new Map();
+  let isChecking = false;
+
+  async function readFileSnapshot(fileName) {
+    const response = await fetch(`${fileName}?autoReload=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return null;
+    return response.text();
+  }
+
+  async function checkForUpdates() {
+    if (isChecking) return;
+    isChecking = true;
+    try {
+      for (const fileName of watchedFiles) {
+        const snapshot = await readFileSnapshot(fileName);
+        if (snapshot === null) continue;
+        if (!snapshots.has(fileName)) {
+          snapshots.set(fileName, snapshot);
+          continue;
+        }
+        if (snapshots.get(fileName) !== snapshot) {
+          window.location.reload();
+          return;
+        }
+      }
+    } catch {
+      // Keep the game running if the local preview server briefly disappears.
+    } finally {
+      isChecking = false;
+    }
+  }
+
+  checkForUpdates();
+  window.setInterval(checkForUpdates, 1800);
+}
+
 function getAllShopItems() {
   return [...shopItems, ...customShopItems];
 }
 
 function inferFurnitureKind(label) {
+  if (/天气探测器|天气|探测器|预报|weather/i.test(label)) return "weather-detector";
   if (/电脑先生|电脑|computer/i.test(label)) return "computer";
   if (/大窗|大窗户|大玻璃|big window/i.test(label)) return "big-window";
   if (/窗|window/i.test(label)) return "window";
@@ -399,6 +523,80 @@ function addMiniComputerParts(element) {
   });
 }
 
+function addTvScreenParts(element) {
+  if (!element || element.querySelector(".tv-screen-scene")) return;
+  element.textContent = "";
+  element.innerHTML = `
+    <span class="tv-screen-scene" aria-hidden="true">
+      <span class="tv-mini-computer">
+        <span class="tv-computer-eye eye-left"></span>
+        <span class="tv-computer-eye eye-right"></span>
+        <span class="tv-computer-mouth"></span>
+      </span>
+      <span class="tv-mini-robot">
+        <span class="tv-robot-eye eye-left"></span>
+        <span class="tv-robot-eye eye-right"></span>
+        <span class="tv-robot-body"></span>
+      </span>
+      <span class="tv-music-note note-one"></span>
+      <span class="tv-music-note note-two"></span>
+    </span>
+    <span class="tv-new-game-caption" aria-hidden="true">
+      <button class="tv-caption-close" type="button" aria-label="\u5173\u95ed\u7535\u89c6\u5b57\u5e55">\u00d7</button>
+      <span class="tv-caption-title">\u65b0\u73a9\u6cd5</span>
+      <span class="tv-caption-text">\u8282\u594f\u76d2\u6765\u4e86\uff1a\u628a\u89d2\u8272\u62d6\u5230\u5c0f\u7070\u4e91\u97f3\u4e50\u683c\u91cc\uff0c\u4ed6\u4eec\u5c31\u4f1a\u4e00\u8d77\u6f14\u594f\u3002</span>
+    </span>
+    <span class="tv-cable-line" aria-hidden="true"></span>
+    <span class="tv-cable-plug" aria-hidden="true"></span>
+  `;
+}
+
+function getWeatherFutureText(weather = currentWeather) {
+  if (weather === "sunny") return "\u53ef\u80fd\u53d8\u591a\u4e91";
+  if (weather === "cloudy") return "\u53ef\u80fd\u4e0b\u96e8\u6216\u4e0b\u96ea";
+  if (weather === "rain") return "\u7535\u8111\u5148\u751f\u4f1a\u6dcb\u6e7f";
+  if (weather === "snow") return "\u5730\u4e0a\u4f1a\u53d8\u767d";
+  return "\u5929\u6c14\u5f88\u5e73\u7a33";
+}
+
+function updateWeatherDetectorDisplay() {
+  const detector = getFurnitureElement("weather-detector");
+  if (!detector) return;
+  const now = detector.querySelector(".weather-now");
+  const future = detector.querySelector(".weather-future");
+  if (now) {
+    now.textContent = `\u73b0\u5728\uff1a${weatherLabels[currentWeather] || "\u6674\u5929"}`;
+  }
+  if (future) {
+    future.textContent = `\u63a5\u4e0b\u6765\uff1a${getWeatherFutureText(currentWeather)}`;
+  }
+  updateComputerWeatherDisplay();
+}
+
+function updateComputerWeatherDisplay() {
+  if (typeof weatherCableConnectedTo === "undefined" || weatherCableConnectedTo !== "computer" || isPoweredOff) return;
+  screenSubtitle.textContent = `\u5929\u6c14\u63a2\u6d4b\n\u73b0\u5728\uff1a${weatherLabels[currentWeather] || "\u6674\u5929"}\n\u63a5\u4e0b\u6765\uff1a${getWeatherFutureText(currentWeather)}`;
+  screenSubtitle.style.display = "block";
+  moodPanel.classList.remove("face-mode", "colorful");
+  moodPanel.classList.add("text-mode", "weather-display-mode");
+}
+
+function addWeatherDetectorParts(element) {
+  if (!element || element.querySelector(".weather-detector-screen")) return;
+  element.textContent = "";
+  element.innerHTML = `
+    <span class="weather-detector-antenna"></span>
+    <span class="weather-detector-screen">
+      <span class="weather-now"></span>
+      <span class="weather-future"></span>
+    </span>
+    <span class="weather-detector-light"></span>
+    <span class="weather-cable-line" aria-hidden="true"></span>
+    <span class="weather-cable-plug" aria-hidden="true"></span>
+  `;
+  updateWeatherDetectorDisplay();
+}
+
 function createFurnitureElement(item) {
   if (!item || item.type === "house") return null;
   const element = document.createElement("span");
@@ -415,6 +613,10 @@ function createFurnitureElement(item) {
     element.lastElementChild.className = "outlet-hole";
   } else if (kind === "computer") {
     addMiniComputerParts(element);
+  } else if (kind === "tv") {
+    addTvScreenParts(element);
+  } else if (kind === "weather-detector") {
+    addWeatherDetectorParts(element);
   }
   computerHouse?.appendChild(element);
   return element;
@@ -533,9 +735,251 @@ function activateFurniture(itemId) {
   element.classList.add("movable", "owned-furniture");
   element.classList.add(`custom-kind-${kind}`);
   element.dataset.kind = kind;
+  if (kind === "tv") {
+    addTvScreenParts(element);
+  } else if (kind === "weather-detector") {
+    addWeatherDetectorParts(element);
+  }
   if (element.parentElement !== document.body) {
     document.body.appendChild(element);
   }
+  updateRhythmTvMount();
+}
+
+function getPurchasedTv() {
+  const tv = getFurnitureElement("tv") || document.querySelector(".custom-kind-tv.owned-furniture");
+  if (!tv) return null;
+  return tv;
+}
+
+function setTvNewGameCaptionVisible(visible) {
+  const tv = getPurchasedTv();
+  if (!tv) return;
+  tv.classList.toggle("tv-caption-mode", visible);
+  const caption = tv.querySelector(".tv-new-game-caption");
+  if (caption) {
+    caption.setAttribute("aria-hidden", visible ? "false" : "true");
+  }
+}
+
+function showTvNewGameCaption(title, text) {
+  const tv = getPurchasedTv();
+  if (!tv) return;
+  tvNewGameCaptionDismissed = false;
+  const titleNode = tv.querySelector(".tv-caption-title");
+  const textNode = tv.querySelector(".tv-caption-text");
+  if (titleNode) {
+    titleNode.textContent = title;
+  }
+  if (textNode) {
+    textNode.textContent = text;
+  }
+  setTvNewGameCaptionVisible(true);
+}
+
+function maybeShowTvNewGameCaption() {
+  const tv = getPurchasedTv();
+  if (!tv || tvNewGameCaptionDismissed) return;
+  setTvNewGameCaptionVisible(true);
+}
+
+function updateRhythmTvMount() {
+  if (!rhythmBox) return;
+  const tv = getPurchasedTv();
+  document.body.classList.toggle("rhythm-tv-available", Boolean(tv));
+  if (tv) {
+    if (rhythmBox.parentElement !== tv) {
+      tv.appendChild(rhythmBox);
+    }
+    rhythmBox.hidden = false;
+    rhythmBox.removeAttribute("hidden");
+    maybeShowTvNewGameCaption();
+    return;
+  }
+  clearTvCableConnection();
+  clearWeatherCableConnection();
+  if (rhythmBox.parentElement !== document.body) {
+    document.body.appendChild(rhythmBox);
+  }
+  rhythmBox.hidden = true;
+}
+
+function updateTvWeatherMarks() {
+  const tv = getPurchasedTv();
+  if (!tv) return;
+  const broken = currentWeather === "rain" && !isAtHome;
+  tv.classList.toggle("tv-rained-on", broken);
+  tv.classList.toggle("tv-rain-error", broken);
+}
+
+function toggleTvFullscreen(tv = getPurchasedTv()) {
+  if (!tv) return;
+  tv.classList.toggle("tv-fullscreen");
+  document.body.classList.toggle("tv-fullscreen-active", tv.classList.contains("tv-fullscreen"));
+  refreshTvCableConnection();
+}
+
+function getTvCablePlug() {
+  return getPurchasedTv()?.querySelector(".tv-cable-plug") || null;
+}
+
+function getComputerDropZoneAtPoint(x, y) {
+  if (!computerShell) return false;
+  const rect = computerShell.getBoundingClientRect();
+  return x >= rect.left - 18 && x <= rect.right + 18 && y >= rect.top - 18 && y <= rect.bottom + 18;
+}
+
+function getComputerBackZoneAtPoint(x, y) {
+  if (!computerShell) return false;
+  const rect = computerShell.getBoundingClientRect();
+  return x >= rect.right - 36 && x <= rect.right + 46 && y >= rect.top + 64 && y <= rect.top + 156;
+}
+
+function rectsOverlap(first, second, padding = 0) {
+  if (!first || !second) return false;
+  return first.left - padding <= second.right
+    && first.right + padding >= second.left
+    && first.top - padding <= second.bottom
+    && first.bottom + padding >= second.top;
+}
+
+function isTvCableTouchingComputerCable() {
+  const tvPlug = getTvCablePlug();
+  if (!tvPlug || !backPlug) return false;
+  const tvRect = tvPlug.getBoundingClientRect();
+  const plugRect = backPlug.getBoundingClientRect();
+  const shellRect = computerShell?.getBoundingClientRect();
+  const cableBand = shellRect
+    ? {
+        left: Math.min(shellRect.right - 8, plugRect.left),
+        right: Math.max(shellRect.right + 8, plugRect.right),
+        top: Math.min(shellRect.top + 88, plugRect.top) - 22,
+        bottom: Math.max(shellRect.top + 146, plugRect.bottom) + 22
+      }
+    : null;
+  return rectsOverlap(tvRect, plugRect, 28) || rectsOverlap(tvRect, cableBand, 0);
+}
+
+function getTvCableAnchorPoint(tv = getPurchasedTv()) {
+  if (!tv) return null;
+  const rect = tv.getBoundingClientRect();
+  return {
+    x: rect.right - 18,
+    y: rect.bottom - 18
+  };
+}
+
+function setTvCableEndpoint(x, y) {
+  const tv = getPurchasedTv();
+  if (!tv) return;
+  const anchor = getTvCableAnchorPoint(tv);
+  if (!anchor) return;
+  const dx = x - anchor.x;
+  const dy = y - anchor.y;
+  tv.style.setProperty("--tv-cable-length", `${Math.max(22, Math.hypot(dx, dy))}px`);
+  tv.style.setProperty("--tv-cable-angle", `${Math.atan2(dy, dx) * 180 / Math.PI}deg`);
+  tv.style.setProperty("--tv-plug-left", `${x - 10}px`);
+  tv.style.setProperty("--tv-plug-top", `${y - 10}px`);
+}
+
+function clearTvCableConnection() {
+  const tv = getPurchasedTv();
+  tvCableConnectedTo = null;
+  document.body.classList.remove("tv-computer-linked", "tv-outlet-linked");
+  tv?.classList.remove("tv-cable-detached", "tv-cable-to-computer", "tv-cable-to-outlet");
+  tv?.style.removeProperty("--tv-cable-length");
+  tv?.style.removeProperty("--tv-cable-angle");
+  tv?.style.removeProperty("--tv-plug-left");
+  tv?.style.removeProperty("--tv-plug-top");
+}
+
+function connectTvCableTo(target, x, y) {
+  const tv = getPurchasedTv();
+  if (!tv) return;
+  tvCableConnectedTo = target;
+  tv.classList.add("tv-cable-detached");
+  tv.classList.toggle("tv-cable-to-computer", target === "computer");
+  tv.classList.toggle("tv-cable-to-outlet", target === "outlet");
+  document.body.classList.toggle("tv-computer-linked", target === "computer");
+  document.body.classList.toggle("tv-outlet-linked", target === "outlet");
+  setTvCableEndpoint(x, y);
+}
+
+function refreshTvCableConnection() {
+  if (!tvCableConnectedTo) return;
+  if (tvCableConnectedTo === "computer") {
+    const rect = computerShell.getBoundingClientRect();
+    setTvCableEndpoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return;
+  }
+  const outlet = getActiveOutlet();
+  if (!outlet) return;
+  const rect = outlet.getBoundingClientRect();
+  setTvCableEndpoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+}
+
+function getPurchasedWeatherDetector() {
+  const detector = getFurnitureElement("weather-detector") || document.querySelector(".custom-kind-weather-detector.owned-furniture");
+  if (!detector || !isAtHome) return null;
+  return detector;
+}
+
+function getWeatherCablePlug() {
+  return getPurchasedWeatherDetector()?.querySelector(".weather-cable-plug") || null;
+}
+
+function getWeatherCableAnchorPoint(detector = getPurchasedWeatherDetector()) {
+  if (!detector) return null;
+  const rect = detector.getBoundingClientRect();
+  return {
+    x: rect.right - 12,
+    y: rect.bottom - 12
+  };
+}
+
+function setWeatherCableEndpoint(x, y) {
+  const detector = getPurchasedWeatherDetector();
+  if (!detector) return;
+  const anchor = getWeatherCableAnchorPoint(detector);
+  if (!anchor) return;
+  const dx = x - anchor.x;
+  const dy = y - anchor.y;
+  detector.style.setProperty("--weather-cable-length", `${Math.max(18, Math.hypot(dx, dy))}px`);
+  detector.style.setProperty("--weather-cable-angle", `${Math.atan2(dy, dx) * 180 / Math.PI}deg`);
+  detector.style.setProperty("--weather-plug-left", `${x - 9}px`);
+  detector.style.setProperty("--weather-plug-top", `${y - 9}px`);
+}
+
+function clearWeatherCableConnection() {
+  const detector = getPurchasedWeatherDetector();
+  weatherCableConnectedTo = null;
+  document.body.classList.remove("weather-computer-linked");
+  detector?.classList.remove("weather-cable-detached", "weather-cable-to-computer", "weather-cable-swap-ready");
+  detector?.style.removeProperty("--weather-cable-length");
+  detector?.style.removeProperty("--weather-cable-angle");
+  detector?.style.removeProperty("--weather-plug-left");
+  detector?.style.removeProperty("--weather-plug-top");
+  moodPanel.classList.remove("weather-display-mode");
+  if (!isPoweredOff) {
+    showFaceOnly();
+  }
+}
+
+function connectWeatherCableToComputer(x, y) {
+  const detector = getPurchasedWeatherDetector();
+  if (!detector) return;
+  weatherCableConnectedTo = "computer";
+  detector.classList.add("weather-cable-detached", "weather-cable-to-computer");
+  detector.classList.remove("weather-cable-swap-ready");
+  document.body.classList.add("weather-computer-linked");
+  setWeatherCableEndpoint(x, y);
+  updateComputerWeatherDisplay();
+}
+
+function refreshWeatherCableConnection() {
+  if (weatherCableConnectedTo !== "computer") return;
+  const rect = computerShell.getBoundingClientRect();
+  setWeatherCableEndpoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
 }
 
 function saveGameState() {
@@ -571,6 +1015,19 @@ function saveGameState() {
   } catch {
     // Safari private mode can block localStorage; the game still works without saving.
   }
+}
+
+function resetGameState() {
+  const shouldReset = window.confirm("要清空存档，从头开始玩吗？");
+  if (!shouldReset) return;
+
+  try {
+    window.localStorage.removeItem(SAVE_KEY);
+  } catch {
+    // The game can still restart even if localStorage is unavailable.
+  }
+
+  window.location.reload();
 }
 
 function restoreFurniturePosition(itemId, position) {
@@ -854,6 +1311,8 @@ function enterHomeMode() {
   parkPlugAtChargingCorner();
   updateHomeTravelButtons();
   updateShopButtons();
+  updateRhythmTvMount();
+  updateTvWeatherMarks();
   saveGameState();
 }
 
@@ -885,6 +1344,8 @@ function returnToYard() {
     updateComputerWeatherMarks();
   }
   parkPlugAtChargingCorner();
+  updateRhythmTvMount();
+  updateTvWeatherMarks();
   saveGameState();
   speakAsComputer("电脑先生回到草坪上了。", { forceSubtitle: true, colorful: false });
 }
@@ -900,6 +1361,7 @@ function returnHomeFromYard() {
     return;
   }
   enterHomeMode();
+  updateRhythmTvMount();
   speakAsComputer("电脑先生回家了，雨淋不到他。", { forceSubtitle: true, colorful: true });
 }
 
@@ -1139,6 +1601,9 @@ function updateShellPosition() {
   computerShell.style.setProperty("--shell-offset-x", `${shellOffsetX}px`);
   computerShell.style.setProperty("--shell-offset-y", `${shellOffsetY}px`);
   updatePlugCable();
+  refreshTvCableConnection();
+  refreshWeatherCableConnection();
+  updateAllHappyRobotCompanionPositions();
 }
 
 function updateHatPosition() {
@@ -1454,6 +1919,141 @@ function setLightOn(active) {
   updateLightToggleLabel();
 }
 
+function ensureRainCodeLines() {
+  const codePanel = moodPanel?.querySelector(".rain-error-code");
+  if (!codePanel) return [];
+  while (codePanel.children.length < RAIN_CODE_LINE_COUNT) {
+    codePanel.appendChild(document.createElement("span"));
+  }
+  while (codePanel.children.length > RAIN_CODE_LINE_COUNT) {
+    codePanel.lastElementChild?.remove();
+  }
+  return Array.from(codePanel.querySelectorAll("span"));
+}
+
+function updateRainCodeScreen() {
+  const codeLines = ensureRainCodeLines();
+  if (!codeLines.length) return;
+  codeLines.forEach((line, index) => {
+    const snippetIndex = Math.floor(Math.random() * rainCodeSnippets.length);
+    const tick = Math.floor(performance.now() / 60) + index;
+    const noise = Math.random().toString(16).slice(2, 6).toUpperCase();
+    line.textContent = `${String(tick).padStart(4, "0")} 0x${noise} ${rainCodeSnippets[snippetIndex]}`;
+  });
+  pulseRainNoise();
+}
+
+function getRainNoiseContext() {
+  if (rainNoiseContext) return rainNoiseContext;
+  const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextConstructor) return null;
+  rainNoiseContext = new AudioContextConstructor();
+  return rainNoiseContext;
+}
+
+function makeRainNoiseBuffer(context) {
+  const sampleCount = context.sampleRate * 2;
+  const buffer = context.createBuffer(1, sampleCount, context.sampleRate);
+  const samples = buffer.getChannelData(0);
+  let last = 0;
+  for (let index = 0; index < sampleCount; index += 1) {
+    const white = Math.random() * 2 - 1;
+    last = last * 0.38 + white * 0.62;
+    samples[index] = last;
+  }
+  return buffer;
+}
+
+function unlockRainNoise() {
+  const context = getRainNoiseContext();
+  if (!context || context.state !== "suspended") return;
+  context.resume();
+}
+
+function pulseRainNoise() {
+  if (!rainNoiseContext || !rainNoiseGain || !rainNoiseFilter) return;
+  const now = rainNoiseContext.currentTime;
+  const loudness = 0.035 + Math.random() * 0.055;
+  rainNoiseGain.gain.cancelScheduledValues(now);
+  rainNoiseGain.gain.setTargetAtTime(loudness, now, 0.012);
+  rainNoiseGain.gain.setTargetAtTime(0.018, now + 0.045, 0.035);
+  rainNoiseFilter.frequency.setTargetAtTime(850 + Math.random() * 2400, now, 0.018);
+}
+
+function startRainNoise() {
+  if (rainNoiseSource) return;
+  const context = getRainNoiseContext();
+  if (!context) return;
+  if (context.state === "suspended") {
+    context.resume();
+  }
+
+  rainNoiseSource = context.createBufferSource();
+  rainNoiseGain = context.createGain();
+  rainNoiseFilter = context.createBiquadFilter();
+
+  rainNoiseSource.buffer = makeRainNoiseBuffer(context);
+  rainNoiseSource.loop = true;
+  rainNoiseFilter.type = "bandpass";
+  rainNoiseFilter.frequency.value = 1600;
+  rainNoiseFilter.Q.value = 1.4;
+  rainNoiseGain.gain.value = 0;
+
+  rainNoiseSource.connect(rainNoiseFilter);
+  rainNoiseFilter.connect(rainNoiseGain);
+  rainNoiseGain.connect(context.destination);
+  rainNoiseSource.start();
+  pulseRainNoise();
+}
+
+function stopRainNoise() {
+  if (!rainNoiseSource || !rainNoiseContext) return;
+  const source = rainNoiseSource;
+  const gain = rainNoiseGain;
+  const filter = rainNoiseFilter;
+  const now = rainNoiseContext.currentTime;
+  rainNoiseSource = null;
+  rainNoiseGain = null;
+  rainNoiseFilter = null;
+
+  if (gain) {
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setTargetAtTime(0, now, 0.025);
+  }
+  window.setTimeout(() => {
+    try {
+      source.stop();
+    } catch {
+      // The source may already be stopped if the browser tears down audio.
+    }
+    source.disconnect();
+    filter?.disconnect();
+    gain?.disconnect();
+  }, 140);
+}
+
+function stopRainCodeScreen() {
+  if (rainCodeRefreshTimer) {
+    window.clearInterval(rainCodeRefreshTimer);
+    rainCodeRefreshTimer = null;
+  }
+  stopRainNoise();
+}
+
+function startRainCodeScreen() {
+  updateRainCodeScreen();
+  stopRainCodeScreen();
+  startRainNoise();
+  rainCodeRefreshTimer = window.setInterval(updateRainCodeScreen, 90);
+}
+
+function enterRainCodeMode() {
+  if (currentWeather !== "rain" || isAtHome || isPoweredOff || isTerrorNightActive) return;
+  if (cleanRainFromComputerByHappyRobot(true)) return;
+  computerShell.classList.add("rain-error", "rain-code-mode");
+  startRainCodeScreen();
+}
+
 function clearRainErrorState() {
   if (rainErrorTimer) {
     window.clearTimeout(rainErrorTimer);
@@ -1463,6 +2063,7 @@ function clearRainErrorState() {
     window.clearTimeout(rainCodeTimer);
     rainCodeTimer = null;
   }
+  stopRainCodeScreen();
   computerShell.classList.remove("rained-on", "rain-squint", "rain-error", "rain-code-mode");
 }
 
@@ -1475,15 +2076,23 @@ function updateComputerWeatherMarks() {
   computerShell.classList.toggle("snow-covered", currentWeather === "snow");
 
   if (isAtHome) {
+    stopHappyRobotCleaning();
+    stopRainCodeScreen();
     computerShell.classList.remove("wet", "snow-covered", "sun-drying", "rained-on", "rain-squint", "rain-error", "rain-code-mode");
     return;
   }
 
   if (currentWeather === "rain") {
+    if (cleanRainFromComputerByHappyRobot(false)) return;
     computerShell.classList.add("wet");
     computerShell.classList.remove("sun-drying");
+    if (computerShell.classList.contains("rain-code-mode") && !rainCodeRefreshTimer) {
+      startRainCodeScreen();
+    }
     return;
   }
+
+  stopHappyRobotCleaning();
 
   if (currentWeather === "sunny" && computerShell.classList.contains("wet")) {
     computerShell.classList.add("sun-drying");
@@ -1500,9 +2109,11 @@ function setWeather(weather, announce = true) {
   document.body.classList.toggle("weather-cloudy", currentWeather === "cloudy");
   document.body.classList.toggle("weather-rain", currentWeather === "rain");
   document.body.classList.toggle("weather-snow", currentWeather === "snow");
-  computerShell.classList.toggle("rained-on", currentWeather === "rain" && !isAtHome);
+  computerShell.classList.toggle("rained-on", currentWeather === "rain" && !isAtHome && !isHappyRobotRainGuardActive());
   updateComputerWeatherMarks();
   updateWeatherToggleLabel();
+  updateWeatherDetectorDisplay();
+  updateTvWeatherMarks();
 
   if (!announce || isPoweredOff || isTerrorNightActive) return;
 
@@ -1523,18 +2134,17 @@ function setWeather(weather, announce = true) {
     showFaceOnly();
     setMood(0);
     updateComputerWeatherMarks();
-    computerShell.classList.toggle("rain-squint", currentWeather === "rain" && !isAtHome);
+    computerShell.classList.toggle("rain-squint", currentWeather === "rain" && !isAtHome && !isHappyRobotRainGuardActive());
     if (currentWeather === "rain" && !isAtHome) {
+      if (cleanRainFromComputerByHappyRobot(true)) return;
       rainErrorTimer = window.setTimeout(() => {
         rainErrorTimer = null;
         if (currentWeather !== "rain" || isAtHome || isPoweredOff || isTerrorNightActive) return;
+        if (cleanRainFromComputerByHappyRobot(true)) return;
         computerShell.classList.add("rain-error");
-        showSubtitle("报错", false);
         rainCodeTimer = window.setTimeout(() => {
           rainCodeTimer = null;
-          if (currentWeather !== "rain" || isAtHome || isPoweredOff || isTerrorNightActive) return;
-          computerShell.classList.add("rain-code-mode");
-          showSubtitle("太阳公公已出海对话取消无限个取消，下雨了", false);
+          enterRainCodeMode();
         }, 900);
       }, 850);
     }
@@ -1651,7 +2261,7 @@ function stopAutoSkyCycle() {
 
 function scheduleAutoSkyCycle() {
   clearSkyTimers();
-  if (isTerrorNightActive) return;
+  if (isTerrorNightActive || skyBodyAway.sun || skyBodyAway.moon) return;
 
   const duration = getActiveSkyDuration();
   const skyKind = getSkyKey();
@@ -1832,7 +2442,7 @@ function getFlightCommand(text) {
   return null;
 }
 
-function speakReply(text) {
+function speakReply(text, voiceSettings = clearVoiceSettings) {
   if (!("speechSynthesis" in window) || !text) return;
 
   loadVoices();
@@ -1841,10 +2451,10 @@ function speakReply(text) {
   }
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = clearVoiceSettings.lang;
-  utterance.pitch = clearVoiceSettings.pitch;
-  utterance.rate = clearVoiceSettings.rate;
-  utterance.volume = clearVoiceSettings.volume;
+  utterance.lang = voiceSettings.lang;
+  utterance.pitch = voiceSettings.pitch;
+  utterance.rate = voiceSettings.rate;
+  utterance.volume = voiceSettings.volume;
 
   const selectedVoice = pickVoice();
   if (selectedVoice) {
@@ -1855,6 +2465,10 @@ function speakReply(text) {
 }
 
 function showFaceOnly() {
+  if (weatherCableConnectedTo === "computer" && !isPoweredOff) {
+    updateComputerWeatherDisplay();
+    return;
+  }
   screenSubtitle.style.display = "none";
   moodPanel.classList.remove("text-mode");
   moodPanel.classList.add("face-mode");
@@ -1863,6 +2477,7 @@ function showFaceOnly() {
     computerShell.classList.remove("rain-squint");
   }
   if (currentWeather !== "rain") {
+    stopRainCodeScreen();
     computerShell.classList.remove("rain-error", "rain-code-mode");
   }
   setEyeLook(0, 0);
@@ -1922,9 +2537,37 @@ function bumpHat() {
   }, 720);
 }
 
+function getRhythmDropZoneAtPoint(x, y) {
+  const rhythmTarget = rhythmStage || rhythmBox;
+  if (!rhythmTarget) return false;
+  const rect = rhythmTarget.getBoundingClientRect();
+  return x >= rect.left - 12 && x <= rect.right + 12 && y >= rect.top - 12 && y <= rect.bottom + 12;
+}
+
+function singComputerSong() {
+  markChatActivity();
+  computerShell.classList.add("rhythm-loving");
+  const song = COMPUTER_SONG_LINE;
+  speakAsComputer(song, { forceSubtitle: true, colorful: true });
+  unlockRhythmAudio();
+  [262, 330, 392, 523, 392, 330, 262].forEach((frequency, index) => {
+    window.setTimeout(() => {
+      playRhythmTone(frequency, 0.16, "triangle", 0.14);
+      playRhythmTone(frequency * 2, 0.08, "sine", 0.05);
+    }, index * 170);
+  });
+  if (rhythmPraiseTimer) {
+    window.clearTimeout(rhythmPraiseTimer);
+  }
+  rhythmPraiseTimer = window.setTimeout(() => {
+    computerShell.classList.remove("rhythm-loving");
+  }, 2600);
+}
+
 function setupInteractiveFace() {
   window.addEventListener("pointermove", (event) => {
     markPointerActivity();
+    updateRhythmCharacterLook(event.clientX, event.clientY);
     updateSkyLook(event.clientX, event.clientY);
     updateMiniComputerLook(event.clientX, event.clientY);
     scheduleIdleLook();
@@ -1964,6 +2607,7 @@ function setupInteractiveFace() {
     } else {
       setFacePeek(0, 0);
     }
+    maybeHappyRobotAirKiss();
   });
 
   computerShell.addEventListener("pointerdown", (event) => {
@@ -2000,6 +2644,28 @@ function startShellDrop() {
     showFaceOnly();
     dizzyTimer = null;
   }, 2400);
+}
+
+function sleepComputerOnBed() {
+  if (!isAtHome || isPoweredOff) return;
+  computerShell.classList.add("computer-bed-sleeping", "sleepy");
+  moodPanel.classList.remove("text-mode", "colorful");
+  moodPanel.classList.add("face-mode");
+  screenSubtitle.style.display = "none";
+  setEyeLook(0, 0);
+  setFacePeek(0, 0);
+  showTvNewGameCaption(
+    "\u65b0\u73a9\u6cd5",
+    "\u628a\u7535\u8111\u5148\u751f\u62d6\u5230\u5e8a\u4e0a\uff0c\u4ed6\u5c31\u4f1a\u9ed1\u5c4f\u7761\u89c9\u3002"
+  );
+  if (screenTimer) {
+    window.clearTimeout(screenTimer);
+  }
+  screenTimer = window.setTimeout(() => {
+    computerShell.classList.remove("computer-bed-sleeping", "sleepy");
+    showFaceOnly();
+    setMood(0);
+  }, 6500);
 }
 
 function setupDragInteractions() {
@@ -2042,7 +2708,28 @@ function setupDragInteractions() {
       furnitureDrag.element.style.bottom = "auto";
       furnitureDrag.element.style.position = "fixed";
       furnitureDrag.element.classList.add("custom-placed");
+      if (furnitureDrag.element.classList.contains("custom-kind-tv")) {
+        refreshTvCableConnection();
+      }
+      if (furnitureDrag.element.classList.contains("custom-kind-weather-detector")) {
+        refreshWeatherCableConnection();
+      }
       salesBasket?.classList.toggle("ready", isNearSalesBasket(event.clientX, event.clientY));
+      return;
+    }
+
+    if (tvCableDrag) {
+      setTvCableEndpoint(event.clientX, event.clientY);
+      getPurchasedTv()?.classList.toggle(
+        "tv-cable-swap-ready",
+        getComputerDropZoneAtPoint(event.clientX, event.clientY) || isTvCableTouchingComputerCable()
+      );
+      return;
+    }
+
+    if (weatherCableDrag) {
+      setWeatherCableEndpoint(event.clientX, event.clientY);
+      getPurchasedWeatherDetector()?.classList.toggle("weather-cable-swap-ready", getComputerDropZoneAtPoint(event.clientX, event.clientY));
       return;
     }
 
@@ -2052,6 +2739,9 @@ function setupDragInteractions() {
       shellOffsetX = clamp(nextX, shellDrag.minX, shellDrag.maxX);
       shellOffsetY = clamp(nextY, shellDrag.minY, shellDrag.maxY);
       updateShellPosition();
+      const rhythmSlot = getRhythmSlotAtPoint(event.clientX, event.clientY);
+      rhythmSlots.forEach((item) => item.classList.toggle("drop-ready", item === rhythmSlot));
+      rhythmBox?.classList.toggle("computer-drop-ready", Boolean(rhythmSlot) || getRhythmDropZoneAtPoint(event.clientX, event.clientY));
       return;
     }
 
@@ -2097,9 +2787,50 @@ function setupDragInteractions() {
       saveGameState();
     }
 
+    if (tvCableDrag) {
+      const activeOutlet = getChargeOutlets().find((outlet) => {
+        const rect = outlet.getBoundingClientRect();
+        return event.clientX >= rect.left - 34 && event.clientX <= rect.right + 34 && event.clientY >= rect.top - 28 && event.clientY <= rect.bottom + 28;
+      });
+      if (getComputerDropZoneAtPoint(event.clientX, event.clientY) || getComputerBackZoneAtPoint(event.clientX, event.clientY) || isTvCableTouchingComputerCable()) {
+        const rect = computerShell.getBoundingClientRect();
+        connectTvCableTo("computer", event.clientX, event.clientY);
+      } else if (activeOutlet) {
+        const rect = activeOutlet.getBoundingClientRect();
+        connectTvCableTo("outlet", rect.left + rect.width / 2, rect.top + rect.height / 2);
+      } else {
+        clearTvCableConnection();
+      }
+      getPurchasedTv()?.classList.remove("tv-cable-swap-ready");
+      tvCableDrag = null;
+    }
+
+    if (weatherCableDrag) {
+      if (getComputerDropZoneAtPoint(event.clientX, event.clientY)) {
+        connectWeatherCableToComputer(event.clientX, event.clientY);
+      } else {
+        clearWeatherCableConnection();
+      }
+      weatherCableDrag = null;
+    }
+
     if (shellDrag) {
+      const rhythmSlot = getRhythmSlotAtPoint(event.clientX, event.clientY);
+      const droppedOnBed = getBedAtPoint(event.clientX, event.clientY);
       computerShell.classList.remove("dragging");
       shellDrag = null;
+      rhythmBox?.classList.remove("computer-drop-ready");
+      rhythmSlots.forEach((item) => item.classList.remove("drop-ready"));
+      if (rhythmSlot) {
+        placeHappyRobotInSlot(rhythmSlot, "computer");
+        startShellDrop();
+        return;
+      }
+      if (droppedOnBed) {
+        sleepComputerOnBed();
+        startShellDrop();
+        return;
+      }
       startShellDrop();
     }
 
@@ -2108,6 +2839,12 @@ function setupDragInteractions() {
     }
 
   if (plugDrag) {
+      if (isTvCableTouchingComputerCable()) {
+        const rect = backPlug.getBoundingClientRect();
+        connectTvCableTo("computer", rect.left + rect.width / 2, rect.top + rect.height / 2);
+        plugDrag = null;
+        return;
+      }
       const activeOutlet = getChargeOutlets().find((outlet) => {
         const outletRect = outlet.getBoundingClientRect();
         return (
@@ -2156,6 +2893,51 @@ function setupDragInteractions() {
       return;
     }
 
+    const tvPlug = event.target.closest(".tv-cable-plug");
+    if (tvPlug && isAtHome) {
+      event.preventDefault();
+      event.stopPropagation();
+      markPointerActivity();
+      wakeFromNightSleep();
+      const tv = getPurchasedTv();
+      if (!tv) return;
+      tv.classList.add("tv-cable-detached");
+      tv.classList.remove("tv-cable-swap-ready");
+      document.body.classList.remove("tv-computer-linked", "tv-outlet-linked");
+      tvCableConnectedTo = null;
+      setTvCableEndpoint(event.clientX, event.clientY);
+      tvCableDrag = true;
+      return;
+    }
+
+    const tvCaptionClose = event.target.closest(".tv-caption-close");
+    if (tvCaptionClose) {
+      event.preventDefault();
+      event.stopPropagation();
+      tvNewGameCaptionDismissed = true;
+      setTvNewGameCaptionVisible(false);
+      return;
+    }
+
+    const weatherPlug = event.target.closest(".weather-cable-plug");
+    if (weatherPlug && isAtHome) {
+      event.preventDefault();
+      event.stopPropagation();
+      markPointerActivity();
+      wakeFromNightSleep();
+      const detector = getPurchasedWeatherDetector();
+      if (!detector) return;
+      detector.classList.add("weather-cable-detached");
+      detector.classList.remove("weather-cable-swap-ready");
+      document.body.classList.remove("weather-computer-linked");
+      weatherCableConnectedTo = null;
+      setWeatherCableEndpoint(event.clientX, event.clientY);
+      weatherCableDrag = true;
+      return;
+    }
+
+    if (event.target.closest("#rhythm-box button, #rhythm-box input")) return;
+
     const item = event.target.closest(".house-item.movable");
     if (!item || !isAtHome) return;
     event.preventDefault();
@@ -2178,6 +2960,13 @@ function setupDragInteractions() {
       width: rect.width,
       height: rect.height
     };
+  });
+
+  document.body.addEventListener("dblclick", (event) => {
+    const tv = event.target.closest(".house-item.owned-furniture.custom-kind-tv, .house-item.owned-furniture.house-tv");
+    if (!tv || event.target.closest("button, input, .tv-cable-plug, .rhythm-box")) return;
+    event.preventDefault();
+    toggleTvFullscreen(tv);
   });
 
   computerShell.addEventListener("pointerdown", (event) => {
@@ -2356,12 +3145,15 @@ function speakAsComputer(text, options = {}) {
 
   startMouthTalking(duration);
   speakReply(text);
+  happyRobotReactToComputer(text, duration);
   return duration;
 }
 
 function setupSpeechUnlock() {
-  if (!("speechSynthesis" in window)) return;
-  const unlock = () => unlockSpeech();
+  const unlock = () => {
+    unlockSpeech();
+    unlockRainNoise();
+  };
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("touchstart", unlock, { once: true });
   window.addEventListener("click", unlock, { once: true });
@@ -2657,6 +3449,8 @@ function sellFurnitureItem(element) {
   ownedShopItems.delete(itemId);
   computerHouse?.classList.remove(`has-${itemId}`);
   element.remove();
+  updateRhythmTvMount();
+  clearWeatherCableConnection();
 
   const earned = randomSaleValue();
   money += earned;
@@ -2818,6 +3612,1071 @@ function setupFoodDrag() {
   });
 }
 
+function makeHappyRobotIcon(extraClass = "", characterType = "happy-robot") {
+  const robot = document.createElement("span");
+  const isGallod = characterType === "gallod";
+  const isSimon = characterType === "simon";
+  const isMusicBox = characterType === "music-box";
+  const isSun = characterType === "sun";
+  const isMoon = characterType === "moon";
+  const isComputer = characterType === "computer";
+  robot.className = `happy-robot-icon ${isGallod ? "gallod-icon" : ""} ${isSimon ? "simon-icon" : ""} ${isMusicBox ? "music-box-icon" : ""} ${isSun ? "sun-icon" : ""} ${isMoon ? "moon-icon" : ""} ${isComputer ? "computer-rhythm-icon" : ""} ${extraClass}`.trim();
+  robot.dataset.characterType = characterType;
+  robot.setAttribute("aria-hidden", "true");
+  robot.innerHTML = isSun
+    ? `
+    <span class="sky-sun-copy">
+      <span class="sun-core">
+        <span class="sun-eye sun-eye-left"></span>
+        <span class="sun-eye sun-eye-right"></span>
+        <span class="sun-mouth"></span>
+      </span>
+      <span class="sun-ray sun-ray-1"></span>
+      <span class="sun-ray sun-ray-2"></span>
+      <span class="sun-ray sun-ray-3"></span>
+      <span class="sun-ray sun-ray-4"></span>
+      <span class="sun-ray sun-ray-5"></span>
+      <span class="sun-ray sun-ray-6"></span>
+      <span class="sun-ray sun-ray-7"></span>
+      <span class="sun-ray sun-ray-8"></span>
+    </span>
+  `
+    : isMoon
+      ? `
+    <span class="sky-moon-copy">
+      <span class="moon-face">
+        <span class="moon-eye moon-eye-left"></span>
+        <span class="moon-eye moon-eye-right"></span>
+        <span class="moon-mouth"></span>
+      </span>
+    </span>
+  `
+      : isComputer
+        ? `
+    <span class="computer-rhythm-body">
+      <span class="computer-rhythm-screen">
+        <span class="computer-rhythm-eye eye-left"></span>
+        <span class="computer-rhythm-eye eye-right"></span>
+        <span class="computer-rhythm-mouth"></span>
+      </span>
+      <span class="computer-rhythm-stand"></span>
+      <span class="computer-rhythm-lyric"></span>
+    </span>
+  `
+      : isSimon
+        ? `
+    <span class="simon-antenna antenna-left"></span>
+    <span class="simon-antenna antenna-right"></span>
+    <span class="simon-hair hair-one"></span>
+    <span class="simon-hair hair-two"></span>
+    <span class="simon-hair hair-three"></span>
+    <span class="simon-head">
+      <span class="simon-eye eye-left"></span>
+      <span class="simon-eye eye-right"></span>
+      <span class="simon-mouth"></span>
+    </span>
+    <span class="simon-neck"></span>
+  `
+      : isMusicBox
+        ? `
+    <span class="music-box-ear ear-left"></span>
+    <span class="music-box-ear ear-right"></span>
+    <span class="music-box-hair"></span>
+    <span class="music-box-head">
+      <span class="music-box-eye eye-left"><span></span></span>
+      <span class="music-box-eye eye-right"><span></span></span>
+      <span class="music-box-mouth"></span>
+    </span>
+    <span class="music-box-neck"></span>
+  `
+      : isGallod
+    ? `
+    <span class="gallod-dome"></span>
+    <span class="happy-robot-head gallod-head">
+      <span class="gallod-screen"></span>
+    </span>
+    <span class="gallod-mouth"></span>
+    <span class="happy-robot-hand hand-left"></span>
+    <span class="happy-robot-hand hand-right"></span>
+    <span class="happy-robot-neck gallod-neck"></span>
+  `
+    : `
+    <span class="happy-robot-antenna antenna-left"></span>
+    <span class="happy-robot-antenna antenna-right"></span>
+    <span class="happy-robot-speaker speaker-left"></span>
+    <span class="happy-robot-speaker speaker-right"></span>
+    <span class="happy-robot-head">
+      <span class="happy-robot-eye eye-left"></span>
+      <span class="happy-robot-eye eye-right"></span>
+      <span class="happy-robot-mouth"></span>
+    </span>
+    <span class="happy-robot-hand hand-left"></span>
+    <span class="happy-robot-hand hand-right"></span>
+    <span class="happy-robot-neck"></span>
+  `;
+  return robot;
+}
+
+function getCharacterLabel(characterType = "happy-robot") {
+  if (characterType === "computer") return "\u7535\u8111\u5148\u751f";
+  if (characterType === "sun") return "\u592a\u9633\u516c\u516c";
+  if (characterType === "moon") return "\u6708\u4eae\u59d1\u59d1";
+  if (characterType === "simon") return "\u897f\u8499";
+  if (characterType === "music-box") return "\u5c0f\u5929";
+  return characterType === "gallod" ? "\u52a0\u6d1b\u5fb7" : "\u5feb\u4e50\u673a\u5668\u4eba";
+}
+
+function getHappyRobotCompanionByType(characterType = "happy-robot") {
+  return happyRobotCompanions.find((companion) => companion.dataset.characterType === characterType) || null;
+}
+
+function updateRhythmCharacterLook(clientX, clientY) {
+  document.querySelectorAll(".happy-robot-icon").forEach((robot) => {
+    if (robot.classList.contains("robot-sleeping")) return;
+    const rect = robot.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height * 0.42;
+    const lookX = clamp((clientX - centerX) / 40, -4, 4);
+    const lookY = clamp((clientY - centerY) / 54, -3, 3);
+    robot.style.setProperty("--robot-look-x", `${lookX}px`);
+    robot.style.setProperty("--robot-look-y", `${lookY}px`);
+    robot.style.setProperty("--gallod-look-x", `${lookX * 1.8}px`);
+    robot.style.setProperty("--gallod-look-y", `${lookY * 1.4}px`);
+  });
+}
+
+function getBedAtPoint(x, y) {
+  const beds = Array.from(document.querySelectorAll(".house-bed, .custom-kind-bed"));
+  return beds.find((bed) => {
+    const style = window.getComputedStyle(bed);
+    if (style.visibility === "hidden" || style.display === "none" || Number(style.opacity) === 0) return false;
+    const rect = bed.getBoundingClientRect();
+    return x >= rect.left - 12 && x <= rect.right + 12 && y >= rect.top - 12 && y <= rect.bottom + 12;
+  }) || null;
+}
+
+function clearEmptySlotMouseLook() {
+  rhythmSlots.forEach((slot) => {
+    slot.classList.remove("mouse-looking", "front-looking");
+    slot.style.removeProperty("--empty-mouse-look-x");
+    slot.style.removeProperty("--empty-mouse-look-y");
+  });
+}
+
+function updateEmptySlotMouseLook(clientX, clientY) {
+  if (!rhythmBox) return;
+  const boxRect = rhythmBox.getBoundingClientRect();
+  const isNearRhythmBox =
+    clientX >= boxRect.left - 24 &&
+    clientX <= boxRect.right + 24 &&
+    clientY >= boxRect.top - 24 &&
+    clientY <= boxRect.bottom + 24;
+
+  if (!isNearRhythmBox) {
+    clearEmptySlotMouseLook();
+    return;
+  }
+
+  rhythmSlots.forEach((slot) => {
+    if (slot.classList.contains("occupied")) return;
+    const rect = slot.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const faceY = rect.top + 42;
+    const dx = clientX - centerX;
+    const dy = clientY - faceY;
+    const isInFront = Math.abs(dx) < 9 && clientY >= rect.top - 10 && clientY <= rect.bottom + 20;
+    slot.classList.add("mouse-looking");
+    slot.classList.toggle("front-looking", isInFront);
+    slot.style.setProperty("--empty-mouse-look-x", `${isInFront ? 0 : clamp(dx / 18, -5, 5)}px`);
+    slot.style.setProperty("--empty-mouse-look-y", `${isInFront ? 0 : clamp(dy / 28, -3, 3)}px`);
+  });
+}
+
+function sleepHappyRobotOnBed(companion) {
+  if (!companion) return;
+  stopHappyRobotCleaning();
+  companion.classList.remove("robot-talking", "robot-writing", "robot-kissing", "robot-crying", "robot-umbrella", "robot-cleaning");
+  companion.classList.add("robot-sleeping");
+  const message = companion.querySelector(".happy-robot-message");
+  if (message) {
+    message.textContent = "";
+  }
+  speakAsHappyRobot(`${getCharacterLabel(companion.dataset.characterType)}睡着了`, 1600);
+  window.setTimeout(() => {
+    companion.classList.remove("robot-sleeping");
+    speakAsHappyRobot(`${getCharacterLabel(companion.dataset.characterType)}醒了`, 1600);
+  }, 5200);
+}
+
+function getHappyRobotCompanionText(text = "") {
+  if (/节奏|音乐|鼓|beat|loop/i.test(text)) return "蓝色节拍已同步";
+  if (/你好|在吗/.test(text)) return "快乐机器人在线";
+  if (/开心|快乐|高兴/.test(text)) return "快乐模式启动";
+  if (/下雨|天气|雪|多云|晴/.test(text)) return "天气数据收到";
+  if (/回家|房子|入住/.test(text)) return "一起去玩";
+  return randomFrom(["哔哔，收到", "一起玩吧", "节奏准备好", "蓝屏回应中"]);
+}
+
+function updateHappyRobotCompanionPosition(companion = happyRobotCompanion) {
+  if (!companion || !computerShell) return;
+  const rect = computerShell.getBoundingClientRect();
+  const robotWidth = 86;
+  const companionIndex = Math.max(0, happyRobotCompanions.indexOf(companion));
+  const isCleaning = companion.classList.contains("robot-cleaning");
+  if (happyRobotCompanionPinned && companion === happyRobotCompanion && !isCleaning && !happyRobotCompanionDrag) return;
+  const gap = isCleaning ? -2 : 10;
+  const rightX = rect.right + gap + companionIndex * 72;
+  const leftX = rect.left - robotWidth - gap - companionIndex * 72;
+  const nextLeft = rightX + robotWidth < window.innerWidth - 10 ? rightX : Math.max(10, leftX);
+  const baseTopRatio = isCleaning ? 0.26 : 0.38;
+  const nextTop = clamp(rect.top + rect.height * baseTopRatio + companionIndex * 28, 16, Math.max(16, window.innerHeight - 132));
+  companion.style.left = `${nextLeft}px`;
+  companion.style.top = `${nextTop}px`;
+  companion.classList.toggle("robot-left-side", nextLeft < rect.left);
+  companion.classList.toggle("robot-right-side", nextLeft >= rect.left);
+  companion.classList.toggle("robot-looking-at-computer", getHappyRobotDistanceFromComputer(companion) <= 230);
+}
+
+function updateAllHappyRobotCompanionPositions() {
+  happyRobotCompanions.forEach((companion) => updateHappyRobotCompanionPosition(companion));
+}
+
+function getHappyRobotDistanceFromComputer(companion = happyRobotCompanion) {
+  if (!companion || !computerShell) return Infinity;
+  const robotRect = companion.getBoundingClientRect();
+  const computerRect = computerShell.getBoundingClientRect();
+  const robotX = robotRect.left + robotRect.width / 2;
+  const robotY = robotRect.top + robotRect.height / 2;
+  const computerX = computerRect.left + computerRect.width / 2;
+  const computerY = computerRect.top + computerRect.height * 0.35;
+  return Math.hypot(robotX - computerX, robotY - computerY);
+}
+
+function showHappyRobotAirKiss(companion = happyRobotCompanion) {
+  if (!companion || !computerShell || happyRobotKissTimer) return;
+  if (companion.classList.contains("dragging") || companion.classList.contains("robot-talking")) return;
+  if (getHappyRobotDistanceFromComputer(companion) > 230) return;
+  companion.classList.add("robot-looking-at-computer");
+
+  companion.classList.add("robot-kissing");
+  computerShell.classList.add("air-kissing");
+  happyRobotKissTimer = window.setTimeout(() => {
+    companion?.classList.remove("robot-kissing");
+    computerShell?.classList.remove("air-kissing");
+    happyRobotKissTimer = null;
+  }, 1500);
+}
+
+function maybeHappyRobotAirKiss() {
+  const candidates = happyRobotCompanions.filter((companion) => !companion.classList.contains("robot-cleaning") && getHappyRobotDistanceFromComputer(companion) <= 230);
+  if (!candidates.length) return;
+  if (Math.random() < 0.18) {
+    showHappyRobotAirKiss(randomFrom(candidates));
+  }
+}
+
+function setupHappyRobotCompanionDrag(companion = happyRobotCompanion) {
+  if (!companion) return;
+
+  const moveCompanion = (event) => {
+    if (!happyRobotCompanionDrag || event.pointerId !== happyRobotCompanionDrag.pointerId) return;
+    const activeCompanion = happyRobotCompanionDrag.element;
+    const distance = Math.hypot(event.clientX - happyRobotCompanionDrag.startX, event.clientY - happyRobotCompanionDrag.startY);
+    if (distance > 4) {
+      happyRobotCompanionDrag.moved = true;
+      happyRobotCompanionPinned = true;
+      activeCompanion.classList.add("dragging");
+    }
+
+    const nextLeft = clamp(
+      event.clientX - happyRobotCompanionDrag.offsetX,
+      8,
+      Math.max(8, window.innerWidth - happyRobotCompanionDrag.width - 8)
+    );
+    const nextTop = clamp(
+      event.clientY - happyRobotCompanionDrag.offsetY,
+      8,
+      Math.max(8, window.innerHeight - happyRobotCompanionDrag.height - 8)
+    );
+    activeCompanion.style.left = `${nextLeft}px`;
+    activeCompanion.style.top = `${nextTop}px`;
+    const computerRect = computerShell.getBoundingClientRect();
+    activeCompanion.classList.toggle("robot-left-side", nextLeft < computerRect.left);
+    activeCompanion.classList.toggle("robot-right-side", nextLeft >= computerRect.left);
+  };
+
+  const stopCompanionDrag = (event) => {
+    if (happyRobotCompanionDrag && event.pointerId !== happyRobotCompanionDrag.pointerId) return;
+    const hadUmbrella = Boolean(happyRobotCompanionDrag?.umbrellaAtDragStart);
+    window.removeEventListener("pointermove", moveCompanion);
+    window.removeEventListener("pointerup", stopCompanionDrag);
+    if (happyRobotCompanionDrag) {
+      happyRobotCompanionDrag.element?.releasePointerCapture?.(happyRobotCompanionDrag.pointerId);
+    }
+    happyRobotCompanionDrag?.element?.classList.remove("dragging");
+    if (happyRobotCompanionDrag?.moved) {
+      happyRobotSuppressClick = true;
+      window.setTimeout(() => {
+        happyRobotSuppressClick = false;
+      }, 0);
+    }
+    const draggedCompanion = happyRobotCompanionDrag?.element || happyRobotCompanion;
+    happyRobotCompanion = draggedCompanion;
+    const droppedOnBed = getBedAtPoint(event.clientX, event.clientY);
+    happyRobotCompanionDrag = null;
+    draggedCompanion?.classList.toggle("robot-looking-at-computer", getHappyRobotDistanceFromComputer(draggedCompanion) <= 230);
+    if (droppedOnBed) {
+      sleepHappyRobotOnBed(draggedCompanion);
+      return;
+    }
+    if (hadUmbrella && getHappyRobotDistanceFromComputer(draggedCompanion) > 260) {
+      stopHappyRobotCleaning();
+      draggedCompanion?.classList.add("robot-crying");
+      speakAsHappyRobot("为什么我要和电脑先生打雨伞", 2600);
+      window.setTimeout(() => {
+        draggedCompanion?.classList.remove("robot-crying");
+      }, 3000);
+    } else if (currentWeather === "rain") {
+      cleanRainFromComputerByHappyRobot(false);
+    }
+  };
+
+  companion.addEventListener("pointerdown", (event) => {
+    markPointerActivity();
+    event.preventDefault();
+    event.stopPropagation();
+    happyRobotCompanion = companion;
+    const umbrellaAtDragStart = happyRobotUmbrellaActive;
+    if (umbrellaAtDragStart) {
+      companion.classList.remove("robot-cleaning", "robot-umbrella");
+      happyRobotUmbrellaActive = false;
+    }
+    const rect = companion.getBoundingClientRect();
+    happyRobotCompanionDrag = {
+      element: companion,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      width: rect.width,
+      height: rect.height,
+      moved: false,
+      umbrellaAtDragStart
+    };
+    companion.setPointerCapture?.(event.pointerId);
+    window.addEventListener("pointermove", moveCompanion);
+    window.addEventListener("pointerup", stopCompanionDrag);
+  });
+}
+
+function showHappyRobotMessage(message, duration = 1800) {
+  if (!happyRobotCompanion) return;
+  const text = happyRobotCompanion.querySelector(".happy-robot-message");
+  if (!text) return;
+  text.textContent = message;
+  happyRobotCompanion.classList.add("robot-talking", "robot-playing", "robot-writing");
+  if (happyRobotMessageTimer) {
+    window.clearTimeout(happyRobotMessageTimer);
+  }
+  happyRobotMessageTimer = window.setTimeout(() => {
+    text.textContent = "";
+    happyRobotCompanion?.classList.remove("robot-talking", "robot-writing");
+    happyRobotMessageTimer = null;
+  }, Math.max(1200, Math.min(duration, 3600)));
+}
+
+function playHappyRobotClassicBlips() {
+  const context = getRhythmAudioContext();
+  if (!context || !rhythmMasterGain) return;
+  [220, 330, 247, 392].forEach((frequency, index) => {
+    const now = context.currentTime + index * 0.065;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "square";
+    oscillator.frequency.setValueAtTime(frequency, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.06, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+    oscillator.connect(gain);
+    gain.connect(rhythmMasterGain);
+    oscillator.start(now);
+    oscillator.stop(now + 0.07);
+  });
+}
+
+function speakAsHappyRobot(message, duration = 1800) {
+  showHappyRobotMessage(message, duration);
+  playHappyRobotClassicBlips();
+
+  if (!("speechSynthesis" in window) || !message) return;
+  loadVoices();
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+  }
+  const utterance = new SpeechSynthesisUtterance(message);
+  utterance.lang = "zh-CN";
+  utterance.pitch = 0.55;
+  utterance.rate = 0.78;
+  utterance.volume = 0.78;
+  const selectedVoice = availableVoices.find((voice) => /Chinese|Mandarin|中文|普通话|Huihui|Kangkang|Yaoyao/i.test(voice.name));
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+  window.speechSynthesis.speak(utterance);
+}
+
+function happyRobotReactToComputer(text, duration = 1800) {
+  if (!happyRobotCompanions.length) return;
+  const message = getHappyRobotCompanionText(text);
+  happyRobotCompanions.forEach((companion, index) => window.setTimeout(() => {
+    if (!companion.isConnected) return;
+    happyRobotCompanion = companion;
+    speakAsHappyRobot(message, Math.min(duration + 400, 3000));
+  }, 260 + index * 220));
+}
+
+function isHappyRobotRainGuardActive() {
+  return Boolean(happyRobotCompanion) && !happyRobotCompanionDrag && currentWeather === "rain" && !isAtHome && !isPoweredOff && !isTerrorNightActive && getHappyRobotDistanceFromComputer() <= 280;
+}
+
+function stopHappyRobotCleaning() {
+  if (happyRobotCleaningTimer) {
+    window.clearTimeout(happyRobotCleaningTimer);
+    happyRobotCleaningTimer = null;
+  }
+  happyRobotUmbrellaActive = false;
+  happyRobotCompanion?.classList.remove("robot-cleaning", "robot-umbrella");
+}
+
+function cleanRainFromComputerByHappyRobot(announce = false) {
+  if (!isHappyRobotRainGuardActive()) {
+    stopHappyRobotCleaning();
+    return false;
+  }
+
+  if (rainErrorTimer) {
+    window.clearTimeout(rainErrorTimer);
+    rainErrorTimer = null;
+  }
+  if (rainCodeTimer) {
+    window.clearTimeout(rainCodeTimer);
+    rainCodeTimer = null;
+  }
+  stopRainCodeScreen();
+  computerShell.classList.remove("wet", "rained-on", "rain-squint", "rain-error", "rain-code-mode");
+  happyRobotUmbrellaActive = true;
+  happyRobotCompanion.classList.add("robot-cleaning", "robot-playing", "robot-umbrella");
+  updateHappyRobotCompanionPosition();
+
+  if (announce) {
+    speakAsHappyRobot("我给电脑先生打伞", 2100);
+  } else {
+    showHappyRobotMessage("打伞中", 1500);
+    playHappyRobotClassicBlips();
+  }
+
+  if (happyRobotCleaningTimer) {
+    window.clearTimeout(happyRobotCleaningTimer);
+  }
+  happyRobotCleaningTimer = window.setTimeout(() => {
+    happyRobotCleaningTimer = null;
+    cleanRainFromComputerByHappyRobot(false);
+  }, 2400);
+  return true;
+}
+
+function getComputerDropZoneAtPoint(x, y) {
+  if (!computerShell) return false;
+  const rect = computerShell.getBoundingClientRect();
+  return (
+    x >= rect.left - 110 &&
+    x <= rect.right + 130 &&
+    y >= rect.top - 80 &&
+    y <= rect.bottom + 80
+  );
+}
+
+function placeHappyRobotBesideComputer(characterType = "happy-robot") {
+  unlockRhythmAudio();
+  happyRobotCompanion = getHappyRobotCompanionByType(characterType);
+  if (!happyRobotCompanion) {
+    happyRobotCompanion = makeHappyRobotIcon("happy-robot-companion robot-playing", characterType);
+    happyRobotCompanion.setAttribute("role", "button");
+    happyRobotCompanion.setAttribute("aria-label", `${getCharacterLabel(characterType)}伙伴`);
+    happyRobotCompanion.tabIndex = 0;
+    const message = document.createElement("span");
+    message.className = "happy-robot-message";
+    happyRobotCompanion.appendChild(message);
+    document.body.appendChild(happyRobotCompanion);
+    happyRobotCompanions.push(happyRobotCompanion);
+    setupHappyRobotCompanionDrag(happyRobotCompanion);
+    const companionForClick = happyRobotCompanion;
+    happyRobotCompanion.addEventListener("click", () => {
+      if (happyRobotSuppressClick) return;
+      happyRobotCompanion = companionForClick;
+      speakAsHappyRobot(`${getCharacterLabel(companionForClick.dataset.characterType)}和电脑先生一起玩`, 2000);
+    });
+  } else {
+    happyRobotCompanion.dataset.characterType = characterType;
+  }
+  happyRobotCompanionPinned = false;
+  updateHappyRobotCompanionPosition(happyRobotCompanion);
+  speakAsHappyRobot(`${getCharacterLabel(characterType)}加入游戏`, 2200);
+  cleanRainFromComputerByHappyRobot(currentWeather === "rain");
+}
+
+function getRhythmAudioContext() {
+  if (rhythmAudioContext) return rhythmAudioContext;
+  const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextConstructor) return null;
+  rhythmAudioContext = new AudioContextConstructor();
+  rhythmMasterGain = rhythmAudioContext.createGain();
+  rhythmMasterGain.gain.value = rhythmVolumeValue;
+  rhythmMasterGain.connect(rhythmAudioContext.destination);
+  return rhythmAudioContext;
+}
+
+function applyRhythmVolume(value = rhythmVolumeValue) {
+  rhythmVolumeValue = clamp(Number(value) || 0, 0, 2.6);
+  if (!rhythmMasterGain || !rhythmAudioContext) return;
+  rhythmMasterGain.gain.setTargetAtTime(rhythmVolumeValue, rhythmAudioContext.currentTime, 0.025);
+}
+
+function praiseRhythmMusic() {
+  if (rhythmPraiseCooldown || !placedRhythmCharacters.size || isPoweredOff || isTerrorNightActive) return;
+  if (Array.from(placedRhythmCharacters.values()).some((character) => character.id === "computer")) return;
+  rhythmPraiseCooldown = true;
+  computerShell.classList.add("rhythm-loving");
+  speakAsComputer("好听。", { forceSubtitle: true, colorful: true });
+  if (rhythmPraiseTimer) {
+    window.clearTimeout(rhythmPraiseTimer);
+  }
+  rhythmPraiseTimer = window.setTimeout(() => {
+    computerShell.classList.remove("rhythm-loving");
+    rhythmPraiseTimer = null;
+  }, 2600);
+  window.setTimeout(() => {
+    rhythmPraiseCooldown = false;
+  }, 9000);
+}
+
+function unlockRhythmAudio() {
+  const context = getRhythmAudioContext();
+  if (!context || context.state !== "suspended") return;
+  context.resume();
+}
+
+function playRhythmTone(frequency, duration = 0.12, type = "square", gainValue = 0.08) {
+  const context = getRhythmAudioContext();
+  if (!context || !rhythmMasterGain) return;
+  const now = context.currentTime;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, now);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  oscillator.connect(gain);
+  gain.connect(rhythmMasterGain);
+  oscillator.start(now);
+  oscillator.stop(now + duration + 0.03);
+}
+
+function playRhythmVocalTone(frequency, duration = 0.32, vowel = "ah", gainValue = 0.075, delay = 0) {
+  const context = getRhythmAudioContext();
+  if (!context || !rhythmMasterGain) return;
+  const formants = {
+    ah: [760, 1180],
+    oh: [520, 920],
+    ee: [330, 2250],
+    mm: [260, 680]
+  }[vowel] || [760, 1180];
+  const now = context.currentTime + delay;
+  const oscillator = context.createOscillator();
+  const vibrato = context.createOscillator();
+  const vibratoGain = context.createGain();
+  const inputGain = context.createGain();
+  const voiceGain = context.createGain();
+
+  oscillator.type = vowel === "mm" ? "triangle" : "sawtooth";
+  oscillator.frequency.setValueAtTime(frequency, now);
+  vibrato.type = "sine";
+  vibrato.frequency.setValueAtTime(5.4, now);
+  vibratoGain.gain.setValueAtTime(frequency * 0.01, now);
+  vibrato.connect(vibratoGain);
+  vibratoGain.connect(oscillator.frequency);
+
+  inputGain.gain.setValueAtTime(0.42, now);
+  voiceGain.gain.setValueAtTime(0.0001, now);
+  voiceGain.gain.exponentialRampToValueAtTime(gainValue, now + 0.04);
+  voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  oscillator.connect(inputGain);
+  formants.forEach((formant, index) => {
+    const filter = context.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(formant, now);
+    filter.Q.setValueAtTime(index === 0 ? 8 : 12, now);
+    inputGain.connect(filter);
+    filter.connect(voiceGain);
+  });
+
+  voiceGain.connect(rhythmMasterGain);
+  oscillator.start(now);
+  vibrato.start(now);
+  oscillator.stop(now + duration + 0.04);
+  vibrato.stop(now + duration + 0.04);
+}
+
+function playRhythmNoise(duration = 0.08, gainValue = 0.05, filterFrequency = 5200) {
+  const context = getRhythmAudioContext();
+  if (!context || !rhythmMasterGain) return;
+  const sampleCount = Math.max(1, Math.floor(context.sampleRate * duration));
+  const buffer = context.createBuffer(1, sampleCount, context.sampleRate);
+  const samples = buffer.getChannelData(0);
+  for (let index = 0; index < sampleCount; index += 1) {
+    samples[index] = Math.random() * 2 - 1;
+  }
+  const source = context.createBufferSource();
+  const filter = context.createBiquadFilter();
+  const gain = context.createGain();
+  const now = context.currentTime;
+  filter.type = "highpass";
+  filter.frequency.value = filterFrequency;
+  gain.gain.setValueAtTime(gainValue, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  source.buffer = buffer;
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(rhythmMasterGain);
+  source.start(now);
+  source.stop(now + duration);
+}
+
+function showRhythmComputerSong(slot, text, duration = 9800) {
+  const computer = slot?.querySelector(".computer-rhythm-icon");
+  if (!computer) return;
+  const lyric = computer.querySelector(".computer-rhythm-lyric");
+  if (lyric) {
+    lyric.textContent = text;
+  }
+  computer.classList.add("computer-singing");
+  window.setTimeout(() => {
+    computer.classList.remove("computer-singing");
+    if (lyric) {
+      lyric.textContent = "";
+    }
+  }, duration);
+}
+
+function playComputerVocalLine() {
+  const line = [
+    [262, "oh", 0.34],
+    [294, "ah", 0.32],
+    [330, "ee", 0.28],
+    [392, "ah", 0.38],
+    [440, "oh", 0.32],
+    [392, "mm", 0.34],
+    [330, "ee", 0.3],
+    [294, "ah", 0.36]
+  ];
+  line.forEach(([frequency, vowel, duration], index) => {
+    playRhythmVocalTone(frequency, duration, vowel, 0.075, index * 0.42);
+  });
+}
+
+function singFromRhythmComputer(slot) {
+  const duration = 11200;
+  showRhythmComputerSong(slot, COMPUTER_SONG_LINE, duration);
+  playComputerVocalLine();
+  speakReply(COMPUTER_SONG_LINE, {
+    lang: "zh-CN",
+    pitch: 1.12,
+    rate: 0.72,
+    volume: 0.95
+  });
+}
+
+function stopComputerSongLoop() {
+  if (computerSongTimer) {
+    window.clearTimeout(computerSongTimer);
+    computerSongTimer = null;
+  }
+}
+
+function startComputerSongLoop(slot) {
+  stopComputerSongLoop();
+  const loop = () => {
+    if (!slot || !placedRhythmCharacters.get(slot.dataset.slotIndex) || placedRhythmCharacters.get(slot.dataset.slotIndex)?.id !== "computer") {
+      stopComputerSongLoop();
+      return;
+    }
+    singFromRhythmComputer(slot);
+    computerSongTimer = window.setTimeout(loop, 11250);
+  };
+  loop();
+}
+
+function playHappyRobotStep(step, slotIndex, characterType = "happy-robot", slot = null) {
+  const shiftedStep = (step + slotIndex * 2) % 16;
+  if (characterType === "computer") {
+    const melody = [262, 294, 330, 392, 440, 392, 330, 294];
+    if (shiftedStep % 4 === 0) {
+      const note = melody[(shiftedStep / 4 + slotIndex) % melody.length];
+      playRhythmVocalTone(note, 0.34, ["oh", "ah", "ee", "mm"][(shiftedStep / 4 + slotIndex) % 4], 0.09);
+      playRhythmTone(note * 1.5, 0.18, "sine", 0.035);
+    }
+    return;
+  }
+  if (characterType === "sun") {
+    const pianoNotes = [262, 330, 392, 523, 392, 330];
+    if ([0, 4, 8, 12].includes(shiftedStep)) {
+      const root = pianoNotes[(shiftedStep / 4 + slotIndex) % pianoNotes.length];
+      playRhythmTone(root, 0.18, "triangle", 0.16);
+      playRhythmTone(root * 1.5, 0.12, "sine", 0.08);
+    }
+    if ([2, 6, 10, 14].includes(shiftedStep)) {
+      playRhythmTone(pianoNotes[(shiftedStep + slotIndex) % pianoNotes.length] * 2, 0.07, "triangle", 0.055);
+    }
+    return;
+  }
+  if (characterType === "moon") {
+    if ([1, 5, 9, 13].includes(shiftedStep)) {
+      playRhythmTone([440, 523, 659, 784][(shiftedStep + slotIndex) % 4], 0.22, "sine", 0.085);
+    }
+    if ([7, 15].includes(shiftedStep)) {
+      playRhythmTone(988, 0.16, "triangle", 0.05);
+    }
+    return;
+  }
+  if (characterType === "simon") {
+    if ([0, 4, 8, 12].includes(shiftedStep)) {
+      const note = [523, 659, 784, 1047][(shiftedStep / 4 + slotIndex) % 4];
+      playRhythmTone(note, 0.09, "square", 0.15);
+      playRhythmTone(note * 1.5, 0.055, "sawtooth", 0.055);
+    }
+    if ([2, 6, 10, 14].includes(shiftedStep)) {
+      playRhythmTone([988, 1175, 1319, 1568][(shiftedStep / 2 + slotIndex) % 4], 0.055, "square", 0.09);
+    }
+    if (shiftedStep % 4 === 2) {
+      playRhythmNoise(0.018, 0.045, 9000);
+    }
+    return;
+  }
+  if (characterType === "music-box") {
+    const melody = [1047, 1175, 1319, 1568, 1760, 1568, 1319, 1175];
+    if ([0, 3, 6, 10, 13].includes(shiftedStep)) {
+      const note = melody[(shiftedStep + slotIndex) % melody.length];
+      playRhythmTone(note, 0.18, "sine", 0.1);
+      playRhythmTone(note * 2, 0.12, "triangle", 0.035);
+    }
+    if ([5, 11, 15].includes(shiftedStep)) {
+      playRhythmTone(melody[(shiftedStep + slotIndex + 2) % melody.length] * 1.5, 0.11, "sine", 0.055);
+    }
+    return;
+  }
+  if (characterType === "gallod") {
+    if ([0, 6, 10].includes(shiftedStep)) {
+      playRhythmTone(124, 0.12, "sawtooth", 0.18);
+    }
+    if ([2, 5, 9, 13].includes(shiftedStep)) {
+      playRhythmTone([262, 330, 392, 523][(shiftedStep + slotIndex) % 4], 0.08, "square", 0.09);
+    }
+    if (shiftedStep % 4 === 0) {
+      playRhythmNoise(0.045, 0.055, 5200);
+    }
+    return;
+  }
+  if ([0, 8].includes(shiftedStep)) {
+    playRhythmTone(82, 0.16, "sine", 0.24);
+  }
+  if ([4, 12].includes(shiftedStep)) {
+    playRhythmNoise(0.1, 0.14, 1300);
+  }
+  if (shiftedStep % 2 === 0) {
+    playRhythmNoise(0.035, 0.065, 6800);
+  }
+  if ([3, 7, 10, 14].includes(shiftedStep)) {
+    const melody = [330, 392, 494, 587][(shiftedStep + slotIndex) % 4];
+    playRhythmTone(melody, 0.09, "triangle", 0.095);
+  }
+}
+
+function playUrgentPianoBurst() {
+  const notes = [784, 988, 1175, 988, 880, 1047];
+  notes.forEach((frequency, index) => {
+    window.setTimeout(() => {
+      playRhythmTone(frequency, 0.055, "triangle", 0.12);
+      playRhythmTone(frequency * 2, 0.04, "sine", 0.04);
+    }, index * 70);
+  });
+}
+
+function startUrgentPiano() {
+  unlockRhythmAudio();
+  if (urgentPianoTimer) return;
+  playUrgentPianoBurst();
+  urgentPianoTimer = window.setInterval(playUrgentPianoBurst, 560);
+}
+
+function stopUrgentPiano() {
+  if (!urgentPianoTimer) return;
+  window.clearInterval(urgentPianoTimer);
+  urgentPianoTimer = null;
+}
+
+function isSkyCharacter(characterType) {
+  return characterType === "sun" || characterType === "moon";
+}
+
+function syncSkyDragWorld() {
+  const bothAway = skyBodyAway.sun && skyBodyAway.moon;
+  document.body.classList.toggle("sky-sun-away", skyBodyAway.sun);
+  document.body.classList.toggle("sky-moon-away", skyBodyAway.moon);
+  skySun?.classList.toggle("sky-away", skyBodyAway.sun);
+  skyMoon?.classList.toggle("sky-away", skyBodyAway.moon);
+
+  if (bothAway) {
+    skyDragTerrorActive = true;
+    startTerrorNight();
+    startUrgentPiano();
+    return;
+  }
+
+  stopUrgentPiano();
+  if (skyDragTerrorActive && isTerrorNightActive) {
+    skyDragTerrorActive = false;
+    stopTerrorNight();
+  }
+
+  if (skyBodyAway.sun) {
+    setDayNightMode(true);
+    return;
+  }
+
+  if (skyBodyAway.moon) {
+    setDayNightMode(false);
+    return;
+  }
+
+  skyDragTerrorActive = false;
+  scheduleAutoSkyCycle();
+}
+
+function setSkyBodyAway(characterType, away) {
+  if (!isSkyCharacter(characterType)) return;
+  skyBodyAway[characterType] = away;
+  syncSkyDragWorld();
+}
+
+function updateRhythmStatus() {
+  if (!rhythmStatus) return;
+  const count = placedRhythmCharacters.size;
+  rhythmStatus.textContent = count ? `角色 x ${count} 正在演奏` : "拖上角色";
+}
+
+function pulseRhythmSlot(slot) {
+  const robot = slot.querySelector(".happy-robot-icon");
+  slot.classList.remove("beat-pulse");
+  robot?.classList.remove("beat-bounce");
+  slot.offsetWidth;
+  slot.classList.add("beat-pulse");
+  robot?.classList.add("beat-bounce");
+}
+
+function tickRhythmLoop() {
+  placedRhythmCharacters.forEach((character, slotIndex) => {
+    playHappyRobotStep(rhythmStep, Number(slotIndex), character.id, character.slot);
+    if (rhythmStep % 2 === 0) {
+      pulseRhythmSlot(character.slot);
+    }
+  });
+  rhythmStep = (rhythmStep + 1) % 16;
+}
+
+function startRhythmLoop() {
+  unlockRhythmAudio();
+  if (rhythmLoopTimer || !placedRhythmCharacters.size) return;
+  rhythmStep = 0;
+  tickRhythmLoop();
+  rhythmLoopTimer = window.setInterval(tickRhythmLoop, 180);
+  praiseRhythmMusic();
+}
+
+function stopRhythmLoopIfEmpty() {
+  if (placedRhythmCharacters.size || !rhythmLoopTimer) return;
+  window.clearInterval(rhythmLoopTimer);
+  rhythmLoopTimer = null;
+  computerShell.classList.remove("rhythm-loving");
+}
+
+function clearRhythmSlot(slot) {
+  const slotIndex = slot.dataset.slotIndex;
+  if (!placedRhythmCharacters.has(slotIndex)) return;
+  const character = placedRhythmCharacters.get(slotIndex);
+  placedRhythmCharacters.delete(slotIndex);
+  slot.classList.remove("occupied", "beat-pulse");
+  slot.innerHTML = "";
+  if (isSkyCharacter(character?.id)) {
+    setSkyBodyAway(character.id, false);
+  }
+  if (character?.id === "computer") {
+    stopComputerSongLoop();
+    window.speechSynthesis?.cancel?.();
+  }
+  updateRhythmStatus();
+  stopRhythmLoopIfEmpty();
+}
+
+function placeHappyRobotInSlot(slot, characterType = "happy-robot") {
+  const slotIndex = slot.dataset.slotIndex;
+  if (characterType === "computer") {
+    placedRhythmCharacters.forEach((character, existingSlotIndex) => {
+      if (character.id === "computer" && existingSlotIndex !== slotIndex) {
+        clearRhythmSlot(character.slot);
+      }
+    });
+  }
+  clearRhythmSlot(slot);
+  const robot = makeHappyRobotIcon("placed-happy-robot", characterType);
+  const label = document.createElement("span");
+  label.className = "placed-robot-name";
+  label.textContent = getCharacterLabel(characterType);
+  slot.append(robot, label);
+  slot.classList.add("occupied");
+  placedRhythmCharacters.set(slotIndex, { id: characterType, slot });
+  if (isSkyCharacter(characterType)) {
+    setSkyBodyAway(characterType, true);
+  }
+  updateRhythmStatus();
+  if (characterType === "computer") {
+    lastComputerSongAt = performance.now();
+    startRhythmLoop();
+    startComputerSongLoop(slot);
+    return;
+  }
+  startRhythmLoop();
+  speakAsComputer(`${getCharacterLabel(characterType)}\u52a0\u5165\u8282\u594f\uff0c\u5f00\u59cb\u6f14\u594f\u3002`, { forceSubtitle: true, colorful: true });
+  return;
+  speakAsComputer(`${getCharacterLabel(characterType)}加入节奏，开始演奏。`, { forceSubtitle: true, colorful: true });
+}
+
+function getRhythmSlotAtPoint(x, y) {
+  return rhythmSlots.find((slot) => {
+    const rect = slot.getBoundingClientRect();
+    return x >= rect.left - 8 && x <= rect.right + 8 && y >= rect.top - 8 && y <= rect.bottom + 8;
+  });
+}
+
+function setupRhythmBox() {
+  if (!rhythmBox || !happyRobotPicker || !rhythmStage) return;
+
+  const moveGhost = (event) => {
+    if (!rhythmDrag) return;
+    if (event.pointerId !== rhythmDrag.pointerId) return;
+    rhythmDrag.ghost.style.left = `${event.clientX - rhythmDrag.offsetX}px`;
+    rhythmDrag.ghost.style.top = `${event.clientY - rhythmDrag.offsetY}px`;
+    const slot = getRhythmSlotAtPoint(event.clientX, event.clientY);
+    rhythmSlots.forEach((item) => item.classList.toggle("drop-ready", item === slot));
+    updateEmptySlotMouseLook(event.clientX, event.clientY);
+  };
+
+  const endDrag = (event) => {
+    if (rhythmDrag && event.pointerId !== rhythmDrag.pointerId) return;
+    window.removeEventListener("pointermove", moveGhost);
+    window.removeEventListener("pointerup", endDrag);
+    rhythmSlots.forEach((item) => item.classList.remove("drop-ready"));
+    clearEmptySlotMouseLook();
+    if (!rhythmDrag) return;
+    rhythmDrag.picker?.releasePointerCapture?.(rhythmDrag.pointerId);
+    const slot = getRhythmSlotAtPoint(event.clientX, event.clientY);
+    const characterType = rhythmDrag.characterType || "happy-robot";
+    const sourcePicker = rhythmDrag.picker;
+    const isSkySource = isSkyCharacter(characterType);
+    rhythmDrag.ghost.remove();
+    rhythmDrag = null;
+    sourcePicker?.classList.remove("sky-dragging-source");
+    if (slot) {
+      const now = performance.now();
+      if (now - lastRhythmDropAt < 260) return;
+      lastRhythmDropAt = now;
+      placeHappyRobotInSlot(slot, characterType);
+    } else if (getComputerDropZoneAtPoint(event.clientX, event.clientY)) {
+      const now = performance.now();
+      if (now - lastRhythmDropAt < 260) return;
+      lastRhythmDropAt = now;
+      placeHappyRobotBesideComputer(characterType);
+    }
+  };
+
+  const beginCharacterDrag = (event, picker, characterType = "happy-robot") => {
+    if (rhythmDrag || performance.now() - lastRhythmDropAt < 260) return;
+    markPointerActivity();
+    unlockRhythmAudio();
+    event.preventDefault();
+    if (isSkyCharacter(characterType)) {
+      picker.classList.add("sky-dragging-source");
+    }
+    const ghost = makeHappyRobotIcon("happy-robot-ghost", characterType);
+    document.body.appendChild(ghost);
+    rhythmDrag = {
+      ghost,
+      picker,
+      characterType,
+      pointerId: event.pointerId,
+      offsetX: 48,
+      offsetY: 54
+    };
+    picker.setPointerCapture?.(event.pointerId);
+    moveGhost(event);
+    window.addEventListener("pointermove", moveGhost);
+    window.addEventListener("pointerup", endDrag);
+  };
+
+  happyRobotPicker.addEventListener("pointerdown", (event) => {
+    beginCharacterDrag(event, happyRobotPicker, "happy-robot");
+  });
+
+  gallodPicker?.addEventListener("pointerdown", (event) => {
+    beginCharacterDrag(event, gallodPicker, "gallod");
+  });
+
+  simonPicker?.addEventListener("pointerdown", (event) => {
+    beginCharacterDrag(event, simonPicker, "simon");
+  });
+
+  musicBoxPicker?.addEventListener("pointerdown", (event) => {
+    beginCharacterDrag(event, musicBoxPicker, "music-box");
+  });
+
+  skySun?.addEventListener("pointerdown", (event) => {
+    beginCharacterDrag(event, skySun, "sun");
+  });
+
+  skyMoon?.addEventListener("pointerdown", (event) => {
+    beginCharacterDrag(event, skyMoon, "moon");
+  });
+
+  rhythmVolume?.addEventListener("input", () => {
+    applyRhythmVolume((Number(rhythmVolume.value) / 100) * 2.6);
+  });
+
+  if (rhythmVolume) {
+    applyRhythmVolume((Number(rhythmVolume.value) / 100) * 2.6);
+  }
+
+  rhythmStage.addEventListener("click", (event) => {
+    const slot = event.target.closest(".rhythm-slot");
+    if (!slot || !slot.classList.contains("occupied")) return;
+    clearRhythmSlot(slot);
+  });
+
+  updateRhythmStatus();
+}
+
 function stopRecording() {
   if (!recognition || !isRecording) return;
   recognition.stop();
@@ -2906,6 +4765,8 @@ lightToggle?.addEventListener("click", () => {
   setLightOn(!isLightOn);
 });
 
+resetSaveToggle?.addEventListener("click", resetGameState);
+
 window.setInterval(() => {
   if (isRecording || screenSubtitle.style.display === "block") return;
   moodIndex = (moodIndex + 1) % moods.length;
@@ -2920,7 +4781,11 @@ setDayNightMode(false);
 loadGameState();
 setupSpeechRecognition();
 setupSpeechUnlock();
+setupAutoReload();
 setupFoodDrag();
+setupRhythmBox();
+updateRhythmTvMount();
+updateTvWeatherMarks();
 setupMiningGame();
 loadVoices();
 startSunBehaviorLoop();
@@ -2947,6 +4812,9 @@ window.addEventListener("resize", () => {
   if (plugInserted && !plugDrag) {
     parkPlugAtChargingCorner();
   }
+  refreshTvCableConnection();
+  refreshWeatherCableConnection();
+  updateAllHappyRobotCompanionPositions();
 });
 
 if ("speechSynthesis" in window) {

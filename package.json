@@ -1,0 +1,9 @@
+{
+  "name": "mr-computer-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local preview server for the Mr. Computer game.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

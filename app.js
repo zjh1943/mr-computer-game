@@ -68,7 +68,7 @@ const moods = [
 const clearVoiceSettings = {
   lang: "zh-CN",
   pitch: 1.35,
-  rate: 1.06,
+  rate: 1.35,
   volume: 0.95
 };
 const COMPUTER_SONG_LINE = "\u4f60\u597d\uff0c\u4f60\u60f3\u4e0d\u60f3\u627e\u4e00\u70b9\u6709\u8da3\uff1f\u6765\u5427\uff0c\u8ddf\u6211\u4e00\u8d77\u5531\uff0c\u4e00\u8d77\u4eab\u53d7\u5feb\u4e50\u65f6\u523b\u3002";
@@ -4274,28 +4274,28 @@ function showRhythmComputerSong(slot, text, duration = 9800) {
 
 function playComputerVocalLine() {
   const line = [
-    [262, "oh", 0.34],
-    [294, "ah", 0.32],
-    [330, "ee", 0.28],
-    [392, "ah", 0.38],
-    [440, "oh", 0.32],
-    [392, "mm", 0.34],
-    [330, "ee", 0.3],
-    [294, "ah", 0.36]
+    [262, "oh", 0.24],
+    [294, "ah", 0.23],
+    [330, "ee", 0.2],
+    [392, "ah", 0.27],
+    [440, "oh", 0.23],
+    [392, "mm", 0.24],
+    [330, "ee", 0.22],
+    [294, "ah", 0.25]
   ];
   line.forEach(([frequency, vowel, duration], index) => {
-    playRhythmVocalTone(frequency, duration, vowel, 0.075, index * 0.42);
+    playRhythmVocalTone(frequency, duration, vowel, 0.075, index * 0.29);
   });
 }
 
 function singFromRhythmComputer(slot) {
-  const duration = 11200;
+  const duration = 6200;
   showRhythmComputerSong(slot, COMPUTER_SONG_LINE, duration);
   playComputerVocalLine();
   speakReply(COMPUTER_SONG_LINE, {
     lang: "zh-CN",
     pitch: 1.12,
-    rate: 0.72,
+    rate: 1.52,
     volume: 0.95
   });
 }
@@ -4315,7 +4315,7 @@ function startComputerSongLoop(slot) {
       return;
     }
     singFromRhythmComputer(slot);
-    computerSongTimer = window.setTimeout(loop, 11250);
+    computerSongTimer = window.setTimeout(loop, 6500);
   };
   loop();
 }

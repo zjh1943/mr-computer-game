@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>日记剪纸房</title>
+    <link rel="stylesheet" href="./diary.css?v=paper-room-v1" />
+  </head>
+  <body>
+    <main class="paper-room">
+      <a class="back-link" href="./index.html">回到电脑先生</a>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">开发减脂热量小程序</p>
+          <h1>日记剪纸房</h1>
+          <p>这里放减热量的工具。记录吃了什么、多少克、多少热量，剪纸小本子会按日期算当天总热量。</p>
+        </div>
+        <div class="paper-mascot" aria-hidden="true">
+          <span class="leaf"></span>
+          <span class="eye eye-left"></span>
+          <span class="eye eye-right"></span>
+          <span class="smile"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">目标设置</p>
+            <h2>先告诉小本子计划</h2>
+          </div>
+          <button id="reset-button" class="ghost-button" type="button">重置</button>
+        </div>
+        <form id="profile-form" class="profile-grid">
+          <label><span>身高 cm</span><input id="height" type="number" min="100" max="230" step="0.1" required /></label>
+          <label><span>体重 kg</span><input id="weight" type="number" min="30" max="250" step="0.1" required /></label>
+          <label><span>想减多少斤</span><input id="target-loss-jin" type="number" min="1" max="200" step="0.5" required /></label>
+          <label><span>年龄</span><input id="age" type="number" min="12" max="100" step="1" value="28" required /></label>
+          <label>
+            <span>性别</span>
+            <select id="sex"><option value="female">女</option><option value="male">男</option></select>
+          </label>
+          <label>
+            <span>日常活动</span>
+            <select id="activity">
+              <option value="1.2">久坐为主</option>
+              <option value="1.375">轻量活动</option>
+              <option value="1.55">每周运动 3-5 次</option>
+              <option value="1.725">高活动量</option>
+            </select>
+          </label>
+          <button class="primary-button" type="submit">保存并计算</button>
+        </form>
+      </section>
+
+      <section class="summary-grid">
+        <article class="metric"><span>每日建议摄入</span><strong id="daily-target">--</strong><small>kcal</small></article>
+        <article class="metric"><span>所选日期已吃</span><strong id="today-intake">0</strong><small>kcal</small></article>
+        <article class="metric"><span>当天热量缺口</span><strong id="today-deficit">--</strong><small>kcal</small></article>
+        <article class="metric"><span>预计还需</span><strong id="days-left">--</strong><small>天</small></article>
+      </section>
+
+      <section class="tracker-layout">
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">饮食记录</p>
+              <h2>按日期汇总热量</h2>
+            </div>
+            <label class="date-label"><span>记录日期</span><input id="log-date" type="date" /></label>
+          </div>
+
+          <form id="food-form" class="food-form">
+            <label class="wide">
+              <span>食物名称</span>
+              <input id="food-name" type="text" placeholder="例如：米饭、鸡胸肉、苹果" list="food-list" />
+              <datalist id="food-list"></datalist>
+            </label>
+            <label><span>重量 g</span><input id="food-grams" type="number" min="1" max="3000" value="100" /></label>
+            <label><span>热量 kcal</span><input id="food-calories" type="number" min="0" max="5000" placeholder="可自动估算" /></label>
+            <label class="wide file-label"><span>照片</span><input id="food-photo" type="file" accept="image/*" /></label>
+            <button class="primary-button" type="submit">加入这一天</button>
+          </form>
+
+          <div id="estimate-hint" class="hint">输入常见食物名后，会按克数帮你估算热量。</div>
+          <div class="day-total">当天合计：<strong id="day-total">0</strong> kcal</div>
+          <div id="food-log" class="food-log"></div>
+        </section>
+
+        <aside class="panel">
+          <p class="eyebrow">进度</p>
+          <h2>目标小路</h2>
+          <div class="progress-track"><span id="progress-fill"></span></div>
+          <p id="progress-copy" class="progress-copy">先保存目标，就能开始计算。</p>
+          <div class="mini-stats">
+            <span>目标减重 <strong id="loss-kg">--</strong> kg</span>
+            <span>累计缺口 <strong id="total-deficit">0</strong> kcal</span>
+            <span>记录天数 <strong id="logged-days">0</strong> 天</span>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <script src="./diary.js?v=paper-room-v1"></script>
+  </body>
+</html>

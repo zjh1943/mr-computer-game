@@ -373,14 +373,14 @@ const rainCodeSnippets = [
   "GPU_WATER_INTERRUPT"
 ];
 const HOUSE_PRICE = 120;
-const MINE_CELL_COUNT = 18;
+const MINE_CELL_COUNT = 24;
 const INVENTORY_SLOT_COUNT = 12;
 const mineralTypes = [
-  { id: "stone", label: "石头", icon: "●", value: 3, chance: 42 },
-  { id: "copper", label: "铜", icon: "◆", value: 8, chance: 28 },
-  { id: "silver", label: "银", icon: "◇", value: 15, chance: 18 },
-  { id: "gold", label: "金", icon: "★", value: 28, chance: 9 },
-  { id: "gem", label: "宝石", icon: "✦", value: 45, chance: 3 }
+  { id: "stone", label: "石头", icon: "▣", value: 3, chance: 36, hardness: 2 },
+  { id: "coal", label: "煤炭", icon: "●", value: 7, chance: 25, hardness: 2 },
+  { id: "iron", label: "铁矿", icon: "■", value: 13, chance: 20, hardness: 3 },
+  { id: "gold", label: "金矿", icon: "◆", value: 28, chance: 12, hardness: 3 },
+  { id: "diamond", label: "钻石", icon: "✦", value: 55, chance: 7, hardness: 4 }
 ];
 const shopItems = [
   { id: "house", label: "木房子", icon: "家", price: HOUSE_PRICE, type: "house", keywords: "家 房子 木屋 小家" },
@@ -1235,10 +1235,14 @@ function renderMineGrid() {
   mineGrid.innerHTML = "";
   for (let index = 0; index < MINE_CELL_COUNT; index += 1) {
     const cell = document.createElement("button");
-    cell.className = "mine-cell";
+    const hiddenMineral = weightedRandomMineral();
+    cell.className = `mine-cell block-${hiddenMineral.id}`;
     cell.type = "button";
-    cell.setAttribute("aria-label", `矿洞格子 ${index + 1}`);
-    cell.textContent = "土";
+    cell.dataset.mineralId = hiddenMineral.id;
+    cell.dataset.hardness = `${hiddenMineral.hardness}`;
+    cell.dataset.damage = "0";
+    cell.setAttribute("aria-label", `方块 ${index + 1}`);
+    cell.textContent = "";
     cell.addEventListener("click", () => mineCell(cell));
     mineGrid.appendChild(cell);
   }
@@ -1252,7 +1256,18 @@ function mineCell(cell) {
     return;
   }
 
-  const mineral = weightedRandomMineral();
+  const damage = Number(cell.dataset.damage || 0) + 1;
+  const hardness = Number(cell.dataset.hardness || 2);
+  cell.dataset.damage = `${damage}`;
+  cell.classList.remove("crack-1", "crack-2", "crack-3");
+  cell.classList.add(`crack-${Math.min(3, damage)}`);
+  cell.classList.add("mining-hit");
+  window.setTimeout(() => cell.classList.remove("mining-hit"), 120);
+  if (damage < hardness) {
+    return;
+  }
+
+  const mineral = mineralTypes.find((item) => item.id === cell.dataset.mineralId) || weightedRandomMineral();
   minedItems.push(mineral);
   cell.className = `mine-cell mined mineral-${mineral.id}`;
   cell.textContent = mineral.icon;
@@ -1260,10 +1275,10 @@ function mineCell(cell) {
   renderInventory();
   updateMoneyUI();
   saveGameState();
-  const message = mineral.id === "gem" || mineral.id === "gold"
+  const message = mineral.id === "diamond" || mineral.id === "gold"
     ? `挖到${mineral.label}了，好闪。`
     : `挖到${mineral.label}了。`;
-  speakAsComputer(message, { forceSubtitle: true, colorful: mineral.id === "gem" || mineral.id === "gold" });
+  speakAsComputer(message, { forceSubtitle: true, colorful: mineral.id === "diamond" || mineral.id === "gold" });
 }
 
 function sellMinedItems() {
@@ -1423,7 +1438,7 @@ function setupMiningGame() {
   mineToggle?.addEventListener("click", () => {
     setMinePanelOpen(!minePanelOpen);
     if (!minePanelOpen) return;
-    speakAsComputer("小矿场打开了，点格子就能挖矿。", { forceSubtitle: true, colorful: false });
+    speakAsComputer("我的世界小矿洞打开了，点方块几下就能挖出矿。", { forceSubtitle: true, colorful: false });
   });
   sellMineralsButton?.addEventListener("click", sellMinedItems);
   buyHouseButton?.addEventListener("click", buyHouseForComputer);

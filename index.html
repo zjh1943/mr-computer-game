@@ -150,6 +150,7 @@
                 </div>
               </div>
               <p id="screen-subtitle" class="screen-subtitle">滴。我在听。</p>
+              <button id="minecraft-toggle" class="minecraft-toggle" type="button">我的世界</button>
             </div>
           </div>
         </div>
@@ -397,6 +398,68 @@
           <input id="shop-search" class="shop-search" type="search" placeholder="想买什么都可以搜" autocomplete="off" />
         </label>
         <div id="shop-grid" class="shop-grid" aria-label="商城商品"></div>
+      </section>
+      <section id="minecraft-panel" class="minecraft-panel" aria-label="我的世界" hidden>
+        <div class="minecraft-toolbar">
+          <strong>我的世界</strong>
+          <button id="minecraft-close" class="minecraft-close" type="button" aria-label="退出我的世界">×</button>
+        </div>
+        <div id="minecraft-status" class="minecraft-status">先用镐子挖方块，背包有方块之后才能放。</div>
+        <div id="minecraft-world" class="minecraft-world" aria-label="方块世界"></div>
+        <div id="minecraft-map" class="minecraft-map" aria-label="彩色地图"></div>
+        <div id="minecraft-crafting-panel" class="minecraft-crafting-panel" hidden>
+          <div class="minecraft-crafting-head">
+            <strong>工作台</strong>
+            <button id="minecraft-crafting-close" class="minecraft-crafting-close" type="button">×</button>
+          </div>
+          <div class="minecraft-crafting-body">
+            <div id="minecraft-crafting-grid" class="minecraft-crafting-grid" aria-label="工作台九宫格"></div>
+            <div class="minecraft-crafting-flow" aria-label="合成结果">
+              <span class="minecraft-crafting-arrow" aria-hidden="true"></span>
+              <button id="minecraft-crafting-output" class="minecraft-crafting-output" type="button" aria-label="合成输出"></button>
+            </div>
+            <div class="minecraft-crafting-recipes" aria-label="配方">
+              <button class="minecraft-recipe" type="button" data-minecraft-recipe="sticks">
+                <span class="recipe-grid recipe-sticks"><i></i><i></i><i></i><i></i><b>木</b><i></i><i></i><i></i><i></i></span>
+                木棍
+              </button>
+              <button class="minecraft-recipe" type="button" data-minecraft-recipe="torch">
+                <span class="recipe-grid recipe-torch"><b>煤</b><i></i><i></i><b>棍</b><i></i><i></i><i></i><i></i><i></i></span>
+                火把
+              </button>
+              <button class="minecraft-recipe" type="button" data-minecraft-recipe="bucket">
+                <span class="recipe-grid recipe-bucket"><i></i><i></i><i></i><b>铁</b><i></i><b>铁</b><i></i><b>铁</b><i></i></span>
+                铁桶
+              </button>
+            </div>
+          </div>
+          <div id="minecraft-crafting-inventory" class="minecraft-crafting-inventory" aria-label="物品栏材料"></div>
+          <button id="minecraft-crafting-make" class="minecraft-crafting-make" type="button">按九宫格合成</button>
+          <div id="minecraft-crafting-status" class="minecraft-crafting-status">点格子选择材料。</div>
+        </div>
+        <div class="minecraft-tools" aria-label="方块工具">
+          <button class="minecraft-tool" type="button" data-minecraft-tool="grass">草<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="dirt">土<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="stone">石<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="wood">木<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="leaves">叶<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="water">水<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="bed">床<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="crafting_table">台<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="torch">火<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="bucket">桶<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="water_bucket">水桶<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="lava_bucket">岩桶<span>0</span></button>
+          <button class="minecraft-tool active" type="button" data-minecraft-tool="pickaxe">镐</button>
+        </div>
+        <div class="minecraft-controls" aria-label="移动和视角">
+          <div id="minecraft-joystick" class="minecraft-joystick" role="application" aria-label="移动摇杆">
+            <span id="minecraft-joystick-handle" class="minecraft-joystick-handle"></span>
+          </div>
+          <button id="minecraft-jump-up" class="minecraft-jump-up" type="button">跳</button>
+          <button id="minecraft-dig-down" class="minecraft-dig-down" type="button">向下挖</button>
+          <button id="minecraft-view" class="minecraft-view" type="button">切换视角</button>
+        </div>
       </section>
     </main>
 

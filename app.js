@@ -44,6 +44,27 @@ const shopPanel = document.querySelector("#shop-panel");
 const shopSearch = document.querySelector("#shop-search");
 const shopGrid = document.querySelector("#shop-grid");
 const moveHomeButton = document.querySelector("#move-home");
+const minecraftToggle = document.querySelector("#minecraft-toggle");
+const minecraftPanel = document.querySelector("#minecraft-panel");
+const minecraftWorld = document.querySelector("#minecraft-world");
+const minecraftMap = document.querySelector("#minecraft-map");
+const minecraftStatus = document.querySelector("#minecraft-status");
+const minecraftToolButtons = Array.from(document.querySelectorAll(".minecraft-tool"));
+const minecraftMoveButtons = Array.from(document.querySelectorAll(".minecraft-move"));
+const minecraftJumpUpButton = document.querySelector("#minecraft-jump-up");
+const minecraftDigDownButton = document.querySelector("#minecraft-dig-down");
+const minecraftViewButton = document.querySelector("#minecraft-view");
+const minecraftClearButton = document.querySelector("#minecraft-clear");
+const minecraftCloseButton = document.querySelector("#minecraft-close");
+const minecraftJoystick = document.querySelector("#minecraft-joystick");
+const minecraftJoystickHandle = document.querySelector("#minecraft-joystick-handle");
+const minecraftCraftingPanel = document.querySelector("#minecraft-crafting-panel");
+const minecraftCraftingGrid = document.querySelector("#minecraft-crafting-grid");
+const minecraftCraftingInventory = document.querySelector("#minecraft-crafting-inventory");
+const minecraftCraftingOutput = document.querySelector("#minecraft-crafting-output");
+const minecraftCraftingMake = document.querySelector("#minecraft-crafting-make");
+const minecraftCraftingClose = document.querySelector("#minecraft-crafting-close");
+const minecraftCraftingStatus = document.querySelector("#minecraft-crafting-status");
 const yardToggle = document.querySelector("#yard-toggle");
 const homeToggle = document.querySelector("#home-toggle");
 const callBackToggle = document.querySelector("#call-back-toggle");
@@ -283,6 +304,45 @@ let nightAwakeUntil = 0;
 let money = 0;
 let minedItems = [];
 let minePanelOpen = false;
+let minecraftPanelOpen = false;
+let minecraftSelectedTool = "pickaxe";
+let minecraftOpenedAt = 0;
+let minecraftWorldBlocks = [];
+let minecraftInventory = {};
+let minecraftPlayerX = 0;
+let minecraftPlayerZ = 0;
+let minecraftDepth = 0;
+let minecraftView = 0;
+let minecraftGuardianFound = false;
+let minecraftIsNight = false;
+let minecraftXp = 0;
+let minecraftZombies = [];
+let minecraftCycleTimer = null;
+let minecraftHealth = 10;
+let minecraftHunger = 8;
+let minecraftSeeds = 0;
+let minecraftWheat = 0;
+let minecraftEmerald = 0;
+let minecraftPlants = {};
+let minecraftMeat = 0;
+let minecraftWool = 0;
+let minecraftAnimals = {};
+let minecraftSpawnPoint = null;
+let minecraftSticks = 0;
+let minecraftCoal = 0;
+let minecraftIron = 0;
+let minecraftBuckets = 0;
+let minecraftWaterBuckets = 0;
+let minecraftLavaBuckets = 0;
+let minecraftCraftingSlots = Array(9).fill("");
+let minecraftCraftingOpen = false;
+let minecraftSkeletons = [];
+let minecraftVillagers = {};
+let minecraftLastSkeletonShotAt = 0;
+let minecraftLastZombieHitAt = 0;
+let minecraftLastZombieStepAt = 0;
+let minecraftJoystickTimer = null;
+let minecraftJoystickDirection = "";
 let houseBought = false;
 let shopPanelOpen = false;
 let computerMovedIn = false;
@@ -375,6 +435,31 @@ const rainCodeSnippets = [
 const HOUSE_PRICE = 120;
 const MINE_CELL_COUNT = 24;
 const INVENTORY_SLOT_COUNT = 12;
+const MINECRAFT_WORLD_COLUMNS = 18;
+const MINECRAFT_WORLD_ROWS = 10;
+const MINECRAFT_MOVE_STEP = 2;
+const minecraftBlockTypes = {
+  grass: { label: "草方块" },
+  dirt: { label: "泥土" },
+  stone: { label: "石头" },
+  wood: { label: "木头" },
+  leaves: { label: "树叶" },
+  water: { label: "河水" },
+  lava: { label: "岩浆" },
+  coal_ore: { label: "煤炭" },
+  iron_ore: { label: "铁" },
+  gold_ore: { label: "金矿" },
+  diamond_ore: { label: "钻石" },
+  bed: { label: "床" },
+  crafting_table: { label: "工作台" },
+  torch: { label: "火把" }
+};
+const minecraftAnimalTypes = {
+  sheep: { label: "羊", icon: "羊", meat: 1, wool: 1 },
+  cow: { label: "牛", icon: "牛", meat: 2, wool: 0 },
+  pig: { label: "猪", icon: "猪", meat: 2, wool: 0 },
+  chicken: { label: "鸡", icon: "鸡", meat: 1, wool: 0 }
+};
 const mineralTypes = [
   { id: "stone", label: "石头", icon: "▣", value: 3, chance: 36, hardness: 2 },
   { id: "coal", label: "煤炭", icon: "●", value: 7, chance: 25, hardness: 2 },
@@ -997,6 +1082,35 @@ function saveGameState() {
   const saveData = {
     money,
     minedItems: minedItems.map((item) => item.id),
+    minecraftWorldBlocks,
+    minecraftInventory,
+    minecraftSelectedTool,
+    minecraftPlayerX,
+    minecraftPlayerZ,
+    minecraftDepth,
+    minecraftView,
+    minecraftGuardianFound,
+    minecraftIsNight,
+    minecraftXp,
+    minecraftZombies,
+    minecraftHealth,
+    minecraftHunger,
+    minecraftSeeds,
+    minecraftWheat,
+    minecraftEmerald,
+    minecraftPlants,
+    minecraftMeat,
+    minecraftWool,
+    minecraftAnimals,
+    minecraftSpawnPoint,
+    minecraftSticks,
+    minecraftCoal,
+    minecraftIron,
+    minecraftBuckets,
+    minecraftWaterBuckets,
+    minecraftLavaBuckets,
+    minecraftSkeletons,
+    minecraftVillagers,
     houseBought,
     computerMovedIn,
     isAtHome,
@@ -1056,6 +1170,90 @@ function loadGameState() {
         .map((id) => mineralTypes.find((item) => item.id === id))
         .filter(Boolean)
     : [];
+  if (saveData.minecraftWorldBlocks && typeof saveData.minecraftWorldBlocks === "object" && !Array.isArray(saveData.minecraftWorldBlocks)) {
+    minecraftWorldBlocks = {};
+    Object.entries(saveData.minecraftWorldBlocks).forEach(([key, block]) => {
+      minecraftWorldBlocks[key] = minecraftBlockTypes[block] ? block : null;
+    });
+  } else if (Array.isArray(saveData.minecraftWorldBlocks)) {
+    minecraftWorldBlocks = {};
+  }
+  if (saveData.minecraftInventory && typeof saveData.minecraftInventory === "object") {
+    minecraftInventory = {};
+    Object.keys(minecraftBlockTypes).forEach((blockType) => {
+      const count = Number(saveData.minecraftInventory[blockType]);
+      minecraftInventory[blockType] = Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+    });
+  }
+  if (saveData.minecraftSelectedTool === "pickaxe" || minecraftBlockTypes[saveData.minecraftSelectedTool]) {
+    minecraftSelectedTool = saveData.minecraftSelectedTool;
+  }
+  minecraftPlayerX = Number.isFinite(saveData.minecraftPlayerX) ? Math.trunc(saveData.minecraftPlayerX) : 0;
+  minecraftPlayerZ = Number.isFinite(saveData.minecraftPlayerZ) ? Math.trunc(saveData.minecraftPlayerZ) : 0;
+  minecraftDepth = Number.isFinite(saveData.minecraftDepth) ? clamp(Math.trunc(saveData.minecraftDepth), -63, 1) : 0;
+  minecraftView = Number.isFinite(saveData.minecraftView) ? Math.abs(Math.trunc(saveData.minecraftView)) % 4 : 0;
+  minecraftGuardianFound = Boolean(saveData.minecraftGuardianFound);
+  minecraftIsNight = Boolean(saveData.minecraftIsNight);
+  minecraftXp = Number.isFinite(saveData.minecraftXp) ? Math.max(0, Math.trunc(saveData.minecraftXp)) : 0;
+  minecraftZombies = Array.isArray(saveData.minecraftZombies)
+    ? saveData.minecraftZombies
+        .filter((zombie) => Number.isFinite(zombie?.x) && Number.isFinite(zombie?.z))
+        .map((zombie) => ({
+          x: Math.trunc(zombie.x),
+          z: Math.trunc(zombie.z),
+          hp: Number.isFinite(zombie.hp) ? Math.max(1, Math.trunc(zombie.hp)) : 2
+        }))
+    : [];
+  minecraftHealth = Number.isFinite(saveData.minecraftHealth) ? clamp(Math.trunc(saveData.minecraftHealth), 0, 10) : 10;
+  minecraftHunger = Number.isFinite(saveData.minecraftHunger) ? clamp(Math.trunc(saveData.minecraftHunger), 0, 10) : 8;
+  minecraftSeeds = Number.isFinite(saveData.minecraftSeeds) ? Math.max(0, Math.trunc(saveData.minecraftSeeds)) : 0;
+  minecraftWheat = Number.isFinite(saveData.minecraftWheat) ? Math.max(0, Math.trunc(saveData.minecraftWheat)) : 0;
+  minecraftEmerald = Number.isFinite(saveData.minecraftEmerald) ? Math.max(0, Math.trunc(saveData.minecraftEmerald)) : 0;
+  minecraftPlants = saveData.minecraftPlants && typeof saveData.minecraftPlants === "object" && !Array.isArray(saveData.minecraftPlants)
+    ? Object.fromEntries(Object.entries(saveData.minecraftPlants).filter(([, plant]) => plant === "grass" || plant === "wheat" || plant === "wheat-ripe"))
+    : {};
+  minecraftMeat = Number.isFinite(saveData.minecraftMeat) ? Math.max(0, Math.trunc(saveData.minecraftMeat)) : 0;
+  minecraftWool = Number.isFinite(saveData.minecraftWool) ? Math.max(0, Math.trunc(saveData.minecraftWool)) : 0;
+  minecraftAnimals = saveData.minecraftAnimals && typeof saveData.minecraftAnimals === "object" && !Array.isArray(saveData.minecraftAnimals)
+    ? Object.fromEntries(Object.entries(saveData.minecraftAnimals).filter(([, animal]) => animal === null || minecraftAnimalTypes[animal]))
+    : {};
+  minecraftSpawnPoint = saveData.minecraftSpawnPoint
+    && Number.isFinite(saveData.minecraftSpawnPoint.x)
+    && Number.isFinite(saveData.minecraftSpawnPoint.z)
+    && Number.isFinite(saveData.minecraftSpawnPoint.y)
+    ? {
+        x: Math.trunc(saveData.minecraftSpawnPoint.x),
+        z: Math.trunc(saveData.minecraftSpawnPoint.z),
+        y: clamp(Math.trunc(saveData.minecraftSpawnPoint.y), -63, 1)
+      }
+    : null;
+  if (minecraftSpawnPoint && isMinecraftSpawnPointValid()) {
+    minecraftPlayerX = minecraftSpawnPoint.x;
+    minecraftPlayerZ = minecraftSpawnPoint.z;
+    minecraftDepth = minecraftSpawnPoint.y;
+  } else {
+    minecraftSpawnPoint = null;
+  }
+  minecraftSticks = Number.isFinite(saveData.minecraftSticks) ? Math.max(0, Math.trunc(saveData.minecraftSticks)) : 0;
+  minecraftCoal = Number.isFinite(saveData.minecraftCoal) ? Math.max(0, Math.trunc(saveData.minecraftCoal)) : 0;
+  minecraftIron = Number.isFinite(saveData.minecraftIron) ? Math.max(0, Math.trunc(saveData.minecraftIron)) : 0;
+  minecraftBuckets = Number.isFinite(saveData.minecraftBuckets) ? Math.max(0, Math.trunc(saveData.minecraftBuckets)) : 0;
+  minecraftWaterBuckets = Number.isFinite(saveData.minecraftWaterBuckets) ? Math.max(0, Math.trunc(saveData.minecraftWaterBuckets)) : 0;
+  minecraftLavaBuckets = Number.isFinite(saveData.minecraftLavaBuckets) ? Math.max(0, Math.trunc(saveData.minecraftLavaBuckets)) : 0;
+  minecraftSkeletons = Array.isArray(saveData.minecraftSkeletons)
+    ? saveData.minecraftSkeletons
+        .filter((skeleton) => Number.isFinite(skeleton?.x) && Number.isFinite(skeleton?.z))
+        .map((skeleton) => ({
+          x: Math.trunc(skeleton.x),
+          z: Math.trunc(skeleton.z),
+          hp: Number.isFinite(skeleton.hp) ? Math.max(1, Math.trunc(skeleton.hp)) : 2
+        }))
+    : [];
+  minecraftVillagers = saveData.minecraftVillagers && typeof saveData.minecraftVillagers === "object" && !Array.isArray(saveData.minecraftVillagers)
+    ? Object.fromEntries(Object.entries(saveData.minecraftVillagers)
+        .filter(([, villager]) => Number.isFinite(villager?.y))
+        .map(([key, villager]) => [key, { y: clamp(Math.trunc(villager.y), -63, 1) }]))
+    : {};
   houseBought = Boolean(saveData.houseBought);
   computerMovedIn = Boolean(saveData.computerMovedIn);
   isAtHome = Boolean(saveData.isAtHome && computerMovedIn);
@@ -1408,6 +1606,7 @@ function setMinePanelOpen(open) {
   minePanelOpen = open;
   if (open) {
     setShopPanelOpen(false);
+    setMinecraftPanelOpen(false);
   }
   if (minePanel) {
     minePanel.hidden = !minePanelOpen;
@@ -1422,11 +1621,1737 @@ function setShopPanelOpen(open) {
   shopPanelOpen = open;
   if (open) {
     setMinePanelOpen(false);
+    setMinecraftPanelOpen(false);
   }
   if (shopPanel) {
     shopPanel.hidden = !shopPanelOpen;
   }
   shopToggle?.classList.toggle("active", shopPanelOpen);
+}
+
+function getMinecraftKey(x, z, y = minecraftDepth) {
+  return `${x},${z},${y}`;
+}
+
+function getMinecraftTreeOrigin(x, z) {
+  for (let originX = x - 1; originX <= x + 1; originX += 1) {
+    for (let originZ = z; originZ <= z + 3; originZ += 1) {
+      const originSeed = Math.abs((originX * 17 + originZ * 29) % 23);
+      if (originSeed !== 0) continue;
+      const dx = x - originX;
+      const dz = z - originZ;
+      if ((dx === 0 && (dz === 0 || dz === -1))
+        || (dz === -2 && Math.abs(dx) <= 1)
+        || (dx === 0 && dz === -3)) {
+        return { x: originX, z: originZ };
+      }
+    }
+  }
+  return null;
+}
+
+function isMinecraftRiverAt(x, z) {
+  const riverCenter = Math.round(Math.sin(x / 4) * 2);
+  return Math.abs(z - riverCenter) <= 1;
+}
+
+function isMinecraftVillageAreaAt(x, z) {
+  return x >= 10 && x <= 24 && z >= -12 && z <= 2;
+}
+
+function isMinecraftVillageHouseAt(x, z) {
+  if (!isMinecraftVillageAreaAt(x, z)) return false;
+  const localX = ((x - 10) % 5 + 5) % 5;
+  const localZ = ((z + 12) % 5 + 5) % 5;
+  return (localX === 0 || localX === 4 || localZ === 0 || localZ === 4) && !(localX === 2 && localZ === 4);
+}
+
+function getMinecraftVillageLocal(x, z) {
+  if (!isMinecraftVillageAreaAt(x, z)) return false;
+  const localX = ((x - 10) % 5 + 5) % 5;
+  const localZ = ((z + 12) % 5 + 5) % 5;
+  return { localX, localZ };
+}
+
+function isMinecraftVillageBedAt(x, z) {
+  const local = getMinecraftVillageLocal(x, z);
+  return local && local.localX === 1 && local.localZ === 2;
+}
+
+function isMinecraftVillageTorchAt(x, z) {
+  const local = getMinecraftVillageLocal(x, z);
+  return local && local.localX === 3 && local.localZ === 2;
+}
+
+function isMinecraftVillageFarmAt(x, z) {
+  const local = getMinecraftVillageLocal(x, z);
+  return local && (local.localX === 1 || local.localX === 3) && local.localZ === 3;
+}
+
+function getMinecraftVillagerHomeKey(homeX, homeZ) {
+  return `${homeX},${homeZ}`;
+}
+
+function getMinecraftVillagerAtCell(x, z, y) {
+  const local = getMinecraftVillageLocal(x, z);
+  if (!local) return null;
+  const targetX = 2;
+  const targetZ = minecraftIsNight ? 2 : 3;
+  if (local.localX !== targetX || local.localZ !== targetZ) return null;
+  const homeX = x - local.localX + 2;
+  const homeZ = z - local.localZ + 2;
+  const homeKey = getMinecraftVillagerHomeKey(homeX, homeZ);
+  const villager = minecraftVillagers[homeKey] || { y: 0 };
+  let villagerY = villager.y;
+  while (villagerY > -63 && !getMinecraftBlockAt(x, z, villagerY)) {
+    villagerY -= 1;
+  }
+  if (villagerY !== villager.y) {
+    minecraftVillagers[homeKey] = { y: villagerY };
+  }
+  if (villagerY !== y) return null;
+  return { homeKey, sleeping: minecraftIsNight, y: villagerY };
+}
+
+function isMinecraftVillagerAt(x, z, y = 0) {
+  return Boolean(getMinecraftVillagerAtCell(x, z, y));
+}
+
+function isMinecraftCaveAt(x, z, y) {
+  if (y > -9 || y <= -63) return false;
+  return Math.abs((x * 13 + z * 17 + y * 19) % 11) <= 1
+    || Math.abs(Math.round(Math.sin((x + y) / 3) * 3) - z) <= 1;
+}
+
+function getMinecraftOreAt(x, z, y) {
+  if (y > -2) return null;
+  const seed = Math.abs((x * 37 + z * 41 + y * 53) % 97);
+  if (y <= -8 && seed < 10) return "coal_ore";
+  if (y <= -12 && seed >= 10 && seed < 18) return "iron_ore";
+  if (y <= -24 && seed >= 18 && seed < 22) return "gold_ore";
+  if (y <= -21 && seed >= 22 && seed < 24) return "diamond_ore";
+  return null;
+}
+
+function getDefaultMinecraftBlockAt(x, z, y = minecraftDepth) {
+  if (y >= 2) return null;
+  if (y === 1) {
+    const treeOrigin = getMinecraftTreeOrigin(x, z);
+    if (treeOrigin) {
+      const dx = x - treeOrigin.x;
+      const dz = z - treeOrigin.z;
+      if (dx === 0 && (dz === 0 || dz === -1)) return "wood";
+      if ((dz === -2 && Math.abs(dx) <= 1) || (dx === 0 && dz === -3)) return "leaves";
+    }
+    return null;
+  }
+  if (y === 0) {
+    if (isMinecraftVillageBedAt(x, z)) return "bed";
+    if (isMinecraftVillageTorchAt(x, z)) return "torch";
+    if (isMinecraftVillageHouseAt(x, z)) return "wood";
+    if (isMinecraftRiverAt(x, z)) return "water";
+    return "grass";
+  }
+  if (y === -1) return "dirt";
+  if (y <= -21 && Math.abs((x * 7 + z * 5 + y) % 17) <= 2) return "lava";
+  if (isMinecraftCaveAt(x, z, y)) return null;
+  const ore = getMinecraftOreAt(x, z, y);
+  if (ore) return ore;
+  return "stone";
+}
+
+function ensureMinecraftWorldBlocks() {
+  if (!minecraftWorldBlocks || typeof minecraftWorldBlocks !== "object" || Array.isArray(minecraftWorldBlocks)) {
+    minecraftWorldBlocks = {};
+  }
+}
+
+function getMinecraftBlockAt(x, z, y = minecraftDepth) {
+  ensureMinecraftWorldBlocks();
+  const key = getMinecraftKey(x, z, y);
+  if (Object.prototype.hasOwnProperty.call(minecraftWorldBlocks, key)) {
+    return minecraftWorldBlocks[key];
+  }
+  return getDefaultMinecraftBlockAt(x, z, y);
+}
+
+function setMinecraftBlockAt(x, z, y, blockType) {
+  ensureMinecraftWorldBlocks();
+  const key = getMinecraftKey(x, z, y);
+  const defaultBlock = getDefaultMinecraftBlockAt(x, z, y);
+  if (blockType === defaultBlock) {
+    delete minecraftWorldBlocks[key];
+    return;
+  }
+  minecraftWorldBlocks[key] = blockType || null;
+}
+
+function hasMinecraftBlockOverrideAt(x, z, y = minecraftDepth) {
+  ensureMinecraftWorldBlocks();
+  return Object.prototype.hasOwnProperty.call(minecraftWorldBlocks, getMinecraftKey(x, z, y));
+}
+
+function isNaturalMinecraftRiverWaterAt(x, z, y = minecraftDepth) {
+  return y === 0 && getDefaultMinecraftBlockAt(x, z, y) === "water" && !hasMinecraftBlockOverrideAt(x, z, y);
+}
+
+function removePlacedMinecraftWaterAt(x, z, y = minecraftDepth) {
+  setMinecraftBlockAt(x, z, y, getDefaultMinecraftBlockAt(x, z, y));
+}
+
+function schedulePlacedMinecraftWaterFlow(x, z, y = minecraftDepth) {
+  window.setTimeout(() => {
+    if (isNaturalMinecraftRiverWaterAt(x, z, y)) return;
+    if (hasMinecraftBlockOverrideAt(x, z, y) && getMinecraftBlockAt(x, z, y) === "water") {
+      removePlacedMinecraftWaterAt(x, z, y);
+      renderMinecraftWorld();
+      saveGameState();
+    }
+  }, 4200);
+}
+
+function getMinecraftPlantKey(x, z) {
+  return `${x},${z}`;
+}
+
+function getDefaultMinecraftPlantAt(x, z) {
+  if (isMinecraftVillageFarmAt(x, z)) return "wheat-ripe";
+  return Math.abs((x * 11 + z * 7) % 13) === 0 ? "grass" : null;
+}
+
+function getMinecraftPlantAt(x, z) {
+  const key = getMinecraftPlantKey(x, z);
+  if (Object.prototype.hasOwnProperty.call(minecraftPlants, key)) {
+    return minecraftPlants[key];
+  }
+  return getDefaultMinecraftPlantAt(x, z);
+}
+
+function setMinecraftPlantAt(x, z, plantType) {
+  const key = getMinecraftPlantKey(x, z);
+  const defaultPlant = getDefaultMinecraftPlantAt(x, z);
+  if (plantType === defaultPlant) {
+    delete minecraftPlants[key];
+    return;
+  }
+  minecraftPlants[key] = plantType || null;
+}
+
+function getMinecraftAnimalKey(x, z) {
+  return `${x},${z}`;
+}
+
+function getDefaultMinecraftAnimalAt(x, z) {
+  if (getMinecraftBlockAt(x, z, 1)) return null;
+  const seed = Math.abs((x * 31 + z * 43) % 37);
+  if (seed === 0) return "sheep";
+  if (seed === 5) return "cow";
+  if (seed === 11) return "pig";
+  if (seed === 17) return "chicken";
+  return null;
+}
+
+function getMinecraftAnimalAt(x, z) {
+  const key = getMinecraftAnimalKey(x, z);
+  if (Object.prototype.hasOwnProperty.call(minecraftAnimals, key)) {
+    return minecraftAnimals[key];
+  }
+  return getDefaultMinecraftAnimalAt(x, z);
+}
+
+function isMinecraftTorchNearPlayer() {
+  for (let dx = -3; dx <= 3; dx += 1) {
+    for (let dz = -3; dz <= 3; dz += 1) {
+      if (getMinecraftBlockAt(minecraftPlayerX + dx, minecraftPlayerZ + dz, minecraftDepth) === "torch") {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function findMinecraftTorchNear(x, z, radius = 4) {
+  let nearest = null;
+  for (let dx = -radius; dx <= radius; dx += 1) {
+    for (let dz = -radius; dz <= radius; dz += 1) {
+      if (Math.abs(dx) + Math.abs(dz) > radius) continue;
+      if (getMinecraftBlockAt(x + dx, z + dz, 0) !== "torch") continue;
+      const distance = Math.abs(dx) + Math.abs(dz);
+      if (!nearest || distance < nearest.distance) {
+        nearest = { x: x + dx, z: z + dz, distance };
+      }
+    }
+  }
+  return nearest;
+}
+
+function isMinecraftTorchNearPoint(x, z, radius = 4) {
+  return Boolean(findMinecraftTorchNear(x, z, radius));
+}
+
+function setMinecraftAnimalAt(x, z, animalType) {
+  const key = getMinecraftAnimalKey(x, z);
+  const defaultAnimal = getDefaultMinecraftAnimalAt(x, z);
+  if (animalType === defaultAnimal) {
+    delete minecraftAnimals[key];
+    return;
+  }
+  minecraftAnimals[key] = animalType || null;
+}
+
+function craftMinecraftBedsFromWool() {
+  let craftedBeds = 0;
+  while (minecraftWool >= 3) {
+    minecraftWool -= 3;
+    minecraftInventory.bed = (minecraftInventory.bed || 0) + 1;
+    craftedBeds += 1;
+  }
+  return craftedBeds;
+}
+
+function getMinecraftBedPairCells(x, z, y) {
+  const candidates = [
+    { x, z, y },
+    { x, z: z + 1, y },
+    { x, z: z - 1, y },
+    { x: x + 1, z, y },
+    { x: x - 1, z, y }
+  ];
+  const pair = [{ x, z, y }];
+  const neighbor = candidates.slice(1).find((cell) => getMinecraftBlockAt(cell.x, cell.z, cell.y) === "bed");
+  if (neighbor) pair.push(neighbor);
+  return pair;
+}
+
+function clearMinecraftBedAt(x, z, y) {
+  const bedCells = getMinecraftBedPairCells(x, z, y);
+  bedCells.forEach((cell) => {
+    setMinecraftBlockAt(cell.x, cell.z, cell.y, cell.y === 0 ? "grass" : null);
+  });
+  if (minecraftSpawnPoint && bedCells.some((cell) => (
+    cell.x === minecraftSpawnPoint.x
+    && cell.z === minecraftSpawnPoint.z
+    && cell.y === minecraftSpawnPoint.y
+  ))) {
+    minecraftSpawnPoint = null;
+  }
+}
+
+function canPlaceMinecraftBedAt(x, z, y) {
+  if (y > 0) return false;
+  return [z, z + 1].every((bedZ) => {
+    const block = getMinecraftBlockAt(x, bedZ, y);
+    return block && block !== "bed" && block !== "water";
+  });
+}
+
+function placeMinecraftBedAt(x, z, y) {
+  setMinecraftPlantAt(x, z, null);
+  setMinecraftPlantAt(x, z + 1, null);
+  setMinecraftBlockAt(x, z, y, "bed");
+  setMinecraftBlockAt(x, z + 1, y, "bed");
+  minecraftSpawnPoint = { x, z, y };
+}
+
+function isMinecraftSpawnPointValid() {
+  return Boolean(
+    minecraftSpawnPoint
+    && getMinecraftBlockAt(minecraftSpawnPoint.x, minecraftSpawnPoint.z, minecraftSpawnPoint.y) === "bed"
+  );
+}
+
+function moveMinecraftPlayerToSpawnPoint() {
+  if (!isMinecraftSpawnPointValid()) return false;
+  minecraftPlayerX = minecraftSpawnPoint.x;
+  minecraftPlayerZ = minecraftSpawnPoint.z;
+  minecraftDepth = minecraftSpawnPoint.y;
+  return true;
+}
+
+function applyMinecraftGravity() {
+  if (minecraftDepth <= -63) return false;
+  if (minecraftDepth <= 0) return false;
+  if (minecraftDepth === 1 && getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, 0)) {
+    return false;
+  }
+  let fell = false;
+  while (minecraftDepth > -63 && !getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth)) {
+    minecraftDepth -= 1;
+    fell = true;
+  }
+  if (minecraftDepth <= -63) {
+    minecraftDepth = -63;
+    minecraftGuardianFound = true;
+  }
+  return fell;
+}
+
+function resetMinecraftInventory() {
+  minecraftInventory = {};
+  Object.keys(minecraftBlockTypes).forEach((blockType) => {
+    minecraftInventory[blockType] = 0;
+  });
+}
+
+function ensureMinecraftInventory() {
+  Object.keys(minecraftBlockTypes).forEach((blockType) => {
+    const count = Number(minecraftInventory[blockType]);
+    minecraftInventory[blockType] = Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+  });
+  if (minecraftBlockTypes[minecraftSelectedTool] && (minecraftInventory[minecraftSelectedTool] || 0) <= 0) {
+    minecraftSelectedTool = "pickaxe";
+  }
+}
+
+function getMinecraftToolCount(tool) {
+  if (tool === "bucket") return minecraftBuckets;
+  if (tool === "water_bucket") return minecraftWaterBuckets;
+  if (tool === "lava_bucket") return minecraftLavaBuckets;
+  if (minecraftBlockTypes[tool]) return minecraftInventory[tool] || 0;
+  return 0;
+}
+
+function isMinecraftSelectableTool(tool) {
+  return tool === "pickaxe" || tool === "bucket" || tool === "water_bucket" || tool === "lava_bucket" || Boolean(minecraftBlockTypes[tool]);
+}
+
+function setMinecraftTool(tool) {
+  if (!isMinecraftSelectableTool(tool)) return;
+  if (tool !== "pickaxe" && getMinecraftToolCount(tool) <= 0) {
+    updateMinecraftStatus("背包里没有这个方块，先用镐子去挖。");
+    return;
+  }
+  minecraftSelectedTool = tool;
+  updateMinecraftInventoryUI();
+}
+
+function getMinecraftViewOffset(localX, localZ) {
+  if (minecraftView === 1) return { x: -localZ, z: localX };
+  if (minecraftView === 2) return { x: -localX, z: -localZ };
+  if (minecraftView === 3) return { x: localZ, z: -localX };
+  return { x: localX, z: localZ };
+}
+
+function updateMinecraftStatus(message) {
+  if (!minecraftStatus) return;
+  const depthText = minecraftGuardianFound
+    ? ` 深度 ${minecraftDepth}，守护者出现了。`
+    : ` 深度 ${minecraftDepth}。`;
+  minecraftStatus.textContent = `${message}${depthText}`;
+}
+
+function updateMinecraftInventoryUI() {
+  ensureMinecraftInventory();
+  minecraftToolButtons.forEach((button) => {
+    const tool = button.dataset.minecraftTool || "";
+    const countBadge = button.querySelector("span");
+    const count = getMinecraftToolCount(tool);
+    if (countBadge && tool !== "pickaxe") {
+      countBadge.textContent = count > 0 ? `${count}` : "";
+    }
+    if (tool !== "pickaxe") {
+      const isEmpty = count <= 0;
+      button.hidden = isEmpty;
+      button.disabled = isEmpty;
+      if (isEmpty && minecraftSelectedTool === tool) {
+        minecraftSelectedTool = "pickaxe";
+      }
+    } else {
+      button.hidden = false;
+    }
+    button.classList.toggle("active", minecraftSelectedTool === tool);
+  });
+  renderMinecraftExtraInventoryUI();
+}
+
+function renderMinecraftExtraInventoryUI() {
+  const toolsBar = minecraftToolButtons[0]?.parentElement;
+  if (!toolsBar) return;
+  toolsBar.querySelectorAll(".minecraft-extra-item").forEach((item) => item.remove());
+  [
+    { id: "seeds", icon: "种", count: minecraftSeeds },
+    { id: "wheat", icon: "麦", count: minecraftWheat },
+    { id: "wool", icon: "毛", count: minecraftWool }
+  ].forEach((entry) => {
+    if (entry.count <= 0) return;
+    const item = document.createElement("span");
+    item.className = `minecraft-extra-item minecraft-extra-${entry.id}`;
+    item.innerHTML = `<strong>${entry.icon}</strong><span>${entry.count}</span>`;
+    toolsBar.appendChild(item);
+  });
+}
+
+function spendMinecraftHunger(amount = 1) {
+  minecraftHunger = Math.max(0, minecraftHunger - amount);
+  if (minecraftHunger >= 10 && minecraftHealth < 10) {
+    minecraftHealth += 1;
+  }
+}
+
+function hitMinecraftAnimal(x, z) {
+  const animalType = getMinecraftAnimalAt(x, z);
+  const animal = minecraftAnimalTypes[animalType];
+  if (!animal) return;
+  setMinecraftAnimalAt(x, z, null);
+  minecraftMeat += animal.meat;
+  minecraftWool += animal.wool;
+  const craftedBeds = craftMinecraftBedsFromWool();
+  renderMinecraftWorld();
+  const woolText = animal.wool ? `，还掉了羊毛。羊毛 ${minecraftWool}` : "";
+  const bedText = craftedBeds ? `，三个羊毛合成了床，床已经放进物品栏` : "";
+  updateMinecraftStatus(`打到${animal.label}，获得肉 ${animal.meat}${woolText}${bedText}。`);
+  saveGameState();
+}
+
+function makeMinecraftAnimalElement(animalType, x, z) {
+  const animal = minecraftAnimalTypes[animalType];
+  if (!animal) return null;
+  const animalElement = document.createElement("span");
+  animalElement.className = `minecraft-animal minecraft-animal-${animalType}`;
+  animalElement.textContent = animal.icon;
+  animalElement.setAttribute("role", "button");
+  animalElement.setAttribute("aria-label", animal.label);
+  animalElement.addEventListener("click", (event) => {
+    event.stopPropagation();
+    hitMinecraftAnimal(x, z);
+  });
+  return animalElement;
+}
+
+function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMode = "") {
+  const cell = document.createElement("button");
+  cell.type = "button";
+  const visualBlockType = visualMode === "sky"
+    ? "sky"
+    : blockType || getDefaultMinecraftBlockAt(x, z, y - 1) || "stone";
+  if (visualMode === "sky") {
+    cell.className = "minecraft-cube minecraft-sky-block";
+  } else {
+    cell.className = blockType
+      ? `minecraft-cube minecraft-${blockType}`
+      : `minecraft-cube minecraft-empty-block minecraft-${visualBlockType}`;
+  }
+  cell.dataset.x = `${x}`;
+  cell.dataset.z = `${z}`;
+  cell.dataset.y = `${y}`;
+  if (blockType === "bed") {
+    const isFoot = getMinecraftBlockAt(x, z - 1, y) === "bed";
+    cell.dataset.bedPart = isFoot ? "foot" : "head";
+  }
+  cell.style.setProperty("--mc-x", `${localX}`);
+  cell.style.setProperty("--mc-z", `${localZ}`);
+  cell.style.setProperty("--mc-order", `${(localZ + 3) * 10 + (localX + 3)}`);
+  const label = blockType ? minecraftBlockTypes[blockType]?.label || "方块" : "空气";
+  cell.setAttribute("aria-label", `${label} ${x}, ${y}, ${z}`);
+  const plantType = y === 0 && blockType === "grass" ? getMinecraftPlantAt(x, z) : null;
+  cell.dataset.plant = plantType || "";
+  cell.innerHTML = '<span class="cube-top"></span><span class="cube-left"></span><span class="cube-right"></span>';
+  if (plantType) {
+    const plant = document.createElement("span");
+    plant.className = `minecraft-plant minecraft-plant-${plantType}`;
+    plant.textContent = plantType === "wheat-ripe" ? "麦" : plantType === "wheat" ? "芽" : "草";
+    cell.appendChild(plant);
+  }
+  const animalType = y === 0 && blockType === "grass" ? getMinecraftAnimalAt(x, z) : null;
+  const animalElement = animalType ? makeMinecraftAnimalElement(animalType, x, z) : null;
+  if (animalElement) {
+    cell.appendChild(animalElement);
+  }
+  const villagerInfo = getMinecraftVillagerAtCell(x, z, y);
+  if (villagerInfo) {
+    const villager = document.createElement("span");
+    villager.className = `minecraft-villager${villagerInfo.sleeping ? " sleeping" : ""}`;
+    villager.setAttribute("aria-label", "村民");
+    villager.addEventListener("click", (event) => {
+      event.stopPropagation();
+      tradeWithMinecraftVillager();
+    });
+    cell.appendChild(villager);
+  }
+  cell.addEventListener("click", () => handleMinecraftCellClick(cell));
+  cell.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    mineMinecraftBlock(cell);
+  });
+  return cell;
+}
+
+function getMinecraftZombieAt(x, z) {
+  return minecraftZombies.find((zombie) => zombie.x === x && zombie.z === z) || null;
+}
+
+function spawnMinecraftZombies() {
+  if (minecraftDepth >= 0) {
+    minecraftSkeletons = [];
+  }
+  if ((!minecraftIsNight && minecraftDepth >= 0) || minecraftDepth < -62) {
+    minecraftZombies = [];
+    return;
+  }
+  if (!minecraftZombies.length && (minecraftIsNight || minecraftDepth < -2)) {
+    minecraftZombies = [
+      { x: minecraftPlayerX - 3, z: minecraftPlayerZ + 1, hp: 2 },
+      { x: minecraftPlayerX + 4, z: minecraftPlayerZ + 2, hp: 2 }
+    ];
+  }
+  if (minecraftDepth < -4 && !minecraftSkeletons.length) {
+    minecraftSkeletons = [
+      { x: minecraftPlayerX + 5, z: minecraftPlayerZ - 1, hp: 2 }
+    ];
+  }
+}
+
+function respawnMinecraftPlayer() {
+  minecraftHealth = 10;
+  minecraftHunger = 8;
+  const usedBed = moveMinecraftPlayerToSpawnPoint();
+  if (!usedBed) {
+    minecraftDepth = 0;
+    minecraftPlayerX = 0;
+    minecraftPlayerZ = 0;
+  }
+  minecraftIsNight = false;
+  minecraftZombies = [];
+  minecraftGuardianFound = false;
+  renderMinecraftWorld();
+  updateMinecraftStatus(usedBed ? "没有心了，已经在床上重生。现在是白天。" : "没有心了，已经重生。现在是白天。");
+  saveGameState();
+}
+
+function damageMinecraftPlayer(amount = 1) {
+  const now = Date.now();
+  if (now - minecraftLastZombieHitAt < 900) return;
+  minecraftLastZombieHitAt = now;
+  minecraftHealth = Math.max(0, minecraftHealth - amount);
+  if (minecraftHealth <= 0) {
+    if (minecraftHunger > 0) {
+      minecraftHunger -= 1;
+      minecraftHealth = 2;
+      updateMinecraftStatus("没有心了，自动扣一个鸡腿补血。");
+      saveGameState();
+      return;
+    }
+    respawnMinecraftPlayer();
+    return;
+  }
+  updateMinecraftStatus(`僵尸打到你了，心减少了。`);
+  saveGameState();
+}
+
+function isMinecraftWallAt(x, z) {
+  return Boolean(getMinecraftBlockAt(x, z, 1));
+}
+
+function canMinecraftZombieStepTo(x, z) {
+  if (x === minecraftPlayerX && z === minecraftPlayerZ) return false;
+  if (isMinecraftTorchNearPoint(x, z, 3)) return false;
+  return !isMinecraftWallAt(x, z);
+}
+
+function stepMinecraftZombiesTowardPlayer() {
+  if (!minecraftIsNight || minecraftDepth < 0) return;
+  const now = Date.now();
+  if (now - minecraftLastZombieStepAt < 2600) return;
+  minecraftLastZombieStepAt = now;
+  minecraftZombies.forEach((zombie) => {
+    const torch = findMinecraftTorchNear(zombie.x, zombie.z, 4);
+    if (torch) {
+      const fleeMove = {
+        x: Math.sign(zombie.x - torch.x),
+        z: Math.sign(zombie.z - torch.z)
+      };
+      const fleeCandidates = [
+        fleeMove,
+        { x: fleeMove.x, z: 0 },
+        { x: 0, z: fleeMove.z }
+      ].filter((move) => move.x || move.z);
+      const flee = fleeCandidates.find((candidate) => !isMinecraftWallAt(zombie.x + candidate.x, zombie.z + candidate.z));
+      if (flee) {
+        zombie.x += flee.x;
+        zombie.z += flee.z;
+      }
+      return;
+    }
+    const dx = minecraftPlayerX - zombie.x;
+    const dz = minecraftPlayerZ - zombie.z;
+    if (Math.abs(dx) + Math.abs(dz) <= 1) {
+      damageMinecraftPlayer(2);
+      return;
+    }
+    const primary = Math.abs(dx) >= Math.abs(dz)
+      ? { x: Math.sign(dx), z: 0 }
+      : { x: 0, z: Math.sign(dz) };
+    const secondary = primary.x
+      ? { x: 0, z: Math.sign(dz) }
+      : { x: Math.sign(dx), z: 0 };
+    const moves = [primary, secondary].filter((move) => move.x || move.z);
+    const move = moves.find((candidate) => canMinecraftZombieStepTo(zombie.x + candidate.x, zombie.z + candidate.z));
+    if (move) {
+      zombie.x += move.x;
+      zombie.z += move.z;
+    }
+  });
+}
+
+function hitMinecraftZombie(index) {
+  const zombie = minecraftZombies[index];
+  if (!zombie) return;
+  zombie.hp -= 1;
+  if (zombie.hp <= 0) {
+    minecraftZombies.splice(index, 1);
+    minecraftXp += 1;
+    renderMinecraftWorld();
+    updateMinecraftStatus(`打倒僵尸，获得经验球。经验 ${minecraftXp}。`);
+  } else {
+    renderMinecraftWorld();
+    updateMinecraftStatus("打到僵尸了，再打一下。");
+  }
+  saveGameState();
+}
+
+function stepMinecraftSkeletons() {
+  if (minecraftDepth >= 0 || !minecraftSkeletons.length) return;
+  const now = Date.now();
+  if (now - minecraftLastSkeletonShotAt < 2400) return;
+  minecraftLastSkeletonShotAt = now;
+  minecraftSkeletons.forEach((skeleton) => {
+    const distance = Math.abs(minecraftPlayerX - skeleton.x) + Math.abs(minecraftPlayerZ - skeleton.z);
+    if (distance <= 6) {
+      damageMinecraftPlayer(1);
+      updateMinecraftStatus("骷髅小白射箭打到你了，心减少了。");
+    }
+  });
+}
+
+function hitMinecraftSkeleton(index) {
+  const skeleton = minecraftSkeletons[index];
+  if (!skeleton) return;
+  skeleton.hp -= 1;
+  if (skeleton.hp <= 0) {
+    minecraftSkeletons.splice(index, 1);
+    minecraftXp += 2;
+    renderMinecraftWorld();
+    updateMinecraftStatus(`打倒骷髅小白，获得经验球。经验 ${minecraftXp}。`);
+  } else {
+    renderMinecraftWorld();
+    updateMinecraftStatus("砍到骷髅小白了，再来一下。");
+  }
+  saveGameState();
+}
+
+function makeMinecraftZombieElement(zombie, index) {
+  const zombieElement = document.createElement("button");
+  zombieElement.type = "button";
+  zombieElement.className = "minecraft-zombie";
+  zombieElement.textContent = "僵";
+  zombieElement.style.setProperty("--zombie-x", `${zombie.x - minecraftPlayerX}`);
+  zombieElement.style.setProperty("--zombie-z", `${zombie.z - minecraftPlayerZ}`);
+  zombieElement.setAttribute("aria-label", "僵尸");
+  zombieElement.addEventListener("click", () => hitMinecraftZombie(index));
+  return zombieElement;
+}
+
+function makeMinecraftSkeletonElement(skeleton, index) {
+  const skeletonElement = document.createElement("button");
+  skeletonElement.type = "button";
+  skeletonElement.className = "minecraft-skeleton";
+  skeletonElement.textContent = "弓";
+  skeletonElement.style.setProperty("--skeleton-x", `${skeleton.x - minecraftPlayerX}`);
+  skeletonElement.style.setProperty("--skeleton-z", `${skeleton.z - minecraftPlayerZ}`);
+  skeletonElement.setAttribute("aria-label", "骷髅小白");
+  skeletonElement.addEventListener("click", () => hitMinecraftSkeleton(index));
+  return skeletonElement;
+}
+
+function makeMinecraftSkyBody() {
+  const body = document.createElement("span");
+  body.className = minecraftIsNight ? "minecraft-moon" : "minecraft-sun";
+  body.textContent = minecraftIsNight ? "月" : "日";
+  body.style.animationDelay = `-${Date.now() % 120000}ms`;
+  return body;
+}
+
+function makeMinecraftClouds() {
+  const clouds = document.createElement("div");
+  clouds.className = "minecraft-clouds";
+  for (let index = 0; index < 4; index += 1) {
+    const cloud = document.createElement("span");
+    cloud.className = "minecraft-cloud";
+    cloud.style.setProperty("--cloud-index", `${index}`);
+    clouds.appendChild(cloud);
+  }
+  return clouds;
+}
+
+function makeMinecraftExperienceOrb(index) {
+  const orb = document.createElement("span");
+  orb.className = "minecraft-xp-orb";
+  orb.textContent = "经验";
+  orb.style.setProperty("--orb-index", `${index}`);
+  return orb;
+}
+
+function eatMinecraftWheat() {
+  if (minecraftWheat <= 0) {
+    updateMinecraftStatus("还没有小麦可以吃。");
+    return;
+  }
+  minecraftWheat -= 1;
+  minecraftHunger = Math.min(10, minecraftHunger + 3);
+  if (minecraftHunger >= 10) {
+    minecraftHealth = Math.min(10, minecraftHealth + 2);
+  }
+  renderMinecraftWorld();
+  updateMinecraftStatus("吃掉小麦了，鸡腿变多了。鸡腿满了会回血。");
+  saveGameState();
+}
+
+function eatMinecraftMeat() {
+  if (minecraftMeat <= 0) {
+    updateMinecraftStatus("还没有肉可以吃，先去找动物。");
+    return;
+  }
+  minecraftMeat -= 1;
+  minecraftHunger = Math.min(10, minecraftHunger + 4);
+  if (minecraftHunger >= 10) {
+    minecraftHealth = Math.min(10, minecraftHealth + 2);
+  }
+  renderMinecraftWorld();
+  updateMinecraftStatus("吃了一块肉，鸡腿变多了。");
+  saveGameState();
+}
+
+function tradeWithMinecraftVillager() {
+  const choice = window.prompt(
+    `村民：哼！选一个交易：\n1 小麦 -> 铁\n2 小麦 -> 绿宝石\n3 绿宝石 -> 小麦\n4 铁 -> 绿宝石\n\n你有：小麦 ${minecraftWheat}，铁 ${minecraftIron}，绿宝石 ${minecraftEmerald}`,
+    "1"
+  );
+  if (!choice) {
+    updateMinecraftStatus("村民：哼。");
+    return;
+  }
+  const trade = String(choice).trim();
+  if (trade === "1") {
+    if (minecraftWheat <= 0) {
+      updateMinecraftStatus("村民想要一个小麦，可是你没有小麦。");
+      return;
+    }
+    minecraftWheat -= 1;
+    minecraftIron += 1;
+    updateMinecraftStatus("交易成功：1 个小麦换到了 1 个铁。");
+  } else if (trade === "2") {
+    if (minecraftWheat <= 0) {
+      updateMinecraftStatus("村民想要一个小麦，可是你没有小麦。");
+      return;
+    }
+    minecraftWheat -= 1;
+    minecraftEmerald += 1;
+    updateMinecraftStatus("交易成功：1 个小麦换到了 1 个绿宝石。");
+  } else if (trade === "3") {
+    if (minecraftEmerald <= 0) {
+      updateMinecraftStatus("你还没有绿宝石。");
+      return;
+    }
+    minecraftEmerald -= 1;
+    minecraftWheat += 1;
+    updateMinecraftStatus("交易成功：1 个绿宝石换到了 1 个小麦。");
+  } else if (trade === "4") {
+    if (minecraftIron <= 0) {
+      updateMinecraftStatus("你还没有铁。");
+      return;
+    }
+    minecraftIron -= 1;
+    minecraftEmerald += 1;
+    updateMinecraftStatus("交易成功：1 个铁换到了 1 个绿宝石。");
+  } else {
+    updateMinecraftStatus("村民没有看懂这个交易。");
+    return;
+  }
+  speakAsComputer("哼，交易好了。", { forceSubtitle: true, colorful: false });
+  renderMinecraftWorld();
+  saveGameState();
+}
+
+const minecraftCraftingMaterials = ["", "wood", "coal", "stick", "iron"];
+const minecraftCraftingLabels = {
+  wood: "木",
+  coal: "煤",
+  stick: "棍",
+  iron: "铁"
+};
+
+const minecraftCraftingIcons = {
+  wood: "木",
+  coal: "煤",
+  stick: "棍",
+  iron: "铁"
+};
+
+const minecraftInventoryIcons = {
+  grass: "草",
+  dirt: "土",
+  stone: "石",
+  wood: "木",
+  leaves: "叶",
+  water: "水",
+  bed: "床",
+  crafting_table: "台",
+  torch: "火",
+  bucket: "桶",
+  water_bucket: "水",
+  lava_bucket: "岩",
+  coal: "煤",
+  stick: "棍",
+  iron: "铁",
+  emerald: "绿",
+  meat: "肉",
+  wool: "毛",
+  seeds: "种",
+  wheat: "麦",
+  xp: "星"
+};
+const minecraftCraftingPlaceableMaterials = new Set(["wood", "coal", "stick", "iron"]);
+
+function getMinecraftCraftingMaterialCount(material) {
+  if (material === "wood") return minecraftInventory.wood || 0;
+  if (material === "coal") return minecraftCoal;
+  if (material === "stick") return minecraftSticks;
+  if (material === "iron") return minecraftIron;
+  return 0;
+}
+
+function getMinecraftWorkbenchInventoryItems() {
+  ensureMinecraftInventory();
+  const items = Object.keys(minecraftBlockTypes).map((type) => ({
+    id: type,
+    material: type,
+    count: minecraftInventory[type] || 0
+  }));
+  items.push(
+    { id: "coal", material: "coal", count: minecraftCoal },
+    { id: "stick", material: "stick", count: minecraftSticks },
+    { id: "iron", material: "iron", count: minecraftIron },
+    { id: "emerald", material: "emerald", count: minecraftEmerald },
+    { id: "bucket", material: "bucket", count: minecraftBuckets },
+    { id: "water_bucket", material: "water_bucket", count: minecraftWaterBuckets },
+    { id: "lava_bucket", material: "lava_bucket", count: minecraftLavaBuckets },
+    { id: "meat", material: "meat", count: minecraftMeat },
+    { id: "wool", material: "wool", count: minecraftWool },
+    { id: "seeds", material: "seeds", count: minecraftSeeds },
+    { id: "wheat", material: "wheat", count: minecraftWheat },
+    { id: "xp", material: "xp", count: minecraftXp }
+  );
+  return items.filter((item) => item.count > 0);
+}
+
+function setMinecraftCraftingStatus(message) {
+  if (minecraftCraftingStatus) minecraftCraftingStatus.textContent = message;
+}
+
+function getMinecraftCraftingOutput() {
+  const filled = minecraftCraftingSlots.filter(Boolean).length;
+  if (minecraftCraftingSlots[4] === "wood" && filled === 1) {
+    return { recipe: "sticks", label: "木棍", icon: "棍", count: 4 };
+  }
+  if (minecraftCraftingSlots[0] === "coal" && minecraftCraftingSlots[3] === "stick" && filled === 2) {
+    return { recipe: "torch", label: "火把", icon: "火", count: 4 };
+  }
+  if (minecraftCraftingSlots[3] === "iron" && minecraftCraftingSlots[5] === "iron" && minecraftCraftingSlots[7] === "iron" && filled === 3) {
+    return { recipe: "bucket", label: "铁桶", icon: "桶", count: 1 };
+  }
+  return null;
+}
+
+function addMinecraftCraftingMaterialToGrid(material) {
+  const alreadyPlaced = minecraftCraftingSlots.filter((slot) => slot === material).length;
+  if (getMinecraftCraftingMaterialCount(material) <= alreadyPlaced) {
+    setMinecraftCraftingStatus("这个材料已经都摆上去了。");
+    return;
+  }
+  const emptyIndex = minecraftCraftingSlots.findIndex((slot) => !slot);
+  if (emptyIndex < 0) {
+    setMinecraftCraftingStatus("九宫格放满了，先点一个格子换掉。");
+    return;
+  }
+  minecraftCraftingSlots[emptyIndex] = material;
+  renderMinecraftCraftingTable();
+}
+
+function renderMinecraftCraftingInventory() {
+  if (!minecraftCraftingInventory) return;
+  minecraftCraftingInventory.innerHTML = "";
+  getMinecraftWorkbenchInventoryItems().forEach((inventoryItem) => {
+    const material = inventoryItem.material;
+    const count = inventoryItem.count;
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = `minecraft-crafting-inventory-item material-${material}`;
+    item.dataset.material = material;
+    const canPlace = minecraftCraftingPlaceableMaterials.has(material);
+    if (!canPlace) item.classList.add("view-only");
+    const icon = minecraftInventoryIcons[material] || minecraftCraftingIcons[material] || minecraftCraftingLabels[material] || material;
+    item.innerHTML = `<strong>${icon}</strong><span>${count}</span>`;
+    item.addEventListener("click", () => {
+      if (canPlace) {
+        addMinecraftCraftingMaterialToGrid(material);
+      } else {
+        setMinecraftCraftingStatus("这个东西先放在工作台里看着，后面可以继续加新配方。");
+      }
+    });
+    minecraftCraftingInventory.appendChild(item);
+  });
+}
+
+function renderMinecraftCraftingOutput() {
+  if (!minecraftCraftingOutput) return;
+  const output = getMinecraftCraftingOutput();
+  minecraftCraftingOutput.disabled = !output;
+  minecraftCraftingOutput.dataset.recipe = output?.recipe || "";
+  minecraftCraftingOutput.innerHTML = output
+    ? `<strong>${output.icon}</strong><span>${output.count}</span>`
+    : "";
+  minecraftCraftingOutput.setAttribute("aria-label", output ? `合成${output.label}` : "没有可合成的东西");
+}
+
+function openMinecraftCraftingTable() {
+  minecraftCraftingOpen = true;
+  minecraftCraftingSlots = Array(9).fill("");
+  if (minecraftCraftingPanel) minecraftCraftingPanel.hidden = false;
+  renderMinecraftCraftingTable();
+  setMinecraftCraftingStatus("点格子选择材料：中间放木头合成木棍；左上煤、左中木棍合成火把；左中铁、下中铁、右中铁合成铁桶。");
+}
+
+function closeMinecraftCraftingTable() {
+  minecraftCraftingOpen = false;
+  if (minecraftCraftingPanel) minecraftCraftingPanel.hidden = true;
+}
+
+function cycleMinecraftCraftingSlot(index) {
+  const current = minecraftCraftingSlots[index] || "";
+  const start = minecraftCraftingMaterials.indexOf(current);
+  for (let offset = 1; offset <= minecraftCraftingMaterials.length; offset += 1) {
+    const next = minecraftCraftingMaterials[(start + offset + minecraftCraftingMaterials.length) % minecraftCraftingMaterials.length];
+    if (!next || getMinecraftCraftingMaterialCount(next) > minecraftCraftingSlots.filter((slot) => slot === next).length) {
+      minecraftCraftingSlots[index] = next;
+      renderMinecraftCraftingTable();
+      return;
+    }
+  }
+}
+
+function renderMinecraftCraftingTable() {
+  if (!minecraftCraftingGrid) return;
+  minecraftCraftingGrid.innerHTML = "";
+  minecraftCraftingSlots.forEach((material, index) => {
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = "minecraft-crafting-slot";
+    slot.textContent = material ? (minecraftCraftingIcons[material] || minecraftCraftingLabels[material] || material) : "";
+    slot.addEventListener("click", () => cycleMinecraftCraftingSlot(index));
+    minecraftCraftingGrid.appendChild(slot);
+  });
+  renderMinecraftCraftingInventory();
+  renderMinecraftCraftingOutput();
+}
+
+function spendMinecraftCraftingMaterials(materials) {
+  materials.forEach((material) => {
+    if (material === "wood") minecraftInventory.wood = Math.max(0, (minecraftInventory.wood || 0) - 1);
+    if (material === "coal") minecraftCoal = Math.max(0, minecraftCoal - 1);
+    if (material === "stick") minecraftSticks = Math.max(0, minecraftSticks - 1);
+    if (material === "iron") minecraftIron = Math.max(0, minecraftIron - 1);
+  });
+}
+
+function canSpendMinecraftCraftingMaterials(materials) {
+  const needed = materials.reduce((counts, material) => {
+    counts[material] = (counts[material] || 0) + 1;
+    return counts;
+  }, {});
+  return Object.entries(needed).every(([material, count]) => getMinecraftCraftingMaterialCount(material) >= count);
+}
+
+function craftMinecraftRecipe(recipe = "") {
+  if ((recipe === "sticks" || !recipe) && minecraftCraftingSlots[4] === "wood" && minecraftCraftingSlots.filter(Boolean).length === 1) {
+    spendMinecraftCraftingMaterials(["wood"]);
+    minecraftSticks += 4;
+    minecraftCraftingSlots = Array(9).fill("");
+    renderMinecraftCraftingTable();
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus("合成了 4 根木棍。");
+    saveGameState();
+    return;
+  }
+  if (recipe === "sticks") {
+    if (!canSpendMinecraftCraftingMaterials(["wood"])) {
+      setMinecraftCraftingStatus("木头不够，先去撸树。");
+      return;
+    }
+    spendMinecraftCraftingMaterials(["wood"]);
+    minecraftSticks += 4;
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus("合成了 4 根木棍。");
+    saveGameState();
+    return;
+  }
+  if ((recipe === "torch" || !recipe) && minecraftCraftingSlots[0] === "coal" && minecraftCraftingSlots[3] === "stick" && minecraftCraftingSlots.filter(Boolean).length === 2) {
+    spendMinecraftCraftingMaterials(["coal", "stick"]);
+    minecraftInventory.torch = (minecraftInventory.torch || 0) + 4;
+    minecraftCraftingSlots = Array(9).fill("");
+    renderMinecraftCraftingTable();
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus("合成了 4 个火把。");
+    saveGameState();
+    return;
+  }
+  if (recipe === "torch") {
+    if (!canSpendMinecraftCraftingMaterials(["coal", "stick"])) {
+      setMinecraftCraftingStatus("火把需要煤炭和木棍。");
+      return;
+    }
+    spendMinecraftCraftingMaterials(["coal", "stick"]);
+    minecraftInventory.torch = (minecraftInventory.torch || 0) + 4;
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus("合成了 4 个火把。");
+    saveGameState();
+    return;
+  }
+  if ((recipe === "bucket" || !recipe) && minecraftCraftingSlots[3] === "iron" && minecraftCraftingSlots[7] === "iron" && minecraftCraftingSlots[5] === "iron" && minecraftCraftingSlots.filter(Boolean).length === 3) {
+    spendMinecraftCraftingMaterials(["iron", "iron", "iron"]);
+    minecraftBuckets += 1;
+    minecraftCraftingSlots = Array(9).fill("");
+    renderMinecraftCraftingTable();
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus("合成了一个铁桶。");
+    saveGameState();
+    return;
+  }
+  if (recipe === "bucket") {
+    if (!canSpendMinecraftCraftingMaterials(["iron", "iron", "iron"])) {
+      setMinecraftCraftingStatus("铁桶需要 3 个铁。");
+      return;
+    }
+    spendMinecraftCraftingMaterials(["iron", "iron", "iron"]);
+    minecraftBuckets += 1;
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus("合成了一个铁桶。");
+    saveGameState();
+    return;
+  }
+  setMinecraftCraftingStatus("这个摆法还不能合成东西。");
+}
+
+function makeMinecraftHud() {
+  const hud = document.createElement("div");
+  hud.className = "minecraft-hud";
+  const hearts = document.createElement("div");
+  hearts.className = "minecraft-hearts";
+  hearts.textContent = `${"♥".repeat(minecraftHealth)}${"♡".repeat(10 - minecraftHealth)}`;
+  const hunger = document.createElement("div");
+  hunger.className = "minecraft-hunger";
+  hunger.textContent = `${"▣".repeat(minecraftHunger)}${"□".repeat(10 - minecraftHunger)}`;
+  const farm = document.createElement("div");
+  farm.className = "minecraft-farm-counts";
+  farm.textContent = `种子 ${minecraftSeeds} 小麦 ${minecraftWheat} 肉 ${minecraftMeat} 羊毛 ${minecraftWool} 煤 ${minecraftCoal} 铁 ${minecraftIron} 绿 ${minecraftEmerald} 棍 ${minecraftSticks} 桶 ${minecraftBuckets}`;
+  farm.textContent = `肉 ${minecraftMeat}`;
+  const eat = document.createElement("button");
+  eat.type = "button";
+  eat.className = "minecraft-eat";
+  eat.textContent = "吃";
+  eat.disabled = minecraftWheat <= 0;
+  eat.addEventListener("click", eatMinecraftWheat);
+  const eatMeat = document.createElement("button");
+  eatMeat.type = "button";
+  eatMeat.className = "minecraft-eat";
+  eatMeat.textContent = "肉";
+  eatMeat.disabled = minecraftMeat <= 0;
+  eatMeat.addEventListener("click", eatMinecraftMeat);
+  hud.append(hearts, hunger, farm);
+  return hud;
+}
+
+function renderMinecraftMap() {
+  if (!minecraftMap) return;
+  minecraftMap.innerHTML = "";
+  const mapSize = 9;
+  const minX = -18;
+  const maxX = 30;
+  const minZ = -18;
+  const maxZ = 8;
+  const playerMapX = clamp(Math.round(((minecraftPlayerX - minX) / (maxX - minX)) * (mapSize - 1)), 0, mapSize - 1);
+  const playerMapZ = clamp(Math.round(((minecraftPlayerZ - minZ) / (maxZ - minZ)) * (mapSize - 1)), 0, mapSize - 1);
+  for (let mapZ = 0; mapZ < mapSize; mapZ += 1) {
+    for (let mapX = 0; mapX < mapSize; mapX += 1) {
+      const worldX = Math.round(minX + (mapX / (mapSize - 1)) * (maxX - minX));
+      const worldZ = Math.round(minZ + (mapZ / (mapSize - 1)) * (maxZ - minZ));
+      const cell = document.createElement("span");
+      cell.className = "minecraft-map-cell";
+      if (isMinecraftRiverAt(worldX, worldZ)) cell.classList.add("river");
+      if (isMinecraftVillageAreaAt(worldX, worldZ)) cell.classList.add("village");
+      if (mapX === playerMapX && mapZ === playerMapZ) cell.classList.add("player");
+      minecraftMap.appendChild(cell);
+    }
+  }
+  minecraftMap.style.setProperty("--map-size", `${mapSize}`);
+  minecraftMap.dataset.coords = `你在 X${minecraftPlayerX} Z${minecraftPlayerZ}`;
+}
+
+function renderMinecraftWorld() {
+  if (!minecraftWorld) return;
+  ensureMinecraftWorldBlocks();
+  const fell = applyMinecraftGravity();
+  spawnMinecraftZombies();
+  stepMinecraftZombiesTowardPlayer();
+  stepMinecraftSkeletons();
+  minecraftWorld.innerHTML = "";
+  minecraftWorld.classList.toggle("guardian-depth", minecraftGuardianFound || minecraftDepth <= -63);
+  minecraftWorld.classList.toggle("surface-night", minecraftIsNight && minecraftDepth >= 0);
+  minecraftWorld.classList.toggle("underground-dark", minecraftDepth < 0 && !isMinecraftTorchNearPlayer());
+  minecraftWorld.classList.toggle("underground-lit", minecraftDepth < 0 && isMinecraftTorchNearPlayer());
+  for (let localZ = -4; localZ <= 4; localZ += 1) {
+    for (let localX = -7; localX <= 6; localX += 1) {
+      const offset = getMinecraftViewOffset(localX, localZ);
+      const x = minecraftPlayerX + offset.x;
+      const z = minecraftPlayerZ + offset.z;
+      const isSurfaceSky = minecraftDepth >= 0 && (minecraftDepth === 1 || localZ <= -2);
+      const blockY = isSurfaceSky ? 1 : minecraftDepth;
+      const blockType = getMinecraftBlockAt(x, z, blockY);
+      minecraftWorld.appendChild(makeMinecraftBlockElement(blockType, x, z, blockY, localX, localZ, isSurfaceSky && !blockType ? "sky" : ""));
+    }
+  }
+  if (minecraftDepth >= 0) {
+    minecraftWorld.appendChild(makeMinecraftSkyBody());
+    minecraftWorld.appendChild(makeMinecraftClouds());
+  }
+  minecraftZombies.forEach((zombie, index) => {
+    minecraftWorld.appendChild(makeMinecraftZombieElement(zombie, index));
+  });
+  minecraftSkeletons.forEach((skeleton, index) => {
+    minecraftWorld.appendChild(makeMinecraftSkeletonElement(skeleton, index));
+  });
+  for (let index = 0; index < Math.min(minecraftXp, 6); index += 1) {
+    minecraftWorld.appendChild(makeMinecraftExperienceOrb(index));
+  }
+  const player = document.createElement("span");
+  player.className = "minecraft-player";
+  player.textContent = "我";
+  minecraftWorld.appendChild(player);
+  minecraftWorld.appendChild(makeMinecraftHud());
+  if (minecraftGuardianFound || minecraftDepth <= -63) {
+    const guardian = document.createElement("span");
+    guardian.className = "minecraft-guardian";
+    guardian.textContent = "守";
+    minecraftWorld.appendChild(guardian);
+  }
+  updateMinecraftInventoryUI();
+  renderMinecraftMap();
+  updateMinecraftStatus("前后左右可以走，点方块可以挖或放。");
+}
+
+function placeMinecraftBlock(cell, blockType) {
+  const block = minecraftBlockTypes[blockType];
+  const x = Number(cell?.dataset.x);
+  const z = Number(cell?.dataset.z);
+  const y = Number(cell?.dataset.y);
+  if (!cell || !Number.isFinite(x) || !Number.isFinite(z) || !Number.isFinite(y)) return;
+  if (blockType === "water_bucket" || blockType === "lava_bucket") {
+    const fluid = blockType === "water_bucket" ? "water" : "lava";
+    const currentBlock = getMinecraftBlockAt(x, z, y);
+    if (currentBlock) {
+      updateMinecraftStatus("这里已经有方块了，先挖掉再倒。");
+      return;
+    }
+    if (blockType === "water_bucket") minecraftWaterBuckets -= 1;
+    if (blockType === "lava_bucket") minecraftLavaBuckets -= 1;
+    minecraftBuckets += 1;
+    minecraftSelectedTool = "bucket";
+    setMinecraftBlockAt(x, z, y, fluid);
+    if (fluid === "water") schedulePlacedMinecraftWaterFlow(x, z, y);
+    renderMinecraftWorld();
+    updateMinecraftStatus(fluid === "water" ? "倒出了一桶水，水会慢慢流走。" : "倒出了一桶岩浆，小心烫。");
+    saveGameState();
+    return;
+  }
+  if (!block) return;
+  if ((minecraftInventory[blockType] || 0) <= 0) {
+    updateMinecraftStatus("背包里没有这个方块，先用镐子去挖。");
+    return;
+  }
+  const currentBlock = getMinecraftBlockAt(x, z, y);
+  if (blockType === "bed") {
+    const bedY = y > 0 ? 0 : y;
+    if (!canPlaceMinecraftBedAt(x, z, bedY)) {
+      updateMinecraftStatus("床要占两格，旁边没有空位置就放不下。");
+      return;
+    }
+    minecraftInventory.bed -= 1;
+    placeMinecraftBedAt(x, z, bedY);
+    minecraftDepth = bedY;
+    renderMinecraftWorld();
+    updateMinecraftStatus("两格床放好了，晚上碰一下就可以睡觉。");
+    saveGameState();
+    return;
+  }
+  if (currentBlock) {
+    updateMinecraftStatus("这里已经有方块了，先挖掉再放。");
+    return;
+  }
+  minecraftInventory[blockType] -= 1;
+  setMinecraftBlockAt(x, z, y, blockType);
+  if (blockType === "water") {
+    schedulePlacedMinecraftWaterFlow(x, z, y);
+  }
+  renderMinecraftWorld();
+  updateMinecraftStatus(`放下了${block.label}。`);
+  saveGameState();
+}
+
+function growMinecraftWheat(x, z) {
+  window.setTimeout(() => {
+    if (getMinecraftPlantAt(x, z) !== "wheat") return;
+    setMinecraftPlantAt(x, z, "wheat-ripe");
+    renderMinecraftWorld();
+    saveGameState();
+  }, 2600);
+}
+
+function harvestMinecraftPlant(cell) {
+  const x = Number(cell?.dataset.x);
+  const z = Number(cell?.dataset.z);
+  const plantType = cell?.dataset.plant || "";
+  if (!plantType || !Number.isFinite(x) || !Number.isFinite(z)) return false;
+  const isVillageCrop = isMinecraftVillageFarmAt(x, z);
+  setMinecraftPlantAt(x, z, null);
+  if (plantType === "grass") {
+    minecraftSeeds += 1;
+    renderMinecraftWorld();
+    updateMinecraftStatus(`挖到小麦种子了。种子 ${minecraftSeeds}。`);
+  } else if (plantType === "wheat-ripe") {
+    minecraftWheat += 1;
+    minecraftSeeds += 1;
+    renderMinecraftWorld();
+    updateMinecraftStatus(`收到了小麦。小麦 ${minecraftWheat}。`);
+  } else {
+    minecraftSeeds += 1;
+    renderMinecraftWorld();
+    updateMinecraftStatus("小麦还没完全长大，但拿回了种子。");
+  }
+  if (isVillageCrop && plantType === "wheat-ripe") {
+    updateMinecraftStatus(`Harvested village crops. Villager: hum hum! Wheat ${minecraftWheat}.`);
+    speakAsComputer("hum hum", { forceSubtitle: true, colorful: false });
+  }
+  /*
+    updateMinecraftStatus(`收了村里的菜，获得小麦。村民：哼哼！小麦 ${minecraftWheat}。`);
+    speakAsComputer("哼哼。", { forceSubtitle: true, colorful: false });
+  }
+  */
+  saveGameState();
+  return true;
+}
+
+function plantMinecraftWheat(cell) {
+  const x = Number(cell?.dataset.x);
+  const z = Number(cell?.dataset.z);
+  const y = Number(cell?.dataset.y);
+  if (!Number.isFinite(x) || !Number.isFinite(z) || y !== 0) return false;
+  if (getMinecraftBlockAt(x, z, y) !== "grass" || getMinecraftPlantAt(x, z)) return false;
+  if (minecraftSeeds <= 0) return false;
+  minecraftSeeds -= 1;
+  setMinecraftPlantAt(x, z, "wheat");
+  growMinecraftWheat(x, z);
+  renderMinecraftWorld();
+  updateMinecraftStatus("种下小麦了，很快就会长大。");
+  saveGameState();
+  return true;
+}
+
+function sleepInMinecraftBed(cell) {
+  const x = Number(cell?.dataset.x);
+  const z = Number(cell?.dataset.z);
+  const y = Number(cell?.dataset.y);
+  if (!Number.isFinite(x) || !Number.isFinite(z) || !Number.isFinite(y)) return false;
+  if (getMinecraftBlockAt(x, z, y) !== "bed") return false;
+  if (!minecraftIsNight) {
+    if (minecraftSelectedTool !== "pickaxe") {
+      minecraftSpawnPoint = { x, z, y };
+      saveGameState();
+      updateMinecraftStatus("床已经放好了，晚上碰一下它就可以睡觉。");
+      return true;
+    }
+    return false;
+  }
+  minecraftIsNight = false;
+  minecraftZombies = [];
+  minecraftHealth = Math.min(10, minecraftHealth + 2);
+  minecraftSpawnPoint = { x, z, y };
+  renderMinecraftWorld();
+  updateMinecraftStatus("在床上睡了一觉，天亮了，僵尸也走了。");
+  saveGameState();
+  return true;
+}
+
+function mineMinecraftBlock(cell) {
+  const x = Number(cell?.dataset.x);
+  const z = Number(cell?.dataset.z);
+  const y = Number(cell?.dataset.y);
+  if (!cell || !Number.isFinite(x) || !Number.isFinite(z) || !Number.isFinite(y)) return;
+  const blockType = getMinecraftBlockAt(x, z, y);
+  const block = minecraftBlockTypes[blockType];
+  if (!block) {
+    updateMinecraftStatus("这里是空气，挖不到方块。");
+    return;
+  }
+  if (blockType === "bed") {
+    minecraftInventory.bed = (minecraftInventory.bed || 0) + 1;
+    clearMinecraftBedAt(x, z, y);
+    renderMinecraftWorld();
+    updateMinecraftStatus("挖掉了整张床，床已经回到物品栏。");
+    saveGameState();
+    return;
+  }
+  if (blockType === "crafting_table") {
+    openMinecraftCraftingTable();
+    return;
+  }
+  if (blockType === "water") {
+    updateMinecraftStatus("Water cannot be mined. Select an iron bucket and tap the water to fill it.");
+    return;
+    if (minecraftBuckets <= 0) {
+      updateMinecraftStatus("水要用铁桶装，先在工作台合成铁桶。");
+      return;
+    }
+    minecraftBuckets -= 1;
+    minecraftWaterBuckets += 1;
+    minecraftInventory.water = (minecraftInventory.water || 0) + 1;
+    if (!isNaturalMinecraftRiverWaterAt(x, z, y)) {
+      removePlacedMinecraftWaterAt(x, z, y);
+      renderMinecraftWorld();
+      updateMinecraftStatus("装走了一格放出来的水，这个水不是河水源头，所以不会无限补回来。");
+      saveGameState();
+      return;
+    }
+    renderMinecraftWorld();
+    updateMinecraftStatus("装到了一格水，旁边的水又流回来，所以水不会被挖完。");
+    saveGameState();
+    return;
+  }
+  if (blockType === "lava") {
+    if (minecraftBuckets <= 0) {
+      updateMinecraftStatus("岩浆太烫了，要用铁桶装。");
+      return;
+    }
+    minecraftBuckets -= 1;
+    minecraftLavaBuckets += 1;
+    setMinecraftBlockAt(x, z, y, null);
+    renderMinecraftWorld();
+    updateMinecraftStatus("装到了一桶岩浆。");
+    saveGameState();
+    return;
+  }
+  if (blockType === "coal_ore") {
+    minecraftCoal += 1;
+    setMinecraftBlockAt(x, z, y, null);
+    renderMinecraftWorld();
+    updateMinecraftStatus(`挖到煤炭了。煤炭 ${minecraftCoal}。`);
+    saveGameState();
+    return;
+  }
+  if (blockType === "iron_ore") {
+    minecraftIron += 1;
+    setMinecraftBlockAt(x, z, y, null);
+    renderMinecraftWorld();
+    updateMinecraftStatus(`挖到铁了。铁 ${minecraftIron}。`);
+    saveGameState();
+    return;
+  }
+  const madeFirstCraftingTable = blockType === "wood" && (minecraftInventory.crafting_table || 0) <= 0;
+  if (madeFirstCraftingTable) {
+    minecraftInventory.crafting_table = 1;
+  }
+  minecraftInventory[blockType] = (minecraftInventory[blockType] || 0) + 1;
+  setMinecraftBlockAt(x, z, y, null);
+  renderMinecraftWorld();
+  updateMinecraftStatus(madeFirstCraftingTable ? "撸到第一块木头，自动做出了一个工作台。" : `挖到了${block.label}，现在可以放它了。`);
+  saveGameState();
+}
+
+function handleMinecraftCellClick(cell) {
+  if (Date.now() - minecraftOpenedAt < 260) return;
+  markChatActivity();
+  wakeFromNightSleep();
+  const x = Number(cell?.dataset.x);
+  const z = Number(cell?.dataset.z);
+  const y = Number(cell?.dataset.y);
+  const blockType = getMinecraftBlockAt(x, z, y);
+  if (blockType === "crafting_table") {
+    openMinecraftCraftingTable();
+    return;
+  }
+  if (minecraftSelectedTool === "bucket" && (blockType === "water" || blockType === "lava")) {
+    if (minecraftBuckets <= 0) return;
+    minecraftBuckets -= 1;
+    if (blockType === "water") minecraftWaterBuckets += 1;
+    if (blockType === "lava") minecraftLavaBuckets += 1;
+    minecraftSelectedTool = blockType === "water" ? "water_bucket" : "lava_bucket";
+    if (blockType === "lava") {
+      setMinecraftBlockAt(x, z, y, null);
+    } else if (!isNaturalMinecraftRiverWaterAt(x, z, y)) {
+      removePlacedMinecraftWaterAt(x, z, y);
+    }
+    renderMinecraftWorld();
+    updateMinecraftStatus(blockType === "water" ? "用铁桶装到了一桶水。" : "用铁桶装到了一桶岩浆。");
+    saveGameState();
+    return;
+  }
+  if (sleepInMinecraftBed(cell)) return;
+  if (minecraftSelectedTool === "pickaxe") {
+    if (harvestMinecraftPlant(cell)) return;
+    if (plantMinecraftWheat(cell)) return;
+    mineMinecraftBlock(cell);
+    return;
+  }
+  if (minecraftSelectedTool === "bed") {
+    placeMinecraftBlock(cell, minecraftSelectedTool);
+    return;
+  }
+  if (minecraftSelectedTool === "water_bucket" || minecraftSelectedTool === "lava_bucket") {
+    placeMinecraftBlock(cell, minecraftSelectedTool);
+    return;
+  }
+  if (harvestMinecraftPlant(cell)) return;
+  if (plantMinecraftWheat(cell)) return;
+  placeMinecraftBlock(cell, minecraftSelectedTool);
+}
+
+function moveMinecraftPlayer(direction, options = {}) {
+  const moves = {
+    forward: { x: 0, z: -1 },
+    back: { x: 0, z: 1 },
+    left: { x: -1, z: 0 },
+    right: { x: 1, z: 0 }
+  };
+  const move = moves[direction];
+  if (!move) return;
+  const offset = getMinecraftViewOffset(move.x, move.z);
+  minecraftPlayerX += offset.x * MINECRAFT_MOVE_STEP;
+  minecraftPlayerZ += offset.z * MINECRAFT_MOVE_STEP;
+  renderMinecraftWorld();
+  updateMinecraftStatus(options.quiet ? "正在走路。" : "走到了新的地方。");
+  saveGameState();
+}
+
+function stopMinecraftJoystick() {
+  minecraftJoystickDirection = "";
+  if (minecraftJoystickTimer) {
+    window.clearInterval(minecraftJoystickTimer);
+    minecraftJoystickTimer = null;
+  }
+  minecraftJoystickHandle?.style.setProperty("--joy-x", "0px");
+  minecraftJoystickHandle?.style.setProperty("--joy-y", "0px");
+}
+
+function moveMinecraftJoystick(event) {
+  if (!minecraftJoystick || !minecraftJoystickHandle) return;
+  const rect = minecraftJoystick.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const rawX = event.clientX - centerX;
+  const rawY = event.clientY - centerY;
+  const limit = Math.max(14, rect.width * 0.32);
+  const length = Math.hypot(rawX, rawY) || 1;
+  const scale = Math.min(1, limit / length);
+  const knobX = rawX * scale;
+  const knobY = rawY * scale;
+  minecraftJoystickHandle.style.setProperty("--joy-x", `${knobX}px`);
+  minecraftJoystickHandle.style.setProperty("--joy-y", `${knobY}px`);
+  if (Math.hypot(rawX, rawY) < rect.width * 0.13) {
+    minecraftJoystickDirection = "";
+    return;
+  }
+  minecraftJoystickDirection = Math.abs(rawX) > Math.abs(rawY)
+    ? (rawX > 0 ? "right" : "left")
+    : (rawY > 0 ? "back" : "forward");
+}
+
+function startMinecraftJoystick(event) {
+  if (!minecraftJoystick) return;
+  event.preventDefault();
+  minecraftJoystick.setPointerCapture?.(event.pointerId);
+  moveMinecraftJoystick(event);
+  if (minecraftJoystickTimer) return;
+  minecraftJoystickTimer = window.setInterval(() => {
+    if (!minecraftJoystickDirection) return;
+    moveMinecraftPlayer(minecraftJoystickDirection, { quiet: true });
+  }, 170);
+}
+
+function digMinecraftDown() {
+  const blockType = getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth);
+  const block = minecraftBlockTypes[blockType];
+  if (block) {
+    if (blockType === "bed") {
+      minecraftInventory.bed = (minecraftInventory.bed || 0) + 1;
+      clearMinecraftBedAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth);
+    } else if (blockType === "water") {
+      minecraftInventory.water = (minecraftInventory.water || 0) + 1;
+      if (!isNaturalMinecraftRiverWaterAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth)) {
+        removePlacedMinecraftWaterAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth);
+      }
+    } else if (blockType === "lava") {
+      if (minecraftBuckets > 0) {
+        minecraftBuckets -= 1;
+        minecraftLavaBuckets += 1;
+        setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
+      }
+    } else {
+      minecraftInventory[blockType] = (minecraftInventory[blockType] || 0) + 1;
+      setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
+    }
+  }
+  minecraftDepth = minecraftDepth === 1 ? 0 : minecraftDepth - 1;
+  if (minecraftDepth <= -63) {
+    minecraftDepth = -63;
+    minecraftGuardianFound = true;
+    updateMinecraftStatus("你挖到了 -63，守护者在下面等着。");
+    speakAsComputer("你挖到了负六十三层，守护者出现了。", { forceSubtitle: true, colorful: true });
+  } else {
+    updateMinecraftStatus(block ? `向下挖到了${block.label}。` : "向下挖了一层。");
+  }
+  renderMinecraftWorld();
+  saveGameState();
+}
+
+function jumpMinecraftUp() {
+  markChatActivity();
+  wakeFromNightSleep();
+  if (minecraftDepth < 1) {
+    minecraftDepth += 1;
+    renderMinecraftWorld();
+    updateMinecraftStatus(minecraftDepth === 1 ? "跳到最上面了，这里是地面和天空交界，树长在空气里。" : "往上跳了一层。");
+    saveGameState();
+    return;
+  }
+  minecraftWorld?.classList.add("minecraft-jump");
+  window.setTimeout(() => minecraftWorld?.classList.remove("minecraft-jump"), 260);
+  updateMinecraftStatus("已经跳到最上面了，不能再往上跳了。");
+}
+
+function switchMinecraftView() {
+  minecraftView = (minecraftView + 1) % 4;
+  renderMinecraftWorld();
+  updateMinecraftStatus("视角切换了。");
+  saveGameState();
+}
+
+function toggleMinecraftDayNight() {
+  if (!minecraftPanelOpen) return;
+  minecraftIsNight = !minecraftIsNight;
+  if (!minecraftIsNight) {
+    minecraftZombies = [];
+  }
+  renderMinecraftWorld();
+  updateMinecraftStatus(minecraftIsNight ? "太阳下去了，月亮出来了，僵尸来了。" : "月亮下去了，太阳出来了。");
+  saveGameState();
+}
+
+function startMinecraftCycle() {
+  if (minecraftCycleTimer) return;
+  minecraftCycleTimer = window.setInterval(toggleMinecraftDayNight, 120000);
+}
+
+function resetMinecraftWorld() {
+  minecraftWorldBlocks = {};
+  minecraftPlayerX = 0;
+  minecraftPlayerZ = 0;
+  minecraftDepth = 0;
+  minecraftView = 0;
+  minecraftGuardianFound = false;
+  minecraftIsNight = false;
+  minecraftXp = 0;
+  minecraftZombies = [];
+  minecraftHealth = 10;
+  minecraftHunger = 8;
+  minecraftSeeds = 0;
+  minecraftWheat = 0;
+  minecraftEmerald = 0;
+  minecraftPlants = {};
+  minecraftMeat = 0;
+  minecraftWool = 0;
+  minecraftAnimals = {};
+  minecraftSpawnPoint = null;
+  minecraftSticks = 0;
+  minecraftCoal = 0;
+  minecraftIron = 0;
+  minecraftBuckets = 0;
+  minecraftWaterBuckets = 0;
+  minecraftLavaBuckets = 0;
+  minecraftSkeletons = [];
+  minecraftVillagers = {};
+  closeMinecraftCraftingTable();
+  resetMinecraftInventory();
+  renderMinecraftWorld();
+  updateMinecraftStatus("世界重置好了。玩家背包又是空的，要先挖方块。");
+  saveGameState();
+}
+
+function setMinecraftPanelOpen(open) {
+  minecraftPanelOpen = open;
+  if (open) {
+    setMinePanelOpen(false);
+    setShopPanelOpen(false);
+    minecraftOpenedAt = Date.now();
+    renderMinecraftWorld();
+  }
+  if (minecraftPanel) {
+    minecraftPanel.hidden = !minecraftPanelOpen;
+  }
+  minecraftToggle?.classList.toggle("active", minecraftPanelOpen);
+}
+
+function setupMinecraftGame() {
+  ensureMinecraftWorldBlocks();
+  ensureMinecraftInventory();
+  renderMinecraftWorld();
+  minecraftToggle?.addEventListener("click", () => {
+    setMinecraftPanelOpen(!minecraftPanelOpen);
+    if (minecraftPanelOpen) {
+      speakAsComputer("我的世界打开了。现在可以前后左右走，也可以切换视角，先挖方块再放方块。", { forceSubtitle: true, colorful: false });
+    }
+  });
+  minecraftCloseButton?.addEventListener("click", () => setMinecraftPanelOpen(false));
+  minecraftClearButton?.addEventListener("click", () => {
+    if (!window.confirm("确定要重置我的世界吗？建好的房子也会清空。")) return;
+    resetMinecraftWorld();
+    speakAsComputer("小方块世界重置了，背包也清空了。", { forceSubtitle: true, colorful: false });
+  });
+  minecraftToolButtons.forEach((button) => {
+    button.addEventListener("click", () => setMinecraftTool(button.dataset.minecraftTool || "grass"));
+  });
+  minecraftMoveButtons.forEach((button) => {
+    button.addEventListener("click", () => moveMinecraftPlayer(button.dataset.minecraftMove || "forward"));
+  });
+  minecraftJoystick?.addEventListener("pointerdown", startMinecraftJoystick);
+  minecraftJoystick?.addEventListener("pointermove", (event) => {
+    if (!minecraftJoystickTimer) return;
+    moveMinecraftJoystick(event);
+  });
+  minecraftJoystick?.addEventListener("pointerup", stopMinecraftJoystick);
+  minecraftJoystick?.addEventListener("pointercancel", stopMinecraftJoystick);
+  minecraftJoystick?.addEventListener("lostpointercapture", stopMinecraftJoystick);
+  minecraftCraftingClose?.addEventListener("click", closeMinecraftCraftingTable);
+  minecraftCraftingMake?.addEventListener("click", () => craftMinecraftRecipe());
+  minecraftCraftingOutput?.addEventListener("click", () => {
+    const recipe = minecraftCraftingOutput.dataset.recipe || "";
+    if (recipe) craftMinecraftRecipe(recipe);
+  });
+  document.querySelectorAll(".minecraft-recipe").forEach((button) => {
+    button.addEventListener("click", () => craftMinecraftRecipe(button.dataset.minecraftRecipe || ""));
+  });
+  minecraftJumpUpButton?.addEventListener("click", jumpMinecraftUp);
+  minecraftDigDownButton?.addEventListener("click", digMinecraftDown);
+  minecraftViewButton?.addEventListener("click", switchMinecraftView);
+  startMinecraftCycle();
+  setMinecraftTool(minecraftSelectedTool);
 }
 
 function setupMiningGame() {
@@ -4801,6 +6726,7 @@ setupFoodDrag();
 setupRhythmBox();
 updateRhythmTvMount();
 updateTvWeatherMarks();
+setupMinecraftGame();
 setupMiningGame();
 loadVoices();
 startSunBehaviorLoop();

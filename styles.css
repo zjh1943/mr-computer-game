@@ -3759,6 +3759,1609 @@ body.computer-away .call-back-toggle {
   outline-offset: 3px;
 }
 
+.minecraft-toggle {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 6;
+  border: 3px solid #151515;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, #75c94f 0 48%, #4f9c33 48% 100%);
+  color: #ffffff;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    3px 3px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 0 #113c0c;
+}
+
+.minecraft-toggle.active {
+  background:
+    linear-gradient(180deg, #89d8ff 0 48%, #3577d3 48% 100%);
+}
+
+.minecraft-panel {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  z-index: 180;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 5px;
+  padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 100%),
+    linear-gradient(135deg, #6f6f6f 0 25%, #5a5a5a 25% 50%, #777777 50% 75%, #4d4d4d 75% 100%);
+  background-size: 32px 32px, 32px 32px, 64px 64px;
+  color: #fff7e0;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+  font-family: "Courier New", "Lucida Console", monospace;
+  letter-spacing: 0;
+  image-rendering: pixelated;
+}
+
+.minecraft-panel[hidden] {
+  display: none;
+}
+
+.minecraft-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px;
+  border: 3px solid #1f1711;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 48%),
+    #3a2a20;
+  color: #f8f0d8;
+  font-size: 11px;
+  font-weight: 900;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.minecraft-tools {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 5px;
+  border: 3px solid #1f1711;
+  background: rgba(37, 32, 24, 0.92);
+  overflow-x: auto;
+}
+
+.minecraft-tool,
+.minecraft-clear,
+.minecraft-close {
+  flex: 0 0 auto;
+  border: 2px solid #1a120d;
+  border-radius: 0;
+  background: #7d6a54;
+  color: #ffffff;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+}
+
+.minecraft-tool {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  color: transparent;
+  font-size: 0;
+  position: relative;
+}
+
+.minecraft-tool[hidden] {
+  display: none;
+}
+
+.minecraft-tool::before {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #1a120d;
+  background: #777777;
+  box-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.2), inset -3px -3px 0 rgba(0, 0, 0, 0.25);
+}
+
+.minecraft-tool[data-minecraft-tool="grass"]::before {
+  background: linear-gradient(180deg, #35a236 0 36%, #7a4c26 36% 100%);
+}
+
+.minecraft-tool[data-minecraft-tool="dirt"]::before {
+  background: #7a4c26;
+}
+
+.minecraft-tool[data-minecraft-tool="stone"]::before {
+  background: #737373;
+}
+
+.minecraft-tool[data-minecraft-tool="wood"]::before {
+  background: repeating-linear-gradient(90deg, #8b5425 0 5px, #6f3f1d 5px 9px);
+}
+
+.minecraft-tool[data-minecraft-tool="leaves"]::before {
+  background: #2f8d38;
+}
+
+.minecraft-tool[data-minecraft-tool="water"]::before,
+.minecraft-tool[data-minecraft-tool="water_bucket"]::before {
+  background: #2387d8;
+}
+
+.minecraft-tool[data-minecraft-tool="bed"]::before {
+  background: linear-gradient(180deg, #f8f3dc 0 36%, #db3f46 36% 100%);
+}
+
+.minecraft-tool[data-minecraft-tool="crafting_table"]::before {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 4px, transparent 4px 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0 4px, transparent 4px 100%),
+    #9a642f;
+  background-size: 9px 9px;
+}
+
+.minecraft-tool[data-minecraft-tool="torch"]::before {
+  width: 8px;
+  background: linear-gradient(180deg, #f63c20 0 26%, #7a4c26 26% 100%);
+}
+
+.minecraft-tool[data-minecraft-tool="bucket"]::before,
+.minecraft-tool[data-minecraft-tool="lava_bucket"]::before {
+  background: linear-gradient(180deg, #c9ced4 0 72%, #ff7b22 72% 100%);
+}
+
+.minecraft-tool[data-minecraft-tool="pickaxe"]::before {
+  content: "⛏";
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  background: #555555;
+}
+
+.minecraft-tool span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #1a120d;
+  background: rgba(0, 0, 0, 0.58);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.minecraft-extra-item {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #1a120d;
+  border-radius: 0;
+  background: #7d6a54;
+  color: #ffffff;
+  font: 900 11px "Courier New", monospace;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+}
+
+.minecraft-extra-item strong {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #1a120d;
+  font-size: 10px;
+}
+
+.minecraft-extra-item > span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #1a120d;
+  background: rgba(0, 0, 0, 0.58);
+  color: #ffffff;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.minecraft-extra-seeds strong {
+  background: #425f22;
+}
+
+.minecraft-extra-wheat strong {
+  background: #d9a53d;
+  color: #1f1711;
+}
+
+.minecraft-extra-wool strong {
+  background: #f2f2f2;
+  color: #1f1711;
+}
+
+.minecraft-tool.active {
+  background: #3c8f36;
+  color: #f7ffd8;
+}
+
+.minecraft-tool:disabled {
+  cursor: default;
+  opacity: 0.46;
+  filter: grayscale(0.45);
+}
+
+.minecraft-clear {
+  background: #d69a3a;
+  color: #231500;
+  width: 38px;
+}
+
+.minecraft-close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: #c23d32;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.minecraft-status {
+  min-height: 24px;
+  padding: 4px 6px;
+  border: 3px solid #1f1711;
+  background: #252018;
+  color: #d7ffe0;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.48);
+}
+
+.minecraft-controls {
+  display: grid;
+  grid-template-columns: minmax(108px, 148px) minmax(52px, 0.5fr) minmax(64px, 0.65fr) minmax(64px, 0.65fr);
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border: 3px solid #1f1711;
+  background: rgba(37, 32, 24, 0.92);
+}
+
+.minecraft-move,
+.minecraft-jump-up,
+.minecraft-dig-down,
+.minecraft-view {
+  min-height: 28px;
+  border: 2px solid #1a120d;
+  border-radius: 0;
+  background: #5f83d8;
+  color: #ffffff;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
+}
+
+.minecraft-joystick {
+  position: relative;
+  width: min(34vw, 142px);
+  aspect-ratio: 1;
+  border: 4px solid #1a120d;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 2px), rgba(255, 255, 255, 0.26) calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)),
+    linear-gradient(180deg, transparent calc(50% - 2px), rgba(255, 255, 255, 0.26) calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)),
+    #4c4338;
+  touch-action: none;
+  cursor: pointer;
+  box-shadow:
+    inset 5px 5px 0 rgba(255, 255, 255, 0.12),
+    inset -6px -6px 0 rgba(0, 0, 0, 0.28);
+}
+
+.minecraft-joystick-handle {
+  --joy-x: 0px;
+  --joy-y: 0px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34%;
+  aspect-ratio: 1;
+  border: 3px solid #130d09;
+  background: #f0d35d;
+  transform: translate(calc(-50% + var(--joy-x)), calc(-50% + var(--joy-y)));
+  transition: transform 80ms linear;
+  pointer-events: none;
+  box-shadow:
+    inset 4px 4px 0 rgba(255, 255, 255, 0.26),
+    inset -5px -5px 0 rgba(0, 0, 0, 0.22);
+}
+
+.minecraft-dig-down {
+  background: #70503a;
+}
+
+.minecraft-jump-up {
+  background: #8f65d8;
+}
+
+.minecraft-view {
+  background: #3c8f76;
+}
+
+.minecraft-world {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(14, minmax(0, 1fr));
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+  gap: 0;
+  min-height: 0;
+  height: min(68vh, calc((100vw - 28px) * 0.58));
+  aspect-ratio: 14 / 9;
+  border: 4px solid #1f1711;
+  background:
+    linear-gradient(90deg, rgba(31, 23, 17, 0.18) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(31, 23, 17, 0.18) 1px, transparent 1px),
+    #35a236;
+  background-size: calc(100% / 14) calc(100% / 9);
+  overflow: hidden;
+  perspective: none;
+  transform-style: flat;
+}
+
+.minecraft-map {
+  position: absolute;
+  right: 10px;
+  top: 86px;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: repeat(9, 10px);
+  grid-template-rows: repeat(9, 10px);
+  gap: 1px;
+  padding: 5px;
+  border: 3px solid #1f1711;
+  background: #241d16;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.32);
+}
+
+.minecraft-map::after {
+  content: attr(data-coords);
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  bottom: -24px;
+  display: grid;
+  place-items: center;
+  height: 20px;
+  border: 3px solid #1f1711;
+  background: #f7e28a;
+  color: #1f1711;
+  font: 900 10px "Courier New", monospace;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.28);
+}
+
+.minecraft-map-cell {
+  width: 10px;
+  height: 10px;
+  background: #48a848;
+}
+
+.minecraft-map-cell.river {
+  background: #2387d8;
+}
+
+.minecraft-map-cell.village {
+  background: #c89145;
+}
+
+.minecraft-map-cell.player {
+  background: #ff1744;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px #1f1711, 0 0 8px #ffffff;
+}
+
+.minecraft-world.guardian-depth {
+  background: #152039;
+}
+
+.minecraft-world.surface-night {
+  background: #17233f;
+}
+
+.minecraft-world.underground-dark {
+  background: #090b12;
+}
+
+.minecraft-world.underground-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  background: rgba(0, 0, 0, 0.58);
+  pointer-events: none;
+}
+
+.minecraft-world.underground-lit {
+  background: #222018;
+}
+
+.minecraft-world.minecraft-jump .minecraft-player {
+  animation: minecraft-player-jump 260ms ease-out;
+}
+
+.minecraft-cube {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(31, 23, 17, 0.58);
+  background: #35a236;
+  transform: none;
+  cursor: crosshair;
+  transform-style: flat;
+  image-rendering: pixelated;
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.24);
+}
+
+.minecraft-cube.minecraft-air {
+  opacity: 1;
+  background: #2f5e8f;
+}
+
+.minecraft-cube.minecraft-air:hover {
+  opacity: 1;
+}
+
+.minecraft-cube.minecraft-empty-block {
+  opacity: 0.82;
+}
+
+.minecraft-cube.minecraft-empty-block::after {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.minecraft-sky-block {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 42%),
+    #79cfff;
+  box-shadow:
+    inset 5px 5px 0 rgba(255, 255, 255, 0.22),
+    inset -6px -6px 0 rgba(0, 66, 120, 0.18);
+}
+
+.surface-night .minecraft-sky-block {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 42%),
+    #1b2f5c;
+}
+
+.minecraft-sun,
+.minecraft-moon {
+  position: absolute;
+  left: 10%;
+  top: 9%;
+  z-index: 18;
+  display: grid;
+  place-items: center;
+  width: min(7vw, 64px);
+  height: min(7vw, 64px);
+  border: 4px solid #1f1711;
+  color: #1f1711;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow:
+    inset 5px 5px 0 rgba(255, 255, 255, 0.22),
+    inset -6px -6px 0 rgba(0, 0, 0, 0.18);
+}
+
+.minecraft-sun {
+  background: #ffd84d;
+  animation: minecraft-sky-cross 120s linear infinite;
+}
+
+.minecraft-moon {
+  left: 10%;
+  right: auto;
+  background: #dce6ff;
+  animation: minecraft-sky-cross 120s linear infinite;
+}
+
+.minecraft-clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 17;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.minecraft-cloud {
+  position: absolute;
+  left: calc(-28% + var(--cloud-index) * 34%);
+  top: 10%;
+  width: min(24vw, 190px);
+  height: min(5vw, 42px);
+  background:
+    linear-gradient(90deg, transparent 0 8%, #ffffff 8% 28%, transparent 28% 34%, #ffffff 34% 72%, transparent 72% 78%, #ffffff 78% 100%);
+  filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.18));
+  animation: minecraft-cloud-drift 95s linear infinite;
+  animation-delay: calc(var(--cloud-index) * -18s);
+}
+
+.minecraft-cloud:nth-child(2),
+.minecraft-cloud:nth-child(4) {
+  top: 22%;
+}
+
+.minecraft-cloud::before,
+.minecraft-cloud::after {
+  content: "";
+  position: absolute;
+  top: -48%;
+  width: 28%;
+  height: 100%;
+  background: #ffffff;
+}
+
+.minecraft-cloud::before {
+  left: 28%;
+}
+
+.minecraft-cloud::after {
+  right: 18%;
+}
+
+.minecraft-zombie {
+  --zx: calc(50% + var(--zombie-x) * 8%);
+  --zz: calc(51% + var(--zombie-z) * 8%);
+  position: absolute;
+  left: var(--zx);
+  top: var(--zz);
+  z-index: 24;
+  display: grid;
+  place-items: center;
+  width: min(5vw, 44px);
+  height: min(6vw, 56px);
+  border: 4px solid #111111;
+  background:
+    linear-gradient(180deg, #5ca85d 0 42%, #2451a6 42% 100%);
+  color: transparent;
+  font: inherit;
+  font-size: 0;
+  font-weight: 900;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35);
+}
+
+.minecraft-zombie::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: -34%;
+  width: 64%;
+  height: 44%;
+  border: 4px solid #111111;
+  background:
+    radial-gradient(circle at 33% 45%, #111111 0 10%, transparent 11%),
+    radial-gradient(circle at 67% 45%, #111111 0 10%, transparent 11%),
+    linear-gradient(180deg, transparent 0 68%, #223116 68% 78%, transparent 78%),
+    #6ac06a;
+  box-shadow: inset 4px 4px 0 rgba(255, 255, 255, 0.16);
+}
+
+.minecraft-zombie::after {
+  content: "";
+  position: absolute;
+  left: -34%;
+  top: 20%;
+  z-index: -1;
+  width: 168%;
+  height: 18%;
+  border: 4px solid #111111;
+  background: #5ca85d;
+  box-shadow: inset 4px 0 0 rgba(255, 255, 255, 0.14);
+}
+
+.minecraft-skeleton {
+  --sx: calc(50% + var(--skeleton-x) * 7%);
+  --sz: calc(51% + var(--skeleton-z) * 7%);
+  position: absolute;
+  left: var(--sx);
+  top: var(--sz);
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  width: min(5vw, 48px);
+  height: min(5vw, 48px);
+  border: 4px solid #111111;
+  background:
+    linear-gradient(90deg, transparent 0 42%, #5b3316 42% 56%, transparent 56% 100%),
+    #f2f2e8;
+  color: #111111;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35);
+}
+
+.minecraft-xp-orb {
+  position: absolute;
+  left: calc(44% + var(--orb-index) * 22px);
+  bottom: 9%;
+  z-index: 26;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 3px solid #21420f;
+  background: #8cff3e;
+  color: #21420f;
+  font-size: 7px;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(140, 255, 62, 0.75);
+}
+
+.minecraft-hud {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  align-items: center;
+  gap: 6px;
+  transform: translateX(-50%);
+  padding: 5px;
+  border: 4px solid #1f1711;
+  background: rgba(22, 18, 14, 0.88);
+  color: #ffffff;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.minecraft-crafting-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto auto;
+  gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  border: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 100%),
+    #3b2d22;
+  background-size: 30px 30px;
+  color: #fff7df;
+  box-shadow: none;
+}
+
+.minecraft-crafting-panel[hidden] {
+  display: none;
+}
+
+.minecraft-crafting-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.minecraft-crafting-close {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #1f1711;
+  background: #c23d32;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.minecraft-crafting-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  width: min(44vw, 240px);
+  align-self: start;
+  justify-self: center;
+}
+
+.minecraft-crafting-slot {
+  aspect-ratio: 1;
+  border: 3px solid #1f1711;
+  background: #8a6a46;
+  color: #ffffff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.minecraft-crafting-body {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) 72px minmax(150px, 1fr);
+  align-items: start;
+  justify-items: center;
+  gap: 14px;
+}
+
+.minecraft-crafting-flow {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  gap: 8px;
+}
+
+.minecraft-crafting-arrow {
+  width: 52px;
+  height: 26px;
+  border: 3px solid #1f1711;
+  background:
+    linear-gradient(90deg, transparent 0 58%, #f4d46b 58% 100%),
+    linear-gradient(45deg, transparent 0 50%, #f4d46b 50% 100%);
+  clip-path: polygon(0 30%, 58% 30%, 58% 0, 100% 50%, 58% 100%, 58% 70%, 0 70%);
+}
+
+.minecraft-crafting-output {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 4px solid #1f1711;
+  background: #8a6a46;
+  color: #ffffff;
+  font: 900 16px "Courier New", monospace;
+  cursor: pointer;
+  box-shadow: inset 4px 4px 0 rgba(255, 255, 255, 0.14), inset -5px -5px 0 rgba(0, 0, 0, 0.22);
+}
+
+.minecraft-crafting-output:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.minecraft-crafting-output span {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  min-width: 16px;
+  background: rgba(0, 0, 0, 0.58);
+  font-size: 10px;
+}
+
+.minecraft-crafting-recipes {
+  display: grid;
+  gap: 8px;
+  width: min(42vw, 260px);
+}
+
+.minecraft-crafting-inventory {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: start;
+  min-height: 58px;
+  padding: 6px;
+  border: 3px solid #1f1711;
+  background: rgba(24, 18, 13, 0.72);
+}
+
+.minecraft-crafting-inventory:empty::before {
+  content: "先挖材料";
+  color: #ffe4a1;
+  font: 900 12px "Courier New", monospace;
+}
+
+.minecraft-crafting-inventory-item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 3px solid #1f1711;
+  background: #8a6a46;
+  color: #ffffff;
+  font: 900 13px "Courier New", monospace;
+  cursor: pointer;
+}
+
+.minecraft-crafting-inventory-item.material-wood {
+  background: repeating-linear-gradient(90deg, #8b5425 0 7px, #6f3f1d 7px 12px);
+}
+
+.minecraft-crafting-inventory-item.material-coal {
+  background: #3e3e3e;
+}
+
+.minecraft-crafting-inventory-item.material-stick {
+  background: #7a4c26;
+}
+
+.minecraft-crafting-inventory-item.material-iron {
+  background: #d6b84d;
+  color: #1f1711;
+}
+
+.minecraft-crafting-inventory-item.material-emerald {
+  background: #20b55b;
+  color: #ffffff;
+}
+
+.minecraft-crafting-inventory-item.view-only {
+  outline: 2px solid rgba(255, 255, 255, 0.28);
+}
+
+.minecraft-crafting-inventory-item.material-grass {
+  background: linear-gradient(180deg, #35a236 0 36%, #7a4c26 36% 100%);
+}
+
+.minecraft-crafting-inventory-item.material-dirt {
+  background: #7a4c26;
+}
+
+.minecraft-crafting-inventory-item.material-stone {
+  background: #737373;
+}
+
+.minecraft-crafting-inventory-item.material-leaves {
+  background: #2f8d38;
+}
+
+.minecraft-crafting-inventory-item.material-water,
+.minecraft-crafting-inventory-item.material-water_bucket {
+  background: #2387d8;
+}
+
+.minecraft-crafting-inventory-item.material-lava,
+.minecraft-crafting-inventory-item.material-lava_bucket {
+  background: #ff7b22;
+}
+
+.minecraft-crafting-inventory-item.material-bed {
+  background: linear-gradient(180deg, #f8f3dc 0 36%, #db3f46 36% 100%);
+}
+
+.minecraft-crafting-inventory-item.material-crafting_table {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 5px, transparent 5px 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0 5px, transparent 5px 100%),
+    #9a642f;
+  background-size: 12px 12px;
+}
+
+.minecraft-crafting-inventory-item.material-torch {
+  background: linear-gradient(90deg, transparent 0 40%, #7a4c26 40% 60%, transparent 60% 100%),
+    linear-gradient(180deg, #f63c20 0 32%, transparent 32% 100%);
+}
+
+.minecraft-crafting-inventory-item.material-bucket {
+  background: #c9ced4;
+  color: #1f1711;
+}
+
+.minecraft-crafting-inventory-item.material-meat {
+  background: #b44838;
+}
+
+.minecraft-crafting-inventory-item.material-wool {
+  background: #f2f2f2;
+  color: #1f1711;
+}
+
+.minecraft-crafting-inventory-item.material-seeds {
+  background: #425f22;
+}
+
+.minecraft-crafting-inventory-item.material-wheat {
+  background: #d9a53d;
+  color: #1f1711;
+}
+
+.minecraft-crafting-inventory-item.material-xp {
+  background: #6fff57;
+  color: #1f1711;
+}
+
+.minecraft-crafting-inventory-item span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #1f1711;
+  background: rgba(0, 0, 0, 0.58);
+  color: #ffffff;
+  font-size: 11px;
+}
+
+.minecraft-recipe {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 72px;
+  border: 3px solid #1f1711;
+  background: #6b5239;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  text-align: left;
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 20px);
+  grid-template-rows: repeat(3, 20px);
+  gap: 2px;
+  padding: 3px;
+  background: #2b2118;
+  border: 2px solid #1f1711;
+}
+
+.recipe-grid i,
+.recipe-grid b {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff7df;
+  font-size: 8px;
+  font-style: normal;
+}
+
+.recipe-grid b {
+  background: #8a6a46;
+}
+
+.minecraft-crafting-make {
+  width: 100%;
+  min-height: 30px;
+  border: 3px solid #1f1711;
+  background: #3c8f36;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.minecraft-crafting-status {
+  margin-top: 6px;
+  color: #d7ffe0;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.minecraft-hearts {
+  color: #ff4f5f;
+  text-shadow: 2px 2px 0 #3b0508;
+}
+
+.minecraft-hunger {
+  color: #ffb13b;
+  text-shadow: 2px 2px 0 #4a2400;
+}
+
+.minecraft-farm-counts {
+  color: #cfff83;
+  white-space: nowrap;
+}
+
+.minecraft-eat {
+  width: 34px;
+  height: 28px;
+  border: 3px solid #1f1711;
+  border-radius: 0;
+  background: #d7a047;
+  color: #211100;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.minecraft-eat:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.minecraft-plant {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 42%;
+  height: 42%;
+  border: 3px solid #17340d;
+  transform: translate(-50%, -50%);
+  color: #17340d;
+  font-size: 10px;
+  font-weight: 900;
+  pointer-events: none;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.28);
+}
+
+.minecraft-plant-grass {
+  background: #54c943;
+}
+
+.minecraft-plant-wheat {
+  background: #8fe36d;
+}
+
+.minecraft-plant-wheat-ripe {
+  background: #ffd35b;
+  border-color: #5f3a04;
+  color: #5f3a04;
+}
+
+.minecraft-animal {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  width: 48%;
+  height: 42%;
+  border: 3px solid #181818;
+  transform: translate(-50%, -50%);
+  color: #111111;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.32);
+  animation: minecraft-animal-walk 2.4s steps(2, end) infinite;
+}
+
+.minecraft-animal-sheep {
+  background: #f4f4e8;
+}
+
+.minecraft-animal-cow {
+  background:
+    linear-gradient(90deg, transparent 0 28%, #2a1a14 28% 46%, transparent 46% 70%, #2a1a14 70% 86%, transparent 86%),
+    #f6efe0;
+}
+
+.minecraft-animal-pig {
+  background: #f39bb0;
+}
+
+.minecraft-animal-chicken {
+  background: #fff7d6;
+}
+
+.minecraft-villager {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 10;
+  width: 52%;
+  height: 72%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, #b3824f 0 38%, #6b4428 38% 100%);
+  border: 3px solid #1f1711;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.minecraft-villager::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: -20%;
+  width: 64%;
+  height: 44%;
+  border: 3px solid #1f1711;
+  background:
+    radial-gradient(circle at 35% 45%, #1f1711 0 9%, transparent 10%),
+    radial-gradient(circle at 65% 45%, #1f1711 0 9%, transparent 10%),
+    #c49a6d;
+}
+
+.minecraft-villager::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: 46%;
+  width: 64%;
+  height: 14%;
+  border: 2px solid #1f1711;
+  background: #8a5a37;
+}
+
+.minecraft-villager.sleeping {
+  width: 78%;
+  height: 42%;
+  top: 58%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  background: linear-gradient(90deg, #c49a6d 0 28%, #6b4428 28% 100%);
+}
+
+.minecraft-villager.sleeping::before {
+  left: 3%;
+  top: 12%;
+  width: 28%;
+  height: 72%;
+}
+
+.minecraft-villager.sleeping::after {
+  content: "Z";
+  left: auto;
+  right: 8%;
+  top: -36%;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font: 900 14px "Courier New", monospace;
+}
+
+.cube-shadow {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  transform: none;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 42%),
+    #2f5e8f;
+}
+
+.cube-top,
+.cube-left,
+.cube-right {
+  display: none;
+}
+
+.cube-top {
+  left: 0;
+  top: 0;
+  filter: none;
+}
+
+.cube-left {
+  left: 0;
+  top: 0;
+  clip-path: polygon(0 0, 18% 0, 18% 100%, 0 100%);
+  background: rgba(0, 0, 0, 0.2);
+  filter: none;
+}
+
+.cube-right {
+  right: 0;
+  left: auto;
+  top: 0;
+  clip-path: polygon(82% 0, 100% 0, 100% 100%, 82% 100%);
+  background: rgba(0, 0, 0, 0.18);
+  filter: none;
+}
+
+.minecraft-cube:hover .cube-top,
+.minecraft-cube:hover .cube-left,
+.minecraft-cube:hover .cube-right {
+  outline: 0;
+}
+
+.minecraft-cube:hover {
+  outline: 3px solid rgba(255, 255, 255, 0.78);
+  outline-offset: -3px;
+}
+
+.minecraft-player {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: min(5vw, 46px);
+  height: min(5vw, 46px);
+  border: 3px solid #111111;
+  background:
+    linear-gradient(180deg, #49b8ff 0 45%, #2449c7 45% 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  transform: translate(-50%, -50%);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+.minecraft-guardian {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  width: min(10vw, 88px);
+  height: min(10vw, 88px);
+  border: 5px solid #10222d;
+  background:
+    radial-gradient(circle at 50% 45%, #fff6b0 0 12%, #132836 13% 24%, transparent 25%),
+    #39b9a8;
+  color: #10222d;
+  font-size: 24px;
+  font-weight: 900;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 28px rgba(68, 255, 230, 0.8);
+}
+
+.minecraft-guardian::before,
+.minecraft-guardian::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 10px;
+  background: #39b9a8;
+  border: 3px solid #10222d;
+}
+
+.minecraft-guardian::before {
+  left: -24px;
+  top: 31px;
+}
+
+.minecraft-guardian::after {
+  right: -24px;
+  top: 31px;
+}
+
+.minecraft-cell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(31, 23, 17, 0.35);
+  border-radius: 0;
+  background: transparent;
+  cursor: crosshair;
+}
+
+.minecraft-empty:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.minecraft-block {
+  border-color: #211811;
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.24);
+}
+
+.minecraft-grass {
+  background: linear-gradient(180deg, #35a236 0 34%, #7a4c26 34% 100%);
+}
+
+.minecraft-dirt {
+  background:
+    radial-gradient(circle at 30% 38%, rgba(70, 38, 20, 0.42) 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 68%, rgba(49, 28, 14, 0.36) 0 9%, transparent 10%),
+    #7a4c26;
+}
+
+.minecraft-stone {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 42%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.12) 0 5px, transparent 5px 10px),
+    #737373;
+}
+
+.minecraft-wood {
+  background:
+    repeating-linear-gradient(90deg, #8b5425 0 8px, #6f3f1d 8px 14px),
+    #7c4a24;
+}
+
+.minecraft-leaves {
+  background:
+    radial-gradient(circle at 30% 35%, rgba(190, 255, 120, 0.34) 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 62%, rgba(20, 76, 22, 0.35) 0 12%, transparent 13%),
+    #2f8d38;
+}
+
+.minecraft-cube.minecraft-grass .cube-top {
+  background: #35a236;
+}
+
+.minecraft-cube.minecraft-grass {
+  background: linear-gradient(180deg, #35a236 0 34%, #7a4c26 34% 100%);
+}
+
+.minecraft-cube.minecraft-grass .cube-left,
+.minecraft-cube.minecraft-grass .cube-right {
+  background: #7a4c26;
+}
+
+.minecraft-cube.minecraft-dirt {
+  background:
+    radial-gradient(circle at 30% 38%, rgba(70, 38, 20, 0.42) 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 68%, rgba(49, 28, 14, 0.36) 0 9%, transparent 10%),
+    #7a4c26;
+}
+
+.minecraft-cube.minecraft-dirt .cube-top,
+.minecraft-cube.minecraft-dirt .cube-left,
+.minecraft-cube.minecraft-dirt .cube-right {
+  background:
+    radial-gradient(circle at 30% 38%, rgba(70, 38, 20, 0.42) 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 68%, rgba(49, 28, 14, 0.36) 0 9%, transparent 10%),
+    #7a4c26;
+}
+
+.minecraft-cube.minecraft-stone {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 42%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.12) 0 5px, transparent 5px 10px),
+    #737373;
+}
+
+.minecraft-cube.minecraft-stone .cube-top,
+.minecraft-cube.minecraft-stone .cube-left,
+.minecraft-cube.minecraft-stone .cube-right {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 42%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.12) 0 5px, transparent 5px 10px),
+    #737373;
+}
+
+.minecraft-cube.minecraft-wood {
+  background:
+    repeating-linear-gradient(90deg, #8b5425 0 8px, #6f3f1d 8px 14px),
+    #7c4a24;
+}
+
+.minecraft-cube.minecraft-wood::after {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border: 2px solid rgba(45, 24, 9, 0.72);
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 5px, transparent 5px 10px);
+  pointer-events: none;
+}
+
+.minecraft-cube.minecraft-wood .cube-top,
+.minecraft-cube.minecraft-wood .cube-left,
+.minecraft-cube.minecraft-wood .cube-right {
+  background:
+    repeating-linear-gradient(90deg, #8b5425 0 8px, #6f3f1d 8px 14px),
+    #7c4a24;
+}
+
+.minecraft-cube.minecraft-leaves {
+  background:
+    radial-gradient(circle at 30% 35%, rgba(190, 255, 120, 0.34) 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 62%, rgba(20, 76, 22, 0.35) 0 12%, transparent 13%),
+    #2f8d38;
+}
+
+.minecraft-cube.minecraft-leaves .cube-top,
+.minecraft-cube.minecraft-leaves .cube-left,
+.minecraft-cube.minecraft-leaves .cube-right {
+  background:
+    radial-gradient(circle at 30% 35%, rgba(190, 255, 120, 0.34) 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 62%, rgba(20, 76, 22, 0.35) 0 12%, transparent 13%),
+    #2f8d38;
+}
+
+.minecraft-cube.minecraft-water {
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0 6px, transparent 6px 18px),
+    #2387d8;
+  box-shadow:
+    inset 5px 5px 0 rgba(180, 236, 255, 0.36),
+    inset -6px -6px 0 rgba(0, 44, 102, 0.32);
+}
+
+.minecraft-cube.minecraft-water .cube-top,
+.minecraft-cube.minecraft-water .cube-left,
+.minecraft-cube.minecraft-water .cube-right {
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0 6px, transparent 6px 18px),
+    #2387d8;
+}
+
+.minecraft-cube.minecraft-water::after {
+  content: "";
+  position: absolute;
+  inset: 18% 12%;
+  z-index: 6;
+  border: 3px solid rgba(220, 250, 255, 0.74);
+  background: rgba(112, 205, 255, 0.32);
+  pointer-events: none;
+  animation: minecraft-water-shimmer 1.8s steps(2, end) infinite;
+}
+
+.minecraft-cube.minecraft-lava {
+  background:
+    repeating-linear-gradient(135deg, #ffea67 0 8px, #ff7b22 8px 16px, #b71917 16px 24px);
+  box-shadow: inset 0 0 18px rgba(255, 217, 61, 0.75);
+}
+
+.minecraft-cube.minecraft-coal_ore,
+.minecraft-cube.minecraft-iron_ore,
+.minecraft-cube.minecraft-gold_ore,
+.minecraft-cube.minecraft-diamond_ore {
+  background:
+    radial-gradient(circle at 28% 32%, var(--ore-color) 0 12%, transparent 13%),
+    radial-gradient(circle at 68% 64%, var(--ore-color) 0 10%, transparent 11%),
+    #737373;
+}
+
+.minecraft-cube.minecraft-coal_ore {
+  --ore-color: #5b5b5b;
+}
+
+.minecraft-cube.minecraft-iron_ore {
+  --ore-color: #ffd846;
+}
+
+.minecraft-cube.minecraft-gold_ore {
+  --ore-color: #ffd846;
+}
+
+.minecraft-cube.minecraft-diamond_ore {
+  --ore-color: #22a8ff;
+}
+
+.minecraft-cube.minecraft-crafting_table {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 4px, transparent 4px 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0 4px, transparent 4px 100%),
+    #9a642f;
+  background-size: 14px 14px;
+}
+
+.minecraft-cube.minecraft-torch {
+  background: transparent;
+  box-shadow: none;
+}
+
+.minecraft-cube.minecraft-torch::before {
+  content: "";
+  position: absolute;
+  left: 46%;
+  top: 28%;
+  z-index: 7;
+  width: 8%;
+  height: 56%;
+  background: #7a4c26;
+  border: 2px solid #1f1711;
+}
+
+.minecraft-cube.minecraft-torch::after {
+  content: "";
+  position: absolute;
+  left: 39%;
+  top: 10%;
+  z-index: 8;
+  width: 22%;
+  height: 24%;
+  background: #f63c20;
+  border: 2px solid #8a2400;
+  box-shadow: 0 0 18px #ffd64f;
+}
+
+.minecraft-cube.minecraft-bed {
+  background:
+    linear-gradient(180deg, #f8f3dc 0 34%, #db3f46 34% 100%);
+}
+
+.minecraft-cube.minecraft-bed .cube-top,
+.minecraft-cube.minecraft-bed .cube-left,
+.minecraft-cube.minecraft-bed .cube-right {
+  background:
+    linear-gradient(180deg, #f8f3dc 0 34%, #db3f46 34% 100%);
+}
+
+.minecraft-cube.minecraft-bed::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: 16%;
+  z-index: 7;
+  width: 64%;
+  height: 28%;
+  border: 3px solid #211811;
+  background: #fff8db;
+  box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.16);
+  pointer-events: none;
+}
+
+.minecraft-cube.minecraft-bed::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 12%;
+  z-index: 7;
+  height: 46%;
+  border: 3px solid #211811;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 18%, transparent 18% 100%),
+    #db3f46;
+  box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
+
+.minecraft-cube.minecraft-bed[data-bed-part="foot"]::before {
+  display: none;
+}
+
+.minecraft-cube.minecraft-bed[data-bed-part="foot"]::after {
+  top: 12%;
+  bottom: 12%;
+  height: auto;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 7px, transparent 7px 14px),
+    #c92f3b;
+}
+
 .mine-panel {
   position: fixed;
   right: max(14px, env(safe-area-inset-right));
@@ -6525,6 +8128,60 @@ body.terror-night .tree-right::before {
   }
 }
 
+@keyframes minecraft-player-jump {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  45% {
+    transform: translate(-50%, -95%);
+  }
+}
+
+@keyframes minecraft-sky-cross {
+  0% {
+    left: 8%;
+    top: 16%;
+  }
+  50% {
+    left: 46%;
+    top: 5%;
+  }
+  100% {
+    left: 84%;
+    top: 16%;
+  }
+}
+
+@keyframes minecraft-cloud-drift {
+  0% {
+    transform: translateX(-18vw);
+  }
+  100% {
+    transform: translateX(132vw);
+  }
+}
+
+@keyframes minecraft-animal-walk {
+  0%,
+  100% {
+    transform: translate(-55%, -50%);
+  }
+  50% {
+    transform: translate(-45%, -52%);
+  }
+}
+
+@keyframes minecraft-water-shimmer {
+  0%,
+  100% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
 @media (max-width: 820px) {
   .mood-panel {
     width: 178px;
@@ -6623,6 +8280,56 @@ body.terror-night .tree-right::before {
 
   .mine-panel {
     top: calc(max(14px, env(safe-area-inset-top)) + 336px);
+  }
+
+  .minecraft-toggle {
+    right: 8px;
+    bottom: 8px;
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+
+  .minecraft-panel {
+    inset: 0;
+    width: auto;
+    padding: 8px;
+  }
+
+  .minecraft-toolbar {
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .minecraft-toolbar strong,
+  .minecraft-tools {
+    grid-column: 1 / -1;
+  }
+
+  .minecraft-controls {
+    grid-template-columns: minmax(92px, 128px) repeat(3, minmax(44px, 1fr));
+  }
+
+  .minecraft-move,
+  .minecraft-jump-up,
+  .minecraft-dig-down,
+  .minecraft-view {
+    min-height: 26px;
+    font-size: 8px;
+  }
+
+  .minecraft-tool {
+    width: 28px;
+    height: 28px;
+  }
+
+  .minecraft-world {
+    height: min(62vh, calc((100vw - 16px) * 0.64));
+    aspect-ratio: 14 / 9;
+  }
+
+  .minecraft-cube {
+    --cube-size: min(14vw, 58px);
+    --screen-x: calc(50% + (var(--mc-x) - var(--mc-z)) * min(10.5vw, 44px));
+    --screen-y: calc(49% + (var(--mc-x) + var(--mc-z)) * min(5.2vw, 22px));
   }
 
   .home-window-view {

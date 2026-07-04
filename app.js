@@ -3472,6 +3472,10 @@ function mineMinecraftBlock(cell) {
   if (!cell || !Number.isFinite(x) || !Number.isFinite(z) || !Number.isFinite(y)) return;
   const blockType = getMinecraftBlockAt(x, z, y);
   const block = minecraftBlockTypes[blockType];
+  if (blockType === "end_portal_frame" || blockType === "end_portal_frame_eye" || blockType === "end_portal") {
+    updateMinecraftStatus("末地传送门不能挖掉，只能拿末地之眼放到框架上。");
+    return;
+  }
   if (!block) {
     updateMinecraftStatus("这里是空气，挖不到方块。");
     return;
@@ -3607,6 +3611,10 @@ function handleMinecraftCellClick(cell) {
   }
   if (minecraftSelectedTool === "ender_eye") {
     if (minecraftEnderEyes <= 0) return;
+    if (blockType === "end_portal_frame_eye") {
+      updateMinecraftStatus("这个框架已经放过末地之眼了。");
+      return;
+    }
     if (blockType === "end_portal_frame") {
       minecraftEnderEyes -= 1;
       minecraftEndPortalEyes = Math.min(12, minecraftEndPortalEyes + 1);

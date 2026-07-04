@@ -2091,6 +2091,16 @@ function ensureMinecraftWorldBlocks() {
 function getMinecraftBlockAt(x, z, y = minecraftDepth) {
   ensureMinecraftWorldBlocks();
   const key = getMinecraftKey(x, z, y);
+  if (minecraftDimension === "overworld" && y === 0) {
+    const strongholdPortalPart = getMinecraftStrongholdPortalPart(x, z);
+    if (strongholdPortalPart) {
+      const protectedBlock = getDefaultMinecraftBlockAt(x, z, y);
+      if (protectedBlock === "end_portal_frame" || protectedBlock === "end_portal_frame_eye" || protectedBlock === "end_portal") {
+        delete minecraftWorldBlocks[key];
+        return protectedBlock;
+      }
+    }
+  }
   if (Object.prototype.hasOwnProperty.call(minecraftWorldBlocks, key)) {
     return minecraftWorldBlocks[key];
   }
@@ -2565,7 +2575,7 @@ function getMinecraftZombieAt(x, z) {
 }
 
 function spawnMinecraftZombies() {
-  if (minecraftDimension === "nether") {
+  if (minecraftDimension !== "overworld" || (minecraftDepth === 0 && isMinecraftStrongholdAreaAt(minecraftPlayerX, minecraftPlayerZ))) {
     minecraftZombies = [];
     minecraftSkeletons = [];
     return;
@@ -2638,7 +2648,11 @@ function canMinecraftZombieStepTo(x, z) {
 }
 
 function stepMinecraftZombiesTowardPlayer() {
-  if (minecraftDimension === "nether") return;
+  if (minecraftDimension !== "overworld") return;
+  if (minecraftDepth === 0 && isMinecraftStrongholdAreaAt(minecraftPlayerX, minecraftPlayerZ)) {
+    minecraftZombies = [];
+    return;
+  }
   if (!minecraftIsNight || minecraftDepth < 0) return;
   const now = Date.now();
   if (now - minecraftLastZombieStepAt < 2600) return;

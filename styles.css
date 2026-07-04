@@ -4195,6 +4195,22 @@ body.computer-away .call-back-toggle {
   background: #48a848;
 }
 
+.minecraft-map-cell.nether {
+  background: #8b2e27;
+}
+
+.minecraft-map-cell.nether.warped {
+  background: #14876d;
+}
+
+.minecraft-map-cell.nether.bastion {
+  background: #4c1724;
+}
+
+.minecraft-map-cell.nether.lava {
+  background: #ff7b22;
+}
+
 .minecraft-map-cell.river {
   background: #2387d8;
 }
@@ -5384,6 +5400,13 @@ body.computer-away .call-back-toggle {
     #14876d;
 }
 
+.minecraft-cube.minecraft-glowstone {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0 18%, transparent 18% 38%, rgba(255, 255, 255, 0.22) 38% 56%, transparent 56% 100%),
+    linear-gradient(180deg, #fff18a 0 24%, #d99a25 24% 54%, #ffe56a 54% 100%);
+  box-shadow: 0 0 16px rgba(255, 229, 92, 0.82);
+}
+
 .minecraft-cube.minecraft-coal_ore,
 .minecraft-cube.minecraft-iron_ore,
 .minecraft-cube.minecraft-gold_ore,
@@ -5409,7 +5432,10 @@ body.computer-away .call-back-toggle {
 
 .minecraft-cube.minecraft-nether_gold_ore {
   --ore-color: #ffd846;
-  background-color: #8b2e27;
+  background:
+    linear-gradient(90deg, transparent 0 14%, #ffd846 14% 34%, transparent 34% 64%, #ffd846 64% 82%, transparent 82% 100%),
+    linear-gradient(180deg, transparent 0 18%, #ffd846 18% 36%, transparent 36% 62%, #ffd846 62% 80%, transparent 80% 100%),
+    #8b2e27;
 }
 
 .minecraft-cube.minecraft-diamond_ore {

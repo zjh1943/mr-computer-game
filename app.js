@@ -463,6 +463,7 @@ minecraftBlockTypes.nether_gold_ore = { label: "下界金矿" };
 minecraftBlockTypes.nether_brick = { label: "猪灵堡垒砖" };
 minecraftBlockTypes.meteor = { label: "陨石" };
 minecraftBlockTypes.warped_nylium = { label: "诡异森林地" };
+minecraftBlockTypes.glowstone = { label: "萤石" };
 
 const minecraftAnimalTypes = {
   sheep: { label: "羊", icon: "羊", meat: 1, wool: 1 },
@@ -1818,6 +1819,10 @@ function isMinecraftBastionAt(x, z) {
   return x >= 12 && x <= 22 && z >= 8 && z <= 18;
 }
 
+function isMinecraftBastionPillarAt(x, z) {
+  return isMinecraftBastionAt(x, z) && (x === 12 || x === 17 || x === 22) && (z === 8 || z === 13 || z === 18);
+}
+
 function isMinecraftPiglinAt(x, z) {
   if (minecraftDimension !== "nether") return false;
   return Math.abs((x * 19 + z * 23) % 17) === 0;
@@ -1839,9 +1844,12 @@ function isMinecraftMeteorAt(x, z) {
 
 function getDefaultMinecraftNetherBlockAt(x, z, y) {
   if (y >= 1) return null;
+  if (y === 0 && isMinecraftBastionPillarAt(x, z)) return "nether_brick";
+  if (y < 0 && isMinecraftBastionPillarAt(x, z)) return "nether_brick";
   if (y === 0 && isMinecraftNetherLavaPoolAt(x, z)) return "lava";
   if (y === 0 && isMinecraftBastionAt(x, z)) return "nether_brick";
   if (y === 0 && isMinecraftWarpedForestAt(x, z)) return "warped_nylium";
+  if (y === 0 && Math.abs((x * 37 + z * 17) % 43) <= 1) return "glowstone";
   if (y <= 0 && Math.abs((x * 13 + z * 11 + y * 5) % 19) <= 2) return "nether_gold_ore";
   return "netherrack";
 }
@@ -2959,6 +2967,10 @@ function renderMinecraftMap() {
       const worldZ = Math.round(minZ + (mapZ / (mapSize - 1)) * (maxZ - minZ));
       const cell = document.createElement("span");
       cell.className = "minecraft-map-cell";
+      if (minecraftDimension === "nether") cell.classList.add("nether");
+      if (minecraftDimension === "nether" && isMinecraftWarpedForestAt(worldX, worldZ)) cell.classList.add("warped");
+      if (minecraftDimension === "nether" && isMinecraftBastionAt(worldX, worldZ)) cell.classList.add("bastion");
+      if (minecraftDimension === "nether" && isMinecraftNetherLavaPoolAt(worldX, worldZ)) cell.classList.add("lava");
       if (minecraftDimension !== "nether" && isMinecraftRiverAt(worldX, worldZ)) cell.classList.add("river");
       if (minecraftDimension !== "nether" && isMinecraftVillageAreaAt(worldX, worldZ)) cell.classList.add("village");
       if (minecraftDimension === "nether" && Math.abs(worldX) <= 5 && Math.abs(worldZ) <= 5) cell.classList.add("portal");
@@ -2988,13 +3000,13 @@ function renderMinecraftWorld() {
       const offset = getMinecraftViewOffset(localX, localZ);
       const x = minecraftPlayerX + offset.x;
       const z = minecraftPlayerZ + offset.z;
-      const isSurfaceSky = minecraftDepth >= 0 && (minecraftDepth === 1 || localZ <= -2);
+      const isSurfaceSky = minecraftDimension !== "nether" && minecraftDepth >= 0 && (minecraftDepth === 1 || localZ <= -2);
       const blockY = isSurfaceSky ? 1 : minecraftDepth;
       const blockType = getMinecraftBlockAt(x, z, blockY);
       minecraftWorld.appendChild(makeMinecraftBlockElement(blockType, x, z, blockY, localX, localZ, isSurfaceSky && !blockType ? "sky" : ""));
     }
   }
-  if (minecraftDepth >= 0) {
+  if (minecraftDimension !== "nether" && minecraftDepth >= 0) {
     minecraftWorld.appendChild(makeMinecraftSkyBody());
     minecraftWorld.appendChild(makeMinecraftClouds());
   }

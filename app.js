@@ -1804,6 +1804,16 @@ function isMinecraftNearPortalAt(x, z, y = minecraftDepth) {
   return false;
 }
 
+function isMinecraftPortalNearMapPoint(x, z) {
+  if (minecraftDimension !== "overworld") return false;
+  for (let dx = -5; dx <= 5; dx += 1) {
+    for (let dz = -5; dz <= 5; dz += 1) {
+      if (isMinecraftPortalAt(x + dx, z + dz, 0)) return true;
+    }
+  }
+  return false;
+}
+
 function enterMinecraftPortal() {
   if (minecraftDimension === "nether") {
     minecraftDimension = "overworld";
@@ -3207,6 +3217,7 @@ function renderMinecraftMap() {
       if (minecraftDimension === "nether" && isMinecraftNetherLavaPoolAt(worldX, worldZ)) cell.classList.add("lava");
       if (minecraftDimension !== "nether" && isMinecraftRiverAt(worldX, worldZ)) cell.classList.add("river");
       if (minecraftDimension !== "nether" && isMinecraftVillageAreaAt(worldX, worldZ)) cell.classList.add("village");
+      if (minecraftDimension === "overworld" && isMinecraftPortalNearMapPoint(worldX, worldZ)) cell.classList.add("overworld-portal");
       if (minecraftDimension === "nether" && Math.abs(worldX) <= 5 && Math.abs(worldZ) <= 5) cell.classList.add("portal");
       if (minecraftDimension === "end" && isMinecraftEndGatewayAt(worldX, worldZ)) cell.classList.add("portal");
       if (mapX === playerMapX && mapZ === playerMapZ) cell.classList.add("player");

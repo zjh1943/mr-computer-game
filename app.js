@@ -1756,6 +1756,7 @@ function getMinecraftVillagerHomeKey(homeX, homeZ) {
 }
 
 function getMinecraftVillagerAtCell(x, z, y) {
+  if (minecraftDimension !== "overworld") return null;
   const local = getMinecraftVillageLocal(x, z);
   if (!local) return null;
   const targetX = 2;
@@ -1843,6 +1844,7 @@ function checkMinecraftPortalStep() {
     minecraftDepth = 0;
     minecraftPlayerX = 0;
     minecraftPlayerZ = 2;
+    if (minecraftDragonHealth <= 0) minecraftDragonHealth = 12;
     minecraftZombies = [];
     minecraftSkeletons = [];
     renderMinecraftWorld();
@@ -1899,6 +1901,12 @@ function isMinecraftWarpedForestAt(x, z) {
 }
 
 function isMinecraftEndermanAt(x, z) {
+  if (minecraftDimension === "end") {
+    const customEnderman = Object.values(minecraftEndermen).find((entry) => entry && typeof entry === "object" && entry.x === x && entry.z === z);
+    if (customEnderman) return true;
+    if (minecraftEndermen[`end:${x},${z}`] || minecraftEndermen[`${x},${z}`]) return false;
+    return isMinecraftEndIslandAt(x, z) && Math.abs((x * 17 + z * 23) % 11) <= 1;
+  }
   if (!isMinecraftWarpedForestAt(x, z)) return false;
   const customEnderman = Object.values(minecraftEndermen).find((entry) => entry && typeof entry === "object" && entry.x === x && entry.z === z);
   if (customEnderman) return true;
@@ -1992,6 +2000,14 @@ function isMinecraftEndIslandAt(x, z) {
   return (x * x + z * z) <= 260 || ((x - 42) * (x - 42) + (z - 4) * (z - 4)) <= 90;
 }
 
+function isMinecraftEndIslandEdgeAt(x, z) {
+  if (!isMinecraftEndIslandAt(x, z)) return false;
+  return !isMinecraftEndIslandAt(x + 1, z)
+    || !isMinecraftEndIslandAt(x - 1, z)
+    || !isMinecraftEndIslandAt(x, z + 1)
+    || !isMinecraftEndIslandAt(x, z - 1);
+}
+
 function isMinecraftOuterEndIslandAt(x, z) {
   return minecraftDimension === "end" && ((x - 42) * (x - 42) + (z - 4) * (z - 4)) <= 90;
 }
@@ -2028,7 +2044,7 @@ function isMinecraftEndCrystalAt(x, z) {
 }
 
 function isMinecraftDragonAt(x, z) {
-  return minecraftDimension === "end" && minecraftDragonHealth > 0 && Math.abs(x) <= 1 && Math.abs(z) <= 1;
+  return minecraftDimension === "end" && minecraftDragonHealth > 0 && Math.abs(x) <= 2 && z >= -1 && z <= 2;
 }
 
 function getDefaultMinecraftEndBlockAt(x, z, y) {
@@ -2482,6 +2498,9 @@ function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMod
       ? `minecraft-cube minecraft-${blockType}`
       : `minecraft-cube minecraft-empty-block minecraft-${visualBlockType}`;
   }
+  if (blockType === "end_stone" && isMinecraftEndIslandEdgeAt(x, z)) {
+    cell.classList.add("minecraft-end-edge");
+  }
   cell.dataset.x = `${x}`;
   cell.dataset.z = `${z}`;
   cell.dataset.y = `${y}`;
@@ -2494,7 +2513,7 @@ function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMod
   cell.style.setProperty("--mc-order", `${(localZ + 3) * 10 + (localX + 3)}`);
   const label = blockType ? minecraftBlockTypes[blockType]?.label || "方块" : "空气";
   cell.setAttribute("aria-label", `${label} ${x}, ${y}, ${z}`);
-  const plantType = y === 0 && blockType === "grass" ? getMinecraftPlantAt(x, z) : null;
+  const plantType = minecraftDimension === "overworld" && y === 0 && blockType === "grass" ? getMinecraftPlantAt(x, z) : null;
   cell.dataset.plant = plantType || "";
   cell.innerHTML = '<span class="cube-top"></span><span class="cube-left"></span><span class="cube-right"></span>';
   if (plantType) {
@@ -2503,7 +2522,7 @@ function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMod
     plant.textContent = plantType === "wheat-ripe" ? "麦" : plantType === "wheat" ? "芽" : "草";
     cell.appendChild(plant);
   }
-  const animalType = y === 0 && blockType === "grass" ? getMinecraftAnimalAt(x, z) : null;
+  const animalType = minecraftDimension === "overworld" && y === 0 && blockType === "grass" ? getMinecraftAnimalAt(x, z) : null;
   const animalElement = animalType ? makeMinecraftAnimalElement(animalType, x, z) : null;
   if (animalElement) {
     cell.appendChild(animalElement);
@@ -3289,6 +3308,9 @@ function renderMinecraftMap() {
 function renderMinecraftWorld() {
   if (!minecraftWorld) return;
   ensureMinecraftWorldBlocks();
+  if (minecraftDimension === "end" && minecraftDragonHealth <= 0) {
+    minecraftDragonHealth = 12;
+  }
   const fell = applyMinecraftGravity();
   spawnMinecraftZombies();
   stepMinecraftZombiesTowardPlayer();
@@ -3317,6 +3339,17 @@ function renderMinecraftWorld() {
   if (minecraftDimension === "overworld" && minecraftDepth >= 0) {
     minecraftWorld.appendChild(makeMinecraftSkyBody());
     minecraftWorld.appendChild(makeMinecraftClouds());
+  }
+  if (minecraftDimension === "end" && minecraftDragonHealth > 0) {
+    const bossDragon = document.createElement("button");
+    bossDragon.type = "button";
+    bossDragon.className = "minecraft-dragon minecraft-dragon-boss";
+    bossDragon.setAttribute("aria-label", "末影龙");
+    bossDragon.addEventListener("click", (event) => {
+      event.stopPropagation();
+      hitMinecraftDragon();
+    });
+    minecraftWorld.appendChild(bossDragon);
   }
   minecraftZombies.forEach((zombie, index) => {
     minecraftWorld.appendChild(makeMinecraftZombieElement(zombie, index));
@@ -3706,6 +3739,7 @@ function handleMinecraftCellClick(cell) {
     minecraftDepth = 0;
     minecraftPlayerX = 0;
     minecraftPlayerZ = 2;
+    if (minecraftDragonHealth <= 0) minecraftDragonHealth = 12;
     renderMinecraftWorld();
     updateMinecraftStatus("跳进黑色传送门，进入了末地。");
     saveGameState();

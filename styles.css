@@ -5137,6 +5137,15 @@ body.computer-away .call-back-toggle {
   right: -34%;
 }
 
+.minecraft-world > .minecraft-dragon-boss {
+  left: 50%;
+  top: 22%;
+  z-index: 70;
+  width: 22%;
+  height: 13%;
+  transform: translate(-50%, -50%);
+}
+
 .minecraft-end-crystal {
   position: absolute;
   left: 50%;
@@ -5501,9 +5510,16 @@ body.computer-away .call-back-toggle {
 
 .minecraft-cube.minecraft-end_stone {
   background:
-    linear-gradient(90deg, rgba(112, 91, 145, 0.24) 0 5px, transparent 5px 100%),
-    #16111f;
-  box-shadow: inset 0 0 0 2px #2f2444;
+    linear-gradient(90deg, rgba(120, 94, 36, 0.26) 0 5px, transparent 5px 100%),
+    linear-gradient(180deg, #e6db8b 0 62%, #c9b968 62% 100%);
+  box-shadow: inset 0 0 0 2px #7d7138;
+}
+
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge {
+  background:
+    linear-gradient(90deg, rgba(80, 0, 0, 0.32) 0 5px, transparent 5px 100%),
+    linear-gradient(180deg, #c23535 0 58%, #7c1212 58% 100%);
+  box-shadow: inset 0 0 0 2px #3d0505, 0 0 12px rgba(255, 64, 64, 0.34);
 }
 
 .minecraft-cube.minecraft-end_portal_frame {

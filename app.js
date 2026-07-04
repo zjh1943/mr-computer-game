@@ -1835,6 +1835,21 @@ function enterMinecraftPortal() {
 }
 
 function checkMinecraftPortalStep() {
+  if (minecraftDimension === "overworld"
+    && minecraftDepth === 0
+    && isMinecraftStrongholdPortalCenterAt(minecraftPlayerX, minecraftPlayerZ)
+    && getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth) === "end_portal") {
+    minecraftDimension = "end";
+    minecraftDepth = 0;
+    minecraftPlayerX = 0;
+    minecraftPlayerZ = 2;
+    minecraftZombies = [];
+    minecraftSkeletons = [];
+    renderMinecraftWorld();
+    updateMinecraftStatus("走进黑色传送门，进入了末地。这里没有太阳和月亮，只有黑色天空。");
+    saveGameState();
+    return true;
+  }
   if (isMinecraftNearPortalAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth)) {
     enterMinecraftPortal();
     return true;
@@ -3802,6 +3817,10 @@ function startMinecraftJoystick(event) {
 function digMinecraftDown() {
   const blockType = getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth);
   const block = minecraftBlockTypes[blockType];
+  if (blockType === "end_portal_frame" || blockType === "end_portal_frame_eye" || blockType === "end_portal") {
+    updateMinecraftStatus("末地传送门不能往下挖掉，走到黑色中间就能进去。");
+    return;
+  }
   if (block) {
     if (blockType === "bed") {
       minecraftInventory.bed = (minecraftInventory.bed || 0) + 1;

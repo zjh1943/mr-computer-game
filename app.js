@@ -464,6 +464,8 @@ minecraftBlockTypes.nether_brick = { label: "猪灵堡垒砖" };
 minecraftBlockTypes.meteor = { label: "陨石" };
 minecraftBlockTypes.warped_nylium = { label: "诡异森林地" };
 minecraftBlockTypes.glowstone = { label: "萤石" };
+minecraftBlockTypes.warped_stem = { label: "诡异树干" };
+minecraftBlockTypes.warped_leaves = { label: "诡异树叶" };
 
 const minecraftAnimalTypes = {
   sheep: { label: "羊", icon: "羊", meat: 1, wool: 1 },
@@ -1843,7 +1845,13 @@ function isMinecraftMeteorAt(x, z) {
 }
 
 function getDefaultMinecraftNetherBlockAt(x, z, y) {
-  if (y >= 1) return null;
+  if (y >= 2) return null;
+  if (y === 1 && isMinecraftWarpedForestAt(x, z)) {
+    const seed = Math.abs((x * 17 + z * 29) % 11);
+    if (seed === 0) return "warped_stem";
+    if (seed <= 2) return "warped_leaves";
+    return null;
+  }
   if (y === 0 && isMinecraftBastionPillarAt(x, z)) return "nether_brick";
   if (y < 0 && isMinecraftBastionPillarAt(x, z)) return "nether_brick";
   if (y === 0 && isMinecraftNetherLavaPoolAt(x, z)) return "lava";
@@ -2332,6 +2340,11 @@ function getMinecraftZombieAt(x, z) {
 }
 
 function spawnMinecraftZombies() {
+  if (minecraftDimension === "nether") {
+    minecraftZombies = [];
+    minecraftSkeletons = [];
+    return;
+  }
   if (minecraftDepth >= 0) {
     minecraftSkeletons = [];
   }
@@ -2400,6 +2413,7 @@ function canMinecraftZombieStepTo(x, z) {
 }
 
 function stepMinecraftZombiesTowardPlayer() {
+  if (minecraftDimension === "nether") return;
   if (!minecraftIsNight || minecraftDepth < 0) return;
   const now = Date.now();
   if (now - minecraftLastZombieStepAt < 2600) return;
@@ -2992,7 +3006,7 @@ function renderMinecraftWorld() {
   minecraftWorld.innerHTML = "";
   minecraftWorld.classList.toggle("guardian-depth", minecraftGuardianFound || minecraftDepth <= -63);
   minecraftWorld.classList.toggle("nether-world", minecraftDimension === "nether");
-  minecraftWorld.classList.toggle("surface-night", minecraftIsNight && minecraftDepth >= 0);
+  minecraftWorld.classList.toggle("surface-night", minecraftDimension !== "nether" && minecraftIsNight && minecraftDepth >= 0);
   minecraftWorld.classList.toggle("underground-dark", minecraftDepth < 0 && !isMinecraftTorchNearPlayer());
   minecraftWorld.classList.toggle("underground-lit", minecraftDepth < 0 && isMinecraftTorchNearPlayer());
   for (let localZ = -4; localZ <= 4; localZ += 1) {
@@ -3066,6 +3080,15 @@ function placeMinecraftBlock(cell, blockType) {
   }
   const currentBlock = getMinecraftBlockAt(x, z, y);
   if (blockType === "bed") {
+    if (minecraftDimension === "nether") {
+      minecraftInventory.bed = Math.max(0, (minecraftInventory.bed || 0) - 1);
+      minecraftHealth = Math.max(0, minecraftHealth - 6);
+      renderMinecraftWorld();
+      updateMinecraftStatus("下界没有晚上，床不能睡。床爆炸了！");
+      if (minecraftHealth <= 0) respawnMinecraftPlayer();
+      saveGameState();
+      return;
+    }
     const bedY = y > 0 ? 0 : y;
     if (!canPlaceMinecraftBedAt(x, z, bedY)) {
       updateMinecraftStatus("床要占两格，旁边没有空位置就放不下。");

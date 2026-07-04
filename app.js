@@ -3596,6 +3596,18 @@ function handleMinecraftCellClick(cell) {
     saveGameState();
     return;
   }
+  if (minecraftSelectedTool === "water_bucket" && blockType === "lava") {
+    if (minecraftWaterBuckets <= 0) return;
+    minecraftWaterBuckets -= 1;
+    minecraftBuckets += 1;
+    minecraftInventory.obsidian = (minecraftInventory.obsidian || 0) + 5;
+    setMinecraftBlockAt(x, z, y, "obsidian");
+    minecraftSelectedTool = "bucket";
+    renderMinecraftWorld();
+    updateMinecraftStatus(`水桶浇到岩浆上，冷却出了 5 个黑曜石。黑曜石 ${minecraftInventory.obsidian}。`);
+    saveGameState();
+    return;
+  }
   if (blockType === "end_chest") {
     if (!minecraftOuterChestOpened) {
       minecraftOuterChestOpened = true;

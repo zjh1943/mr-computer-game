@@ -3943,6 +3943,20 @@ body.computer-away .call-back-toggle {
   box-shadow: 0 0 8px #ffe45a;
 }
 
+.minecraft-tool[data-minecraft-tool="ender_pearl"]::before,
+.minecraft-tool[data-minecraft-tool="ender_eye"]::before {
+  background: radial-gradient(circle at 50% 50%, #d9ffe6 0 20%, #20b55b 21% 48%, #0b2f28 49% 100%);
+}
+
+.minecraft-tool[data-minecraft-tool="diamond_sword"]::before {
+  content: "剑";
+  display: grid;
+  place-items: center;
+  color: #081d2e;
+  font-size: 12px;
+  background: linear-gradient(135deg, #d8ffff 0 35%, #22a8ff 35% 65%, #32465a 65% 100%);
+}
+
 .minecraft-tool[data-minecraft-tool="pickaxe"]::before {
   content: "⛏";
   color: #ffffff;
@@ -4209,6 +4223,10 @@ body.computer-away .call-back-toggle {
 
 .minecraft-map-cell.nether.lava {
   background: #ff7b22;
+}
+
+.minecraft-map-cell.end {
+  background: #d8d08a;
 }
 
 .minecraft-map-cell.river {
@@ -5072,6 +5090,55 @@ body.computer-away .call-back-toggle {
   background: #14876d;
 }
 
+.minecraft-dragon {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 28;
+  width: 118%;
+  height: 74%;
+  transform: translate(-50%, -50%);
+  border: 4px solid #050505;
+  background:
+    linear-gradient(90deg, transparent 0 8%, #050505 8% 92%, transparent 92% 100%),
+    #111111;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(154, 43, 255, 0.65);
+}
+
+.minecraft-dragon::before,
+.minecraft-dragon::after {
+  content: "";
+  position: absolute;
+  top: 28%;
+  width: 34%;
+  height: 18%;
+  border: 3px solid #050505;
+  background: #161616;
+}
+
+.minecraft-dragon::before {
+  left: -34%;
+}
+
+.minecraft-dragon::after {
+  right: -34%;
+}
+
+.minecraft-end-crystal {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  z-index: 24;
+  width: 38%;
+  height: 38%;
+  transform: translate(-50%, -50%);
+  border: 3px solid #1f1711;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0 18%, #ff72f8 19% 55%, #6b1e8f 56% 100%);
+  cursor: pointer;
+  box-shadow: 0 0 16px #ff72f8;
+}
+
 .minecraft-portal {
   position: absolute;
   inset: 12%;
@@ -5418,6 +5485,32 @@ body.computer-away .call-back-toggle {
     linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0 18%, transparent 18% 38%, rgba(255, 255, 255, 0.22) 38% 56%, transparent 56% 100%),
     linear-gradient(180deg, #fff18a 0 24%, #d99a25 24% 54%, #ffe56a 54% 100%);
   box-shadow: 0 0 16px rgba(255, 229, 92, 0.82);
+}
+
+.minecraft-cube.minecraft-end_stone {
+  background:
+    linear-gradient(90deg, rgba(80, 70, 40, 0.16) 0 5px, transparent 5px 100%),
+    #d8d08a;
+}
+
+.minecraft-cube.minecraft-end_portal_frame {
+  background:
+    linear-gradient(90deg, #1d4b39 0 22%, #d8d08a 22% 78%, #1d4b39 78% 100%);
+}
+
+.minecraft-cube.minecraft-end_portal {
+  background:
+    radial-gradient(circle at 50% 50%, #111111 0 48%, #3c1161 49% 100%);
+  box-shadow: 0 0 16px #111111;
+}
+
+.minecraft-cube.minecraft-obsidian_pillar {
+  background: #090909;
+}
+
+.minecraft-cube.minecraft-end_chest {
+  background:
+    linear-gradient(90deg, #2b1d11 0 20%, #d99a25 20% 80%, #2b1d11 80% 100%);
 }
 
 .minecraft-cube.minecraft-coal_ore,

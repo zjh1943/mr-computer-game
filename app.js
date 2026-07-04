@@ -325,6 +325,12 @@ let minecraftSeeds = 0;
 let minecraftWheat = 0;
 let minecraftEmerald = 0;
 let minecraftMeteorDust = 0;
+let minecraftEnderPearls = 0;
+let minecraftEnderEyes = 0;
+let minecraftEndPortalEyes = 0;
+let minecraftDragonHealth = 12;
+let minecraftEndCrystals = {};
+let minecraftOuterChestOpened = false;
 let minecraftPlants = {};
 let minecraftMeat = 0;
 let minecraftWool = 0;
@@ -466,6 +472,11 @@ minecraftBlockTypes.warped_nylium = { label: "诡异森林地" };
 minecraftBlockTypes.glowstone = { label: "萤石" };
 minecraftBlockTypes.warped_stem = { label: "诡异树干" };
 minecraftBlockTypes.warped_leaves = { label: "诡异树叶" };
+minecraftBlockTypes.end_stone = { label: "末地海绵" };
+minecraftBlockTypes.end_portal_frame = { label: "末地传送门框架" };
+minecraftBlockTypes.end_portal = { label: "末地黑洞" };
+minecraftBlockTypes.obsidian_pillar = { label: "黑曜石柱" };
+minecraftBlockTypes.end_chest = { label: "末地箱子" };
 
 const minecraftAnimalTypes = {
   sheep: { label: "羊", icon: "羊", meat: 1, wool: 1 },
@@ -1113,6 +1124,12 @@ function saveGameState() {
     minecraftWheat,
     minecraftEmerald,
     minecraftMeteorDust,
+    minecraftEnderPearls,
+    minecraftEnderEyes,
+    minecraftEndPortalEyes,
+    minecraftDragonHealth,
+    minecraftEndCrystals,
+    minecraftOuterChestOpened,
     minecraftPlants,
     minecraftMeat,
     minecraftWool,
@@ -1207,7 +1224,7 @@ function loadGameState() {
   minecraftPlayerX = Number.isFinite(saveData.minecraftPlayerX) ? Math.trunc(saveData.minecraftPlayerX) : 0;
   minecraftPlayerZ = Number.isFinite(saveData.minecraftPlayerZ) ? Math.trunc(saveData.minecraftPlayerZ) : 0;
   minecraftDepth = Number.isFinite(saveData.minecraftDepth) ? clamp(Math.trunc(saveData.minecraftDepth), -63, 1) : 0;
-  minecraftDimension = saveData.minecraftDimension === "nether" ? "nether" : "overworld";
+  minecraftDimension = saveData.minecraftDimension === "nether" || saveData.minecraftDimension === "end" ? saveData.minecraftDimension : "overworld";
   minecraftView = Number.isFinite(saveData.minecraftView) ? Math.abs(Math.trunc(saveData.minecraftView)) % 4 : 0;
   minecraftGuardianFound = Boolean(saveData.minecraftGuardianFound);
   minecraftIsNight = Boolean(saveData.minecraftIsNight);
@@ -1227,6 +1244,14 @@ function loadGameState() {
   minecraftWheat = Number.isFinite(saveData.minecraftWheat) ? Math.max(0, Math.trunc(saveData.minecraftWheat)) : 0;
   minecraftEmerald = Number.isFinite(saveData.minecraftEmerald) ? Math.max(0, Math.trunc(saveData.minecraftEmerald)) : 0;
   minecraftMeteorDust = Number.isFinite(saveData.minecraftMeteorDust) ? Math.max(0, Math.trunc(saveData.minecraftMeteorDust)) : 0;
+  minecraftEnderPearls = Number.isFinite(saveData.minecraftEnderPearls) ? Math.max(0, Math.trunc(saveData.minecraftEnderPearls)) : 0;
+  minecraftEnderEyes = Number.isFinite(saveData.minecraftEnderEyes) ? Math.max(0, Math.trunc(saveData.minecraftEnderEyes)) : 0;
+  minecraftEndPortalEyes = Number.isFinite(saveData.minecraftEndPortalEyes) ? clamp(Math.trunc(saveData.minecraftEndPortalEyes), 0, 12) : 0;
+  minecraftDragonHealth = Number.isFinite(saveData.minecraftDragonHealth) ? Math.max(0, Math.trunc(saveData.minecraftDragonHealth)) : 12;
+  minecraftEndCrystals = saveData.minecraftEndCrystals && typeof saveData.minecraftEndCrystals === "object" && !Array.isArray(saveData.minecraftEndCrystals)
+    ? saveData.minecraftEndCrystals
+    : {};
+  minecraftOuterChestOpened = Boolean(saveData.minecraftOuterChestOpened);
   minecraftPlants = saveData.minecraftPlants && typeof saveData.minecraftPlants === "object" && !Array.isArray(saveData.minecraftPlants)
     ? Object.fromEntries(Object.entries(saveData.minecraftPlants).filter(([, plant]) => plant === "grass" || plant === "wheat" || plant === "wheat-ripe"))
     : {};
@@ -1652,6 +1677,7 @@ function setShopPanelOpen(open) {
 
 function getMinecraftKey(x, z, y = minecraftDepth) {
   if (minecraftDimension === "nether") return `nether:${x},${z},${y}`;
+  if (minecraftDimension === "end") return `end:${x},${z},${y}`;
   return `${x},${z},${y}`;
 }
 
@@ -1824,6 +1850,8 @@ function getMinecraftOreAt(x, z, y) {
 }
 
 function isMinecraftNetherLavaPoolAt(x, z) {
+  if (isMinecraftWarpedForestAt(x, z)) return false;
+  if (x >= -40 && x <= -6 && z >= -24 && z <= 12) return false;
   const poolX = Math.abs((x * 5 + z * 3) % 29);
   const poolZ = Math.abs((x * 7 - z * 4) % 23);
   return poolX <= 2 && poolZ <= 2;
@@ -1848,12 +1876,121 @@ function isMinecraftWarpedForestAt(x, z) {
 
 function isMinecraftEndermanAt(x, z) {
   if (!isMinecraftWarpedForestAt(x, z)) return false;
+  const customEnderman = Object.values(minecraftEndermen).find((entry) => entry && typeof entry === "object" && entry.x === x && entry.z === z);
+  if (customEnderman) return true;
   if (minecraftEndermen[`${x},${z}`]) return false;
   return Math.abs((x * 29 + z * 31) % 13) === 0;
 }
 
+function hitMinecraftEnderman(x, z) {
+  const customKey = Object.entries(minecraftEndermen).find(([, entry]) => entry && typeof entry === "object" && entry.x === x && entry.z === z)?.[0];
+  if (customKey) {
+    delete minecraftEndermen[customKey];
+    minecraftEndermen[`${x},${z}`] = true;
+    minecraftXp += 2;
+    minecraftEnderPearls += 1;
+    renderMinecraftWorld();
+    updateMinecraftStatus(`打倒莫影人，掉了经验球和末影珍珠。末影珍珠 ${minecraftEnderPearls}。`);
+    saveGameState();
+    return;
+  }
+  minecraftEndermen[`${x},${z}`] = true;
+  const targetX = minecraftPlayerX - 2;
+  const targetZ = minecraftPlayerZ + 2;
+  minecraftEndermen[`teleport:${Date.now()}`] = { x: targetX, z: targetZ };
+  minecraftHealth = Math.max(0, minecraftHealth - 1);
+  renderMinecraftWorld();
+  updateMinecraftStatus("打了一下莫影人，它瞬移到你后面，还偷袭了你一下。再打一下才会死。");
+  if (minecraftHealth <= 0) respawnMinecraftPlayer();
+  saveGameState();
+}
+
+function hitMinecraftDragon() {
+  const crystalsLeft = [
+    { x: -10, z: -7 },
+    { x: 8, z: -10 },
+    { x: -12, z: 8 },
+    { x: 11, z: 7 },
+    { x: 0, z: 13 }
+  ].some((crystal) => !minecraftEndCrystals[getMinecraftEndCrystalKey(crystal.x, crystal.z)]);
+  if (crystalsLeft) {
+    minecraftDragonHealth = Math.min(12, minecraftDragonHealth + 1);
+    updateMinecraftStatus("末影龙正在用末影水晶回血，先打掉水晶会更快。");
+  } else {
+    minecraftDragonHealth = Math.max(0, minecraftDragonHealth - 3);
+    updateMinecraftStatus(`打中了末影龙。末影龙生命 ${minecraftDragonHealth}。`);
+  }
+  if (minecraftDragonHealth <= 0) {
+    minecraftXp += 10;
+    updateMinecraftStatus(`末影龙被打败了！获得很多经验球。经验 ${minecraftXp}。`);
+  }
+  renderMinecraftWorld();
+  saveGameState();
+}
+
 function isMinecraftMeteorAt(x, z) {
   return minecraftDimension === "overworld" && Math.abs((x * 43 + z * 47) % 71) === 0;
+}
+
+function isMinecraftStrongholdAreaAt(x, z) {
+  return minecraftDimension === "overworld" && x >= 70 && x <= 82 && z >= -6 && z <= 6;
+}
+
+function isMinecraftStrongholdPortalAt(x, z) {
+  return isMinecraftStrongholdAreaAt(x, z) && x >= 75 && x <= 77 && z >= -1 && z <= 1;
+}
+
+function isMinecraftEndIslandAt(x, z) {
+  if (minecraftDimension !== "end") return false;
+  return (x * x + z * z) <= 260 || ((x - 42) * (x - 42) + (z - 4) * (z - 4)) <= 90;
+}
+
+function isMinecraftOuterEndIslandAt(x, z) {
+  return minecraftDimension === "end" && ((x - 42) * (x - 42) + (z - 4) * (z - 4)) <= 90;
+}
+
+function isMinecraftEndGatewayAt(x, z) {
+  return minecraftDimension === "end" && x >= 16 && x <= 18 && z >= -1 && z <= 1;
+}
+
+function getMinecraftEndCrystalKey(x, z) {
+  return `${x},${z}`;
+}
+
+function isMinecraftEndPillarAt(x, z) {
+  const pillars = [
+    { x: -10, z: -7 },
+    { x: 8, z: -10 },
+    { x: -12, z: 8 },
+    { x: 11, z: 7 },
+    { x: 0, z: 13 }
+  ];
+  return pillars.some((pillar) => Math.abs(x - pillar.x) <= 1 && Math.abs(z - pillar.z) <= 1);
+}
+
+function isMinecraftEndCrystalAt(x, z) {
+  if (minecraftDimension !== "end") return false;
+  const centers = [
+    { x: -10, z: -7 },
+    { x: 8, z: -10 },
+    { x: -12, z: 8 },
+    { x: 11, z: 7 },
+    { x: 0, z: 13 }
+  ];
+  return centers.some((center) => center.x === x && center.z === z && !minecraftEndCrystals[getMinecraftEndCrystalKey(x, z)]);
+}
+
+function isMinecraftDragonAt(x, z) {
+  return minecraftDimension === "end" && minecraftDragonHealth > 0 && Math.abs(x) <= 1 && Math.abs(z) <= 1;
+}
+
+function getDefaultMinecraftEndBlockAt(x, z, y) {
+  if (y >= 1) return null;
+  if (y === 0 && isMinecraftEndGatewayAt(x, z)) return "end_portal";
+  if (y === 0 && isMinecraftOuterEndIslandAt(x, z) && x === 42 && z === 4) return "end_chest";
+  if (y <= 0 && isMinecraftEndPillarAt(x, z)) return "obsidian_pillar";
+  if (y === 0 && isMinecraftEndIslandAt(x, z)) return "end_stone";
+  return null;
 }
 
 function getDefaultMinecraftNetherBlockAt(x, z, y) {
@@ -1875,6 +2012,7 @@ function getDefaultMinecraftNetherBlockAt(x, z, y) {
 }
 
 function getDefaultMinecraftBlockAt(x, z, y = minecraftDepth) {
+  if (minecraftDimension === "end") return getDefaultMinecraftEndBlockAt(x, z, y);
   if (minecraftDimension === "nether") return getDefaultMinecraftNetherBlockAt(x, z, y);
   if (y >= 2) return null;
   if (y === 1) {
@@ -1889,6 +2027,8 @@ function getDefaultMinecraftBlockAt(x, z, y = minecraftDepth) {
     return null;
   }
   if (y === 0) {
+    if (isMinecraftStrongholdPortalAt(x, z)) return minecraftEndPortalEyes >= 12 ? "end_portal" : "end_portal_frame";
+    if (isMinecraftStrongholdAreaAt(x, z)) return "stone";
     if (isMinecraftVillageBedAt(x, z)) return "bed";
     if (isMinecraftVillageTorchAt(x, z)) return "torch";
     if (isMinecraftVillageHouseAt(x, z)) return "wood";
@@ -2151,12 +2291,15 @@ function getMinecraftToolCount(tool) {
   if (tool === "bucket") return minecraftBuckets;
   if (tool === "water_bucket") return minecraftWaterBuckets;
   if (tool === "lava_bucket") return minecraftLavaBuckets;
+  if (tool === "ender_pearl") return minecraftEnderPearls;
+  if (tool === "ender_eye") return minecraftEnderEyes;
+  if (tool === "diamond_sword") return minecraftInventory.diamond_sword || 0;
   if (minecraftBlockTypes[tool]) return minecraftInventory[tool] || 0;
   return 0;
 }
 
 function isMinecraftSelectableTool(tool) {
-  return tool === "pickaxe" || tool === "bucket" || tool === "water_bucket" || tool === "lava_bucket" || Boolean(minecraftBlockTypes[tool]);
+  return tool === "pickaxe" || tool === "bucket" || tool === "water_bucket" || tool === "lava_bucket" || tool === "ender_pearl" || tool === "ender_eye" || tool === "diamond_sword" || Boolean(minecraftBlockTypes[tool]);
 }
 
 function setMinecraftTool(tool) {
@@ -2311,6 +2454,15 @@ function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMod
   if (y === 0 && isMinecraftPiglinAt(x, z)) {
     const piglin = document.createElement("span");
     piglin.className = "minecraft-piglin";
+    piglin.setAttribute("role", "button");
+    piglin.addEventListener("click", (event) => {
+      event.stopPropagation();
+      minecraftMeat += 2;
+      minecraftXp += 1;
+      renderMinecraftWorld();
+      updateMinecraftStatus(`打倒猪灵，掉了肉。肉 ${minecraftMeat}，经验 ${minecraftXp}。`);
+      saveGameState();
+    });
     piglin.setAttribute("aria-label", "猪灵");
     cell.appendChild(piglin);
   }
@@ -2321,12 +2473,35 @@ function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMod
     enderman.setAttribute("aria-label", "莫影人");
     enderman.addEventListener("click", (event) => {
       event.stopPropagation();
-      minecraftEndermen[`${x},${z}`] = true;
-      updateMinecraftStatus("打了一下莫影人，它拿着方块瞬移走了。");
-      renderMinecraftWorld();
-      saveGameState();
+      hitMinecraftEnderman(x, z);
     });
     cell.appendChild(enderman);
+  }
+  if (y === 0 && isMinecraftDragonAt(x, z)) {
+    const dragon = document.createElement("button");
+    dragon.type = "button";
+    dragon.className = "minecraft-dragon";
+    dragon.setAttribute("aria-label", "末影龙");
+    dragon.addEventListener("click", (event) => {
+      event.stopPropagation();
+      hitMinecraftDragon();
+    });
+    cell.appendChild(dragon);
+  }
+  if (y === 0 && isMinecraftEndCrystalAt(x, z)) {
+    const crystal = document.createElement("button");
+    crystal.type = "button";
+    crystal.className = "minecraft-end-crystal";
+    crystal.setAttribute("aria-label", "末影水晶");
+    crystal.addEventListener("click", (event) => {
+      event.stopPropagation();
+      minecraftEndCrystals[getMinecraftEndCrystalKey(x, z)] = true;
+      minecraftDragonHealth = Math.max(0, minecraftDragonHealth - 4);
+      renderMinecraftWorld();
+      updateMinecraftStatus("打掉末影水晶，末影龙不能回血了。");
+      saveGameState();
+    });
+    cell.appendChild(crystal);
   }
   const villagerInfo = getMinecraftVillagerAtCell(x, z, y);
   if (villagerInfo) {
@@ -2649,7 +2824,7 @@ function tradeWithMinecraftVillager() {
   saveGameState();
 }
 
-const minecraftCraftingMaterials = ["", "wood", "coal", "stick", "iron", "meteor_dust"];
+const minecraftCraftingMaterials = ["", "wood", "coal", "stick", "iron", "meteor_dust", "ender_pearl"];
 const minecraftCraftingLabels = {
   wood: "木",
   coal: "煤",
@@ -2665,6 +2840,7 @@ const minecraftCraftingIcons = {
 };
 
 minecraftCraftingIcons.meteor_dust = "粉";
+minecraftCraftingIcons.ender_pearl = "珍";
 
 const minecraftInventoryIcons = {
   grass: "草",
@@ -2692,7 +2868,11 @@ const minecraftInventoryIcons = {
 const minecraftCraftingPlaceableMaterials = new Set(["wood", "coal", "stick", "iron"]);
 minecraftInventoryIcons.meteor = "陨";
 minecraftInventoryIcons.meteor_dust = "粉";
+minecraftInventoryIcons.ender_pearl = "珍";
+minecraftInventoryIcons.ender_eye = "眼";
+minecraftInventoryIcons.diamond_sword = "剑";
 minecraftCraftingPlaceableMaterials.add("meteor_dust");
+minecraftCraftingPlaceableMaterials.add("ender_pearl");
 
 function getMinecraftCraftingMaterialCount(material) {
   if (material === "wood") return minecraftInventory.wood || 0;
@@ -2700,6 +2880,7 @@ function getMinecraftCraftingMaterialCount(material) {
   if (material === "stick") return minecraftSticks;
   if (material === "iron") return minecraftIron;
   if (material === "meteor_dust") return minecraftMeteorDust;
+  if (material === "ender_pearl") return minecraftEnderPearls;
   return 0;
 }
 
@@ -2716,6 +2897,9 @@ function getMinecraftWorkbenchInventoryItems() {
     { id: "iron", material: "iron", count: minecraftIron },
     { id: "emerald", material: "emerald", count: minecraftEmerald },
     { id: "meteor_dust", material: "meteor_dust", count: minecraftMeteorDust },
+    { id: "ender_pearl", material: "ender_pearl", count: minecraftEnderPearls },
+    { id: "ender_eye", material: "ender_eye", count: minecraftEnderEyes },
+    { id: "diamond_sword", material: "diamond_sword", count: minecraftInventory.diamond_sword || 0 },
     { id: "bucket", material: "bucket", count: minecraftBuckets },
     { id: "water_bucket", material: "water_bucket", count: minecraftWaterBuckets },
     { id: "lava_bucket", material: "lava_bucket", count: minecraftLavaBuckets },
@@ -2749,6 +2933,13 @@ function getMinecraftCraftingOutput() {
     && minecraftCraftingSlots[8] === "meteor_dust"
     && filled === 4) {
     return { recipe: "meteor", label: "陨石", icon: "陨", count: 1 };
+  }
+  if (minecraftCraftingSlots[4] === "ender_pearl"
+    && minecraftCraftingSlots[5] === "ender_pearl"
+    && minecraftCraftingSlots[7] === "ender_pearl"
+    && minecraftCraftingSlots[8] === "ender_pearl"
+    && filled === 4) {
+    return { recipe: "ender_eye", label: "末地之眼", icon: "眼", count: 12 };
   }
   return null;
 }
@@ -2852,6 +3043,7 @@ function spendMinecraftCraftingMaterials(materials) {
     if (material === "stick") minecraftSticks = Math.max(0, minecraftSticks - 1);
     if (material === "iron") minecraftIron = Math.max(0, minecraftIron - 1);
     if (material === "meteor_dust") minecraftMeteorDust = Math.max(0, minecraftMeteorDust - 1);
+    if (material === "ender_pearl") minecraftEnderPearls = Math.max(0, minecraftEnderPearls - 1);
   });
 }
 
@@ -2864,6 +3056,21 @@ function canSpendMinecraftCraftingMaterials(materials) {
 }
 
 function craftMinecraftRecipe(recipe = "") {
+  if ((recipe === "ender_eye" || !recipe)
+    && minecraftCraftingSlots[4] === "ender_pearl"
+    && minecraftCraftingSlots[5] === "ender_pearl"
+    && minecraftCraftingSlots[7] === "ender_pearl"
+    && minecraftCraftingSlots[8] === "ender_pearl"
+    && minecraftCraftingSlots.filter(Boolean).length === 4) {
+    spendMinecraftCraftingMaterials(["ender_pearl", "ender_pearl", "ender_pearl", "ender_pearl"]);
+    minecraftEnderEyes += 12;
+    minecraftCraftingSlots = Array(9).fill("");
+    renderMinecraftCraftingTable();
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus("4 个末影珍珠合成了 12 个末地之眼。");
+    saveGameState();
+    return;
+  }
   if ((recipe === "meteor" || !recipe)
     && minecraftCraftingSlots[4] === "meteor_dust"
     && minecraftCraftingSlots[5] === "meteor_dust"
@@ -2973,7 +3180,7 @@ function makeMinecraftHud() {
   eatMeat.textContent = "肉";
   eatMeat.disabled = minecraftMeat <= 0;
   eatMeat.addEventListener("click", eatMinecraftMeat);
-  hud.append(hearts, hunger, farm);
+  hud.append(hearts, hunger, farm, eat, eatMeat);
   return hud;
 }
 
@@ -2994,12 +3201,14 @@ function renderMinecraftMap() {
       const cell = document.createElement("span");
       cell.className = "minecraft-map-cell";
       if (minecraftDimension === "nether") cell.classList.add("nether");
+      if (minecraftDimension === "end") cell.classList.add("end");
       if (minecraftDimension === "nether" && isMinecraftWarpedForestAt(worldX, worldZ)) cell.classList.add("warped");
       if (minecraftDimension === "nether" && isMinecraftBastionAt(worldX, worldZ)) cell.classList.add("bastion");
       if (minecraftDimension === "nether" && isMinecraftNetherLavaPoolAt(worldX, worldZ)) cell.classList.add("lava");
       if (minecraftDimension !== "nether" && isMinecraftRiverAt(worldX, worldZ)) cell.classList.add("river");
       if (minecraftDimension !== "nether" && isMinecraftVillageAreaAt(worldX, worldZ)) cell.classList.add("village");
       if (minecraftDimension === "nether" && Math.abs(worldX) <= 5 && Math.abs(worldZ) <= 5) cell.classList.add("portal");
+      if (minecraftDimension === "end" && isMinecraftEndGatewayAt(worldX, worldZ)) cell.classList.add("portal");
       if (mapX === playerMapX && mapZ === playerMapZ) cell.classList.add("player");
       minecraftMap.appendChild(cell);
     }
@@ -3316,8 +3525,100 @@ function handleMinecraftCellClick(cell) {
   const z = Number(cell?.dataset.z);
   const y = Number(cell?.dataset.y);
   const blockType = getMinecraftBlockAt(x, z, y);
+  if (minecraftSelectedTool === "diamond_sword") {
+    if (isMinecraftPiglinAt(x, z)) {
+      minecraftMeat += 2;
+      minecraftXp += 1;
+      renderMinecraftWorld();
+      updateMinecraftStatus("钻石剑秒杀猪灵，掉了肉。");
+      saveGameState();
+      return;
+    }
+    if (isMinecraftEndermanAt(x, z)) {
+      minecraftEndermen[`${x},${z}`] = true;
+      minecraftEnderPearls += 1;
+      minecraftXp += 2;
+      renderMinecraftWorld();
+      updateMinecraftStatus("钻石剑秒杀莫影人，掉了末影珍珠。");
+      saveGameState();
+      return;
+    }
+    if (isMinecraftDragonAt(x, z)) {
+      minecraftDragonHealth = 0;
+      minecraftXp += 10;
+      renderMinecraftWorld();
+      updateMinecraftStatus("钻石剑重重砍中了末影龙！");
+      saveGameState();
+      return;
+    }
+  }
+  if (minecraftSelectedTool === "ender_pearl") {
+    if (minecraftEnderPearls <= 0) return;
+    minecraftEnderPearls -= 1;
+    minecraftPlayerX = x;
+    minecraftPlayerZ = z;
+    minecraftDepth = y;
+    minecraftSelectedTool = minecraftEnderPearls > 0 ? "ender_pearl" : "pickaxe";
+    renderMinecraftWorld();
+    updateMinecraftStatus("扔出了末影珍珠，你瞬移过去了。");
+    saveGameState();
+    return;
+  }
+  if (minecraftSelectedTool === "ender_eye") {
+    if (minecraftEnderEyes <= 0) return;
+    if (blockType === "end_portal_frame") {
+      minecraftEnderEyes -= 1;
+      minecraftEndPortalEyes = Math.min(12, minecraftEndPortalEyes + 1);
+      minecraftSelectedTool = minecraftEnderEyes > 0 ? "ender_eye" : "pickaxe";
+      renderMinecraftWorld();
+      updateMinecraftStatus(`放上了末地之眼。传送门 ${minecraftEndPortalEyes}/12。`);
+      saveGameState();
+      return;
+    }
+    minecraftEnderEyes -= 1;
+    minecraftPlayerX = 76;
+    minecraftPlayerZ = 0;
+    minecraftDepth = 0;
+    minecraftDimension = "overworld";
+    minecraftSelectedTool = minecraftEnderEyes > 0 ? "ender_eye" : "pickaxe";
+    renderMinecraftWorld();
+    updateMinecraftStatus("末地之眼飞向了末地要塞，你跟着找到了传送门房间。");
+    saveGameState();
+    return;
+  }
+  if (blockType === "end_chest") {
+    if (!minecraftOuterChestOpened) {
+      minecraftOuterChestOpened = true;
+      minecraftEnderPearls += 4;
+      minecraftInventory.diamond_sword = (minecraftInventory.diamond_sword || 0) + 1;
+      renderMinecraftWorld();
+      updateMinecraftStatus("打开末地外岛箱子，获得末影珍珠和钻石剑。");
+      saveGameState();
+    } else {
+      updateMinecraftStatus("这个末地箱子已经打开过了。");
+    }
+    return;
+  }
   if (isMinecraftPortalAt(x, z, y)) {
     enterMinecraftPortal();
+    return;
+  }
+  if (blockType === "end_portal") {
+    if (minecraftDimension === "end") {
+      minecraftPlayerX = 42;
+      minecraftPlayerZ = 4;
+      renderMinecraftWorld();
+      updateMinecraftStatus("走进小传送门，到了末地外岛。");
+      saveGameState();
+      return;
+    }
+    minecraftDimension = "end";
+    minecraftDepth = 0;
+    minecraftPlayerX = 0;
+    minecraftPlayerZ = 8;
+    renderMinecraftWorld();
+    updateMinecraftStatus("跳进黑色传送门，进入了末地。");
+    saveGameState();
     return;
   }
   if (blockType === "crafting_table") {

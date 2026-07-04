@@ -474,6 +474,7 @@ minecraftBlockTypes.warped_stem = { label: "诡异树干" };
 minecraftBlockTypes.warped_leaves = { label: "诡异树叶" };
 minecraftBlockTypes.end_stone = { label: "末地海绵" };
 minecraftBlockTypes.end_portal_frame = { label: "末地传送门框架" };
+minecraftBlockTypes.end_portal_frame_eye = { label: "放了眼的末地传送门框架" };
 minecraftBlockTypes.end_portal = { label: "末地黑洞" };
 minecraftBlockTypes.obsidian_pillar = { label: "黑曜石柱" };
 minecraftBlockTypes.end_chest = { label: "末地箱子" };
@@ -1944,8 +1945,31 @@ function isMinecraftStrongholdAreaAt(x, z) {
   return minecraftDimension === "overworld" && x >= 70 && x <= 82 && z >= -6 && z <= 6;
 }
 
-function isMinecraftStrongholdPortalAt(x, z) {
-  return isMinecraftStrongholdAreaAt(x, z) && x >= 75 && x <= 77 && z >= -1 && z <= 1;
+function getMinecraftStrongholdPortalPart(x, z) {
+  if (minecraftDimension !== "overworld") return null;
+  const dx = x - 76;
+  const dz = z;
+  const isFrame = (Math.abs(dx) === 2 && Math.abs(dz) <= 1) || (Math.abs(dz) === 2 && Math.abs(dx) <= 1);
+  if (isFrame) {
+    const order = [
+      [75, -2], [76, -2], [77, -2],
+      [78, -1], [78, 0], [78, 1],
+      [77, 2], [76, 2], [75, 2],
+      [74, 1], [74, 0], [74, -1]
+    ];
+    const index = order.findIndex(([frameX, frameZ]) => frameX === x && frameZ === z);
+    return { type: "frame", index };
+  }
+  if (Math.abs(dx) <= 1 && Math.abs(dz) <= 1) return { type: "center" };
+  return null;
+}
+
+function isMinecraftStrongholdPortalFrameAt(x, z) {
+  return getMinecraftStrongholdPortalPart(x, z)?.type === "frame";
+}
+
+function isMinecraftStrongholdPortalCenterAt(x, z) {
+  return getMinecraftStrongholdPortalPart(x, z)?.type === "center";
 }
 
 function isMinecraftEndIslandAt(x, z) {
@@ -2035,7 +2059,13 @@ function getDefaultMinecraftBlockAt(x, z, y = minecraftDepth) {
     return null;
   }
   if (y === 0) {
-    if (isMinecraftStrongholdPortalAt(x, z)) return minecraftEndPortalEyes >= 12 ? "end_portal" : "end_portal_frame";
+    const strongholdPortalPart = getMinecraftStrongholdPortalPart(x, z);
+    if (strongholdPortalPart?.type === "frame") {
+      return strongholdPortalPart.index >= 0 && strongholdPortalPart.index < minecraftEndPortalEyes
+        ? "end_portal_frame_eye"
+        : "end_portal_frame";
+    }
+    if (strongholdPortalPart?.type === "center") return minecraftEndPortalEyes >= 12 ? "end_portal" : null;
     if (isMinecraftStrongholdAreaAt(x, z)) return "stone";
     if (isMinecraftVillageBedAt(x, z)) return "bed";
     if (isMinecraftVillageTorchAt(x, z)) return "torch";
@@ -3214,8 +3244,8 @@ function renderMinecraftMap() {
       if (minecraftDimension === "nether" && isMinecraftBastionAt(worldX, worldZ)) cell.classList.add("bastion");
       if (minecraftDimension === "nether" && isMinecraftNetherLavaPoolAt(worldX, worldZ)) cell.classList.add("lava");
       if (minecraftDimension === "nether" && isMinecraftPortalNearMapPoint(worldX, worldZ)) cell.classList.add("portal");
-      if (minecraftDimension !== "nether" && isMinecraftRiverAt(worldX, worldZ)) cell.classList.add("river");
-      if (minecraftDimension !== "nether" && isMinecraftVillageAreaAt(worldX, worldZ)) cell.classList.add("village");
+      if (minecraftDimension === "overworld" && isMinecraftRiverAt(worldX, worldZ)) cell.classList.add("river");
+      if (minecraftDimension === "overworld" && isMinecraftVillageAreaAt(worldX, worldZ)) cell.classList.add("village");
       if (minecraftDimension === "overworld" && isMinecraftPortalNearMapPoint(worldX, worldZ)) cell.classList.add("overworld-portal");
       if (minecraftDimension === "nether" && Math.abs(worldX) <= 5 && Math.abs(worldZ) <= 5) cell.classList.add("portal");
       if (minecraftDimension === "end" && isMinecraftEndGatewayAt(worldX, worldZ)) cell.classList.add("portal");
@@ -3237,7 +3267,8 @@ function renderMinecraftWorld() {
   minecraftWorld.innerHTML = "";
   minecraftWorld.classList.toggle("guardian-depth", minecraftGuardianFound || minecraftDepth <= -63);
   minecraftWorld.classList.toggle("nether-world", minecraftDimension === "nether");
-  minecraftWorld.classList.toggle("surface-night", minecraftDimension !== "nether" && minecraftIsNight && minecraftDepth >= 0);
+  minecraftWorld.classList.toggle("end-world", minecraftDimension === "end");
+  minecraftWorld.classList.toggle("surface-night", minecraftDimension === "overworld" && minecraftIsNight && minecraftDepth >= 0);
   minecraftWorld.classList.toggle("underground-dark", minecraftDepth < 0 && !isMinecraftTorchNearPlayer());
   minecraftWorld.classList.toggle("underground-lit", minecraftDepth < 0 && isMinecraftTorchNearPlayer());
   for (let localZ = -4; localZ <= 4; localZ += 1) {
@@ -3245,7 +3276,7 @@ function renderMinecraftWorld() {
       const offset = getMinecraftViewOffset(localX, localZ);
       const x = minecraftPlayerX + offset.x;
       const z = minecraftPlayerZ + offset.z;
-      const isSurfaceSky = minecraftDimension !== "nether" && minecraftDepth >= 0 && (minecraftDepth === 1 || localZ <= -2);
+      const isSurfaceSky = minecraftDimension === "overworld" && minecraftDepth >= 0 && (minecraftDepth === 1 || localZ <= -2);
       const netherUpperBlock = minecraftDimension === "nether" && minecraftDepth === 0 && localZ <= -2
         ? getMinecraftBlockAt(x, z, 1)
         : null;
@@ -3254,7 +3285,7 @@ function renderMinecraftWorld() {
       minecraftWorld.appendChild(makeMinecraftBlockElement(blockType, x, z, blockY, localX, localZ, isSurfaceSky && !blockType ? "sky" : ""));
     }
   }
-  if (minecraftDimension !== "nether" && minecraftDepth >= 0) {
+  if (minecraftDimension === "overworld" && minecraftDepth >= 0) {
     minecraftWorld.appendChild(makeMinecraftSkyBody());
     minecraftWorld.appendChild(makeMinecraftClouds());
   }
@@ -3637,7 +3668,7 @@ function handleMinecraftCellClick(cell) {
     minecraftDimension = "end";
     minecraftDepth = 0;
     minecraftPlayerX = 0;
-    minecraftPlayerZ = 8;
+    minecraftPlayerZ = 2;
     renderMinecraftWorld();
     updateMinecraftStatus("跳进黑色传送门，进入了末地。");
     saveGameState();

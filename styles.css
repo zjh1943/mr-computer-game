@@ -4285,6 +4285,13 @@ body.computer-away .call-back-toggle {
     #6a1f19;
 }
 
+.minecraft-world.end-world {
+  background:
+    linear-gradient(90deg, rgba(130, 96, 180, 0.16) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(130, 96, 180, 0.16) 1px, transparent 1px),
+    #030208;
+}
+
 .minecraft-world.minecraft-jump .minecraft-player {
   animation: minecraft-player-jump 260ms ease-out;
 }
@@ -5494,8 +5501,9 @@ body.computer-away .call-back-toggle {
 
 .minecraft-cube.minecraft-end_stone {
   background:
-    linear-gradient(90deg, rgba(80, 70, 40, 0.16) 0 5px, transparent 5px 100%),
-    #d8d08a;
+    linear-gradient(90deg, rgba(112, 91, 145, 0.24) 0 5px, transparent 5px 100%),
+    #16111f;
+  box-shadow: inset 0 0 0 2px #2f2444;
 }
 
 .minecraft-cube.minecraft-end_portal_frame {
@@ -5503,10 +5511,17 @@ body.computer-away .call-back-toggle {
     linear-gradient(90deg, #1d4b39 0 22%, #d8d08a 22% 78%, #1d4b39 78% 100%);
 }
 
+.minecraft-cube.minecraft-end_portal_frame_eye {
+  background:
+    radial-gradient(circle at 50% 48%, #6dff8b 0 17%, #163f2b 18% 29%, transparent 30%),
+    linear-gradient(90deg, #1d4b39 0 22%, #d8d08a 22% 78%, #1d4b39 78% 100%);
+  box-shadow: inset 0 0 0 3px #0d2c1e, 0 0 12px rgba(109, 255, 139, 0.65);
+}
+
 .minecraft-cube.minecraft-end_portal {
   background:
-    radial-gradient(circle at 50% 50%, #111111 0 48%, #3c1161 49% 100%);
-  box-shadow: 0 0 16px #111111;
+    radial-gradient(circle at 50% 50%, #000000 0 46%, #16002a 47% 70%, #4d0f85 71% 100%);
+  box-shadow: 0 0 22px #000000, 0 0 18px #5e15a0;
 }
 
 .minecraft-cube.minecraft-obsidian_pillar {

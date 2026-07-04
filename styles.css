@@ -4242,6 +4242,12 @@ body.computer-away .call-back-toggle {
   box-shadow: 0 0 5px #e8b2ff;
 }
 
+.minecraft-map-cell.return-portal {
+  background: #050505;
+  border: 1px solid #d6a8ff;
+  box-shadow: 0 0 7px #9a2bff;
+}
+
 .minecraft-map-cell.overworld-portal {
   background: #050505;
   box-shadow: 0 0 5px #9a2bff;

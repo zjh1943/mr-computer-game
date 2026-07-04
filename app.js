@@ -1836,6 +1836,20 @@ function enterMinecraftPortal() {
 }
 
 function checkMinecraftPortalStep() {
+  if (minecraftDimension === "end"
+    && minecraftDepth === 0
+    && isMinecraftEndReturnPortalAt(minecraftPlayerX, minecraftPlayerZ)) {
+    minecraftDimension = "overworld";
+    minecraftDepth = 0;
+    minecraftPlayerX = 76;
+    minecraftPlayerZ = 0;
+    minecraftZombies = [];
+    minecraftSkeletons = [];
+    renderMinecraftWorld();
+    updateMinecraftStatus("走进末地返回传送门，回到了主世界的要塞房间。");
+    saveGameState();
+    return true;
+  }
   if (minecraftDimension === "overworld"
     && minecraftDepth === 0
     && isMinecraftStrongholdPortalCenterAt(minecraftPlayerX, minecraftPlayerZ)
@@ -2016,6 +2030,20 @@ function isMinecraftEndGatewayAt(x, z) {
   return minecraftDimension === "end" && x >= 16 && x <= 18 && z >= -1 && z <= 1;
 }
 
+function isMinecraftEndReturnPortalAt(x, z) {
+  return minecraftDimension === "end" && x >= -1 && x <= 1 && z >= 6 && z <= 8;
+}
+
+function isMinecraftEndReturnPortalNearMapPoint(x, z) {
+  if (minecraftDimension !== "end") return false;
+  for (let dx = -5; dx <= 5; dx += 1) {
+    for (let dz = -5; dz <= 5; dz += 1) {
+      if (isMinecraftEndReturnPortalAt(x + dx, z + dz)) return true;
+    }
+  }
+  return false;
+}
+
 function getMinecraftEndCrystalKey(x, z) {
   return `${x},${z}`;
 }
@@ -2049,6 +2077,7 @@ function isMinecraftDragonAt(x, z) {
 
 function getDefaultMinecraftEndBlockAt(x, z, y) {
   if (y >= 1) return null;
+  if (y === 0 && isMinecraftEndReturnPortalAt(x, z)) return "end_portal";
   if (y === 0 && isMinecraftEndGatewayAt(x, z)) return "end_portal";
   if (y === 0 && isMinecraftOuterEndIslandAt(x, z) && x === 42 && z === 4) return "end_chest";
   if (y <= 0 && isMinecraftEndPillarAt(x, z)) return "obsidian_pillar";
@@ -3297,6 +3326,7 @@ function renderMinecraftMap() {
       if (minecraftDimension === "overworld" && isMinecraftPortalNearMapPoint(worldX, worldZ)) cell.classList.add("overworld-portal");
       if (minecraftDimension === "nether" && Math.abs(worldX) <= 5 && Math.abs(worldZ) <= 5) cell.classList.add("portal");
       if (minecraftDimension === "end" && isMinecraftEndGatewayAt(worldX, worldZ)) cell.classList.add("portal");
+      if (minecraftDimension === "end" && isMinecraftEndReturnPortalNearMapPoint(worldX, worldZ)) cell.classList.add("return-portal");
       if (mapX === playerMapX && mapZ === playerMapZ) cell.classList.add("player");
       minecraftMap.appendChild(cell);
     }
@@ -3728,6 +3758,16 @@ function handleMinecraftCellClick(cell) {
   }
   if (blockType === "end_portal") {
     if (minecraftDimension === "end") {
+      if (isMinecraftEndReturnPortalAt(x, z)) {
+        minecraftDimension = "overworld";
+        minecraftDepth = 0;
+        minecraftPlayerX = 76;
+        minecraftPlayerZ = 0;
+        renderMinecraftWorld();
+        updateMinecraftStatus("走进末地返回传送门，回到了主世界的要塞房间。");
+        saveGameState();
+        return;
+      }
       minecraftPlayerX = 42;
       minecraftPlayerZ = 4;
       renderMinecraftWorld();

@@ -1802,11 +1802,28 @@ function isMinecraftPortalAt(x, z, y = minecraftDepth) {
 
 function isMinecraftSkyPortalAt(x, z, y = minecraftDepth) {
   if (getMinecraftBlockAt(x, z, y) !== "stone") return false;
-  const northSouth = getMinecraftBlockAt(x, z - 1, y) === "stone"
+  return getMinecraftBlockAt(x, z - 1, y) === "stone"
     && getMinecraftBlockAt(x, z + 1, y) === "stone";
-  const eastWest = getMinecraftBlockAt(x - 1, z, y) === "stone"
-    && getMinecraftBlockAt(x + 1, z, y) === "stone";
-  return northSouth || eastWest;
+}
+
+function isMinecraftSkyPortalNearMapPoint(x, z) {
+  if (minecraftDimension !== "overworld" && minecraftDimension !== "sky") return false;
+  for (let dx = -5; dx <= 5; dx += 1) {
+    for (let dz = -5; dz <= 5; dz += 1) {
+      if (isMinecraftSkyPortalAt(x + dx, z + dz, 0)) return true;
+    }
+  }
+  return false;
+}
+
+function isMinecraftStrongholdPortalNearMapPoint(x, z) {
+  if (minecraftDimension !== "overworld") return false;
+  for (let dx = -5; dx <= 5; dx += 1) {
+    for (let dz = -5; dz <= 5; dz += 1) {
+      if (isMinecraftStrongholdPortalFrameAt(x + dx, z + dz) || isMinecraftStrongholdPortalCenterAt(x + dx, z + dz)) return true;
+    }
+  }
+  return false;
 }
 
 function isMinecraftNearPortalAt(x, z, y = minecraftDepth) {
@@ -2345,6 +2362,16 @@ function getDefaultMinecraftAnimalAt(x, z) {
   return null;
 }
 
+function getMinecraftSkyAnimalAt(x, z) {
+  if (minecraftDimension !== "sky" || !isMinecraftSkyIslandAt(x, z) || getMinecraftBlockAt(x, z, 1)) return null;
+  const seed = Math.abs((x * 31 + z * 43) % 37);
+  if (seed === 0) return "sheep";
+  if (seed === 5) return "cow";
+  if (seed === 11) return "pig";
+  if (seed === 17) return "chicken";
+  return null;
+}
+
 function getMinecraftAnimalAt(x, z) {
   const key = getMinecraftAnimalKey(x, z);
   if (Object.prototype.hasOwnProperty.call(minecraftAnimals, key)) {
@@ -2463,6 +2490,19 @@ function moveMinecraftPlayerToSpawnPoint() {
 }
 
 function applyMinecraftGravity() {
+  if (minecraftDimension === "sky" && minecraftDepth === 0 && !getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, 0)) {
+    minecraftDimension = "overworld";
+    minecraftDepth = 1;
+    if (minecraftHasSkyRabbit) {
+      updateMinecraftStatus("抱着天际兔子从空岛掉下来，轻轻落回主世界，没有扣血。");
+    } else {
+      minecraftHealth = Math.max(0, minecraftHealth - 3);
+      minecraftHunger = Math.max(0, minecraftHunger - 1);
+      updateMinecraftStatus("从天际空岛掉回主世界，摔疼了，心和鸡腿都少了一点。");
+      if (minecraftHealth <= 0) respawnMinecraftPlayer();
+    }
+    return true;
+  }
   if (minecraftDepth <= -63) return false;
   if (minecraftDepth <= 0) return false;
   if (minecraftDepth === 1 && getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, 0)) {
@@ -2601,11 +2641,11 @@ function hitMinecraftAnimal(x, z) {
   saveGameState();
 }
 
-function makeMinecraftAnimalElement(animalType, x, z) {
+function makeMinecraftAnimalElement(animalType, x, z, options = {}) {
   const animal = minecraftAnimalTypes[animalType];
   if (!animal) return null;
   const animalElement = document.createElement("span");
-  animalElement.className = `minecraft-animal minecraft-animal-${animalType}`;
+  animalElement.className = `minecraft-animal minecraft-animal-${animalType}${options.winged ? " minecraft-animal-winged" : ""}`;
   animalElement.textContent = animal.icon;
   animalElement.setAttribute("role", "button");
   animalElement.setAttribute("aria-label", animal.label);
@@ -2628,6 +2668,9 @@ function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMod
     cell.className = blockType
       ? `minecraft-cube minecraft-${blockType}`
       : `minecraft-cube minecraft-empty-block minecraft-${visualBlockType}`;
+  }
+  if (minecraftDimension === "sky" && !blockType) {
+    cell.classList.add("minecraft-sky-air");
   }
   if (blockType === "end_stone" && isMinecraftEndIslandEdgeAt(x, z)) {
     cell.classList.add("minecraft-end-edge");
@@ -2656,8 +2699,12 @@ function makeMinecraftBlockElement(blockType, x, z, y, localX, localZ, visualMod
     plant.textContent = plantType === "wheat-ripe" ? "麦" : plantType === "wheat" ? "芽" : "草";
     cell.appendChild(plant);
   }
-  const animalType = minecraftDimension === "overworld" && y === 0 && blockType === "grass" ? getMinecraftAnimalAt(x, z) : null;
-  const animalElement = animalType ? makeMinecraftAnimalElement(animalType, x, z) : null;
+  const animalType = minecraftDimension === "overworld" && y === 0 && blockType === "grass"
+    ? getMinecraftAnimalAt(x, z)
+    : minecraftDimension === "sky" && y === 0 && blockType === "sky_grass"
+      ? getMinecraftSkyAnimalAt(x, z)
+      : null;
+  const animalElement = animalType ? makeMinecraftAnimalElement(animalType, x, z, { winged: minecraftDimension === "sky" }) : null;
   if (animalElement) {
     cell.appendChild(animalElement);
   }
@@ -3474,11 +3521,12 @@ function renderMinecraftMap() {
       if (minecraftDimension === "overworld" && isMinecraftRiverAt(worldX, worldZ)) cell.classList.add("river");
       if (minecraftDimension === "overworld" && isMinecraftVillageAreaAt(worldX, worldZ)) cell.classList.add("village");
       if (minecraftDimension === "overworld" && isMinecraftPortalNearMapPoint(worldX, worldZ)) cell.classList.add("overworld-portal");
+      if (minecraftDimension === "overworld" && isMinecraftStrongholdPortalNearMapPoint(worldX, worldZ)) cell.classList.add("end-portal-map");
+      if ((minecraftDimension === "overworld" || minecraftDimension === "sky") && isMinecraftSkyPortalNearMapPoint(worldX, worldZ)) cell.classList.add("sky-portal");
       if (minecraftDimension === "nether" && Math.abs(worldX) <= 5 && Math.abs(worldZ) <= 5) cell.classList.add("portal");
       if (minecraftDimension === "end" && isMinecraftEndGatewayAt(worldX, worldZ)) cell.classList.add("portal");
       if (minecraftDimension === "end" && isMinecraftEndReturnPortalNearMapPoint(worldX, worldZ)) cell.classList.add("return-portal");
       if (minecraftDimension === "sky" && isMinecraftSkyBridgeAt(worldX, worldZ)) cell.classList.add("sky-bridge");
-      if (minecraftDimension === "sky" && isMinecraftSkyPortalAt(worldX, worldZ, 0)) cell.classList.add("sky-portal");
       if (mapX === playerMapX && mapZ === playerMapZ) cell.classList.add("player");
       minecraftMap.appendChild(cell);
     }

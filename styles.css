@@ -4242,6 +4242,12 @@ body.computer-away .call-back-toggle {
   box-shadow: 0 0 7px #9de8ff;
 }
 
+.minecraft-map-cell.end-portal-map {
+  background: #020202;
+  border: 1px solid #80ff9f;
+  box-shadow: 0 0 7px #80ff9f;
+}
+
 .minecraft-map-cell.river {
   background: #2387d8;
 }
@@ -4360,6 +4366,23 @@ body.computer-away .call-back-toggle {
   border: 3px solid rgba(255, 255, 255, 0.5);
   z-index: 3;
   pointer-events: none;
+}
+
+.minecraft-cube.minecraft-empty-block.minecraft-sky-air {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.28), transparent 46%),
+    #8de7ff;
+}
+
+.minecraft-cube.minecraft-empty-block.minecraft-sky-air .cube-top,
+.minecraft-cube.minecraft-empty-block.minecraft-sky-air .cube-left,
+.minecraft-cube.minecraft-empty-block.minecraft-sky-air .cube-right {
+  background: #8de7ff;
+  opacity: 0.58;
+}
+
+.minecraft-cube.minecraft-empty-block.minecraft-sky-air::after {
+  border-color: rgba(255, 255, 255, 0.24);
 }
 
 .minecraft-sky-block {
@@ -5005,6 +5028,31 @@ body.computer-away .call-back-toggle {
   pointer-events: auto;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.32);
   animation: minecraft-animal-walk 2.4s steps(2, end) infinite;
+}
+
+.minecraft-animal-winged {
+  top: 42%;
+  box-shadow: 0 9px 0 rgba(0, 0, 0, 0.14), 3px 3px 0 rgba(0, 0, 0, 0.32);
+  animation: minecraft-animal-fly 1.5s steps(2, end) infinite;
+}
+
+.minecraft-animal-winged::before,
+.minecraft-animal-winged::after {
+  content: "";
+  position: absolute;
+  top: 22%;
+  width: 28%;
+  height: 28%;
+  border: 2px solid #181818;
+  background: #e9fbff;
+}
+
+.minecraft-animal-winged::before {
+  left: -26%;
+}
+
+.minecraft-animal-winged::after {
+  right: -26%;
 }
 
 .minecraft-animal-sheep {
@@ -8644,6 +8692,16 @@ body.terror-night .tree-right::before {
   }
   50% {
     transform: translate(-45%, -52%);
+  }
+}
+
+@keyframes minecraft-animal-fly {
+  0%,
+  100% {
+    transform: translate(-52%, -56%);
+  }
+  50% {
+    transform: translate(-46%, -66%);
   }
 }
 

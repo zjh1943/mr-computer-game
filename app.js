@@ -1767,6 +1767,17 @@ function isMinecraftPortalAt(x, z, y = minecraftDepth) {
   return northSouth || eastWest || upDown;
 }
 
+function isMinecraftNearPortalAt(x, z, y = minecraftDepth) {
+  if (isMinecraftPortalAt(x, z, y)) return true;
+  for (let dx = -1; dx <= 1; dx += 1) {
+    for (let dz = -1; dz <= 1; dz += 1) {
+      if (dx === 0 && dz === 0) continue;
+      if (isMinecraftPortalAt(x + dx, z + dz, y)) return true;
+    }
+  }
+  return false;
+}
+
 function enterMinecraftPortal() {
   if (minecraftDimension === "nether") {
     minecraftDimension = "overworld";
@@ -1779,6 +1790,7 @@ function enterMinecraftPortal() {
     minecraftDepth = 0;
     minecraftPlayerX = 1;
     minecraftPlayerZ = 0;
+    minecraftIsNight = false;
     minecraftZombies = [];
     minecraftSkeletons = [];
     updateMinecraftStatus("进入下界了：这里是红红的地，还有猪灵、金子、堡垒和小岩浆池。");
@@ -1788,7 +1800,7 @@ function enterMinecraftPortal() {
 }
 
 function checkMinecraftPortalStep() {
-  if (isMinecraftPortalAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth)) {
+  if (isMinecraftNearPortalAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth)) {
     enterMinecraftPortal();
     return true;
   }
@@ -3015,7 +3027,10 @@ function renderMinecraftWorld() {
       const x = minecraftPlayerX + offset.x;
       const z = minecraftPlayerZ + offset.z;
       const isSurfaceSky = minecraftDimension !== "nether" && minecraftDepth >= 0 && (minecraftDepth === 1 || localZ <= -2);
-      const blockY = isSurfaceSky ? 1 : minecraftDepth;
+      const netherUpperBlock = minecraftDimension === "nether" && minecraftDepth === 0 && localZ <= -2
+        ? getMinecraftBlockAt(x, z, 1)
+        : null;
+      const blockY = netherUpperBlock ? 1 : isSurfaceSky ? 1 : minecraftDepth;
       const blockType = getMinecraftBlockAt(x, z, blockY);
       minecraftWorld.appendChild(makeMinecraftBlockElement(blockType, x, z, blockY, localX, localZ, isSurfaceSky && !blockType ? "sky" : ""));
     }

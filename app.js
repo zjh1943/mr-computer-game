@@ -468,7 +468,7 @@ minecraftBlockTypes.obsidian = { label: "黑曜石" };
 minecraftBlockTypes.netherrack = { label: "下界红土" };
 minecraftBlockTypes.nether_gold_ore = { label: "下界金矿" };
 minecraftBlockTypes.nether_brick = { label: "猪灵堡垒砖" };
-minecraftBlockTypes.meteor = { label: "陨石" };
+minecraftBlockTypes.meteor = { label: "银石" };
 minecraftBlockTypes.warped_nylium = { label: "诡异森林地" };
 minecraftBlockTypes.glowstone = { label: "萤石" };
 minecraftBlockTypes.warped_stem = { label: "诡异树干" };
@@ -1801,9 +1801,9 @@ function isMinecraftPortalAt(x, z, y = minecraftDepth) {
 }
 
 function isMinecraftSkyPortalAt(x, z, y = minecraftDepth) {
-  if (getMinecraftBlockAt(x, z, y) !== "stone") return false;
-  return getMinecraftBlockAt(x, z - 1, y) === "stone"
-    && getMinecraftBlockAt(x, z + 1, y) === "stone";
+  if (getMinecraftBlockAt(x, z, y) !== "meteor") return false;
+  return getMinecraftBlockAt(x, z - 1, y) === "meteor"
+    && getMinecraftBlockAt(x, z + 1, y) === "meteor";
 }
 
 function isMinecraftSkyPortalNearMapPoint(x, z) {
@@ -3150,7 +3150,7 @@ const minecraftCraftingIcons = {
   iron: "铁"
 };
 
-minecraftCraftingIcons.meteor_dust = "粉";
+minecraftCraftingIcons.meteor_dust = "银粉";
 minecraftCraftingIcons.ender_pearl = "珍";
 
 const minecraftInventoryIcons = {
@@ -3177,8 +3177,8 @@ const minecraftInventoryIcons = {
   xp: "星"
 };
 const minecraftCraftingPlaceableMaterials = new Set(["wood", "coal", "stick", "iron"]);
-minecraftInventoryIcons.meteor = "陨";
-minecraftInventoryIcons.meteor_dust = "粉";
+minecraftInventoryIcons.meteor = "银";
+minecraftInventoryIcons.meteor_dust = "银粉";
 minecraftInventoryIcons.ender_pearl = "珍";
 minecraftInventoryIcons.ender_eye = "眼";
 minecraftInventoryIcons.diamond_sword = "剑";
@@ -3243,7 +3243,7 @@ function getMinecraftCraftingOutput() {
     && minecraftCraftingSlots[7] === "meteor_dust"
     && minecraftCraftingSlots[8] === "meteor_dust"
     && filled === 4) {
-    return { recipe: "meteor", label: "陨石", icon: "陨", count: 1 };
+    return { recipe: "meteor", label: "银石", icon: "银", count: 1 };
   }
   if (minecraftCraftingSlots[4] === "ender_pearl"
     && minecraftCraftingSlots[5] === "ender_pearl"
@@ -3393,7 +3393,7 @@ function craftMinecraftRecipe(recipe = "") {
     minecraftCraftingSlots = Array(9).fill("");
     renderMinecraftCraftingTable();
     renderMinecraftWorld();
-    setMinecraftCraftingStatus("4 个陨石粉合成了 1 个陨石。");
+    setMinecraftCraftingStatus("4 个银石粉合成了 1 个银石。");
     saveGameState();
     return;
   }
@@ -3788,7 +3788,7 @@ function mineMinecraftBlock(cell) {
     minecraftMeteorDust += 4;
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
-    updateMinecraftStatus(`挖掉了发黄光的陨石，获得 4 个陨石粉。陨石粉 ${minecraftMeteorDust}。`);
+    updateMinecraftStatus(`挖掉了发黄光的银石，获得 4 个银石粉。银石粉 ${minecraftMeteorDust}。`);
     saveGameState();
     return;
   }

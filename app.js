@@ -339,6 +339,9 @@ let minecraftSpawnPoint = null;
 let minecraftSticks = 0;
 let minecraftCoal = 0;
 let minecraftIron = 0;
+let minecraftDiamond = 0;
+let minecraftBedrockShard = 0;
+let minecraftPickaxes = { wood: 0, stone: 0, iron: 0, diamond: 0, bedrock: 0 };
 let minecraftBuckets = 0;
 let minecraftWaterBuckets = 0;
 let minecraftLavaBuckets = 0;
@@ -460,6 +463,7 @@ const minecraftBlockTypes = {
   iron_ore: { label: "铁" },
   gold_ore: { label: "金矿" },
   diamond_ore: { label: "钻石" },
+  bedrock_ore: { label: "基岩矿" },
   bed: { label: "床" },
   crafting_table: { label: "工作台" },
   torch: { label: "火把" }
@@ -1143,6 +1147,9 @@ function saveGameState() {
     minecraftSticks,
     minecraftCoal,
     minecraftIron,
+    minecraftDiamond,
+    minecraftBedrockShard,
+    minecraftPickaxes,
     minecraftBuckets,
     minecraftWaterBuckets,
     minecraftLavaBuckets,
@@ -1286,6 +1293,17 @@ function loadGameState() {
   minecraftSticks = Number.isFinite(saveData.minecraftSticks) ? Math.max(0, Math.trunc(saveData.minecraftSticks)) : 0;
   minecraftCoal = Number.isFinite(saveData.minecraftCoal) ? Math.max(0, Math.trunc(saveData.minecraftCoal)) : 0;
   minecraftIron = Number.isFinite(saveData.minecraftIron) ? Math.max(0, Math.trunc(saveData.minecraftIron)) : 0;
+  minecraftDiamond = Number.isFinite(saveData.minecraftDiamond) ? Math.max(0, Math.trunc(saveData.minecraftDiamond)) : 0;
+  minecraftBedrockShard = Number.isFinite(saveData.minecraftBedrockShard) ? Math.max(0, Math.trunc(saveData.minecraftBedrockShard)) : 0;
+  minecraftPickaxes = saveData.minecraftPickaxes && typeof saveData.minecraftPickaxes === "object" && !Array.isArray(saveData.minecraftPickaxes)
+    ? {
+        wood: Math.max(0, Math.trunc(Number(saveData.minecraftPickaxes.wood) || 0)),
+        stone: Math.max(0, Math.trunc(Number(saveData.minecraftPickaxes.stone) || 0)),
+        iron: Math.max(0, Math.trunc(Number(saveData.minecraftPickaxes.iron) || 0)),
+        diamond: Math.max(0, Math.trunc(Number(saveData.minecraftPickaxes.diamond) || 0)),
+        bedrock: Math.max(0, Math.trunc(Number(saveData.minecraftPickaxes.bedrock) || 0))
+      }
+    : { wood: 0, stone: 0, iron: 0, diamond: 0, bedrock: 0 };
   minecraftBuckets = Number.isFinite(saveData.minecraftBuckets) ? Math.max(0, Math.trunc(saveData.minecraftBuckets)) : 0;
   minecraftWaterBuckets = Number.isFinite(saveData.minecraftWaterBuckets) ? Math.max(0, Math.trunc(saveData.minecraftWaterBuckets)) : 0;
   minecraftLavaBuckets = Number.isFinite(saveData.minecraftLavaBuckets) ? Math.max(0, Math.trunc(saveData.minecraftLavaBuckets)) : 0;
@@ -1938,6 +1956,7 @@ function isMinecraftCaveAt(x, z, y) {
 function getMinecraftOreAt(x, z, y) {
   if (y > -2) return null;
   const seed = Math.abs((x * 37 + z * 41 + y * 53) % 97);
+  if (y <= -46 && seed < 9) return "bedrock_ore";
   if (y <= -8 && seed < 10) return "coal_ore";
   if (y <= -12 && seed >= 10 && seed < 18) return "iron_ore";
   if (y <= -24 && seed >= 18 && seed < 22) return "gold_ore";
@@ -2596,6 +2615,7 @@ function updateMinecraftInventoryUI() {
       }
     } else {
       button.hidden = false;
+      button.textContent = getMinecraftPickaxeName();
     }
     button.classList.toggle("active", minecraftSelectedTool === tool);
   });
@@ -3135,19 +3155,25 @@ function tradeWithMinecraftVillager() {
   saveGameState();
 }
 
-const minecraftCraftingMaterials = ["", "wood", "coal", "stick", "iron", "meteor_dust", "ender_pearl"];
+const minecraftCraftingMaterials = ["", "wood", "stone", "coal", "stick", "iron", "diamond", "bedrock_shard", "meteor_dust", "ender_pearl"];
 const minecraftCraftingLabels = {
   wood: "木",
+  stone: "石",
   coal: "煤",
   stick: "棍",
-  iron: "铁"
+  iron: "铁",
+  diamond: "钻",
+  bedrock_shard: "基"
 };
 
 const minecraftCraftingIcons = {
   wood: "木",
+  stone: "石",
   coal: "煤",
   stick: "棍",
-  iron: "铁"
+  iron: "铁",
+  diamond: "钻",
+  bedrock_shard: "基"
 };
 
 minecraftCraftingIcons.meteor_dust = "银粉";
@@ -3169,6 +3195,8 @@ const minecraftInventoryIcons = {
   coal: "煤",
   stick: "棍",
   iron: "铁",
+  diamond: "钻",
+  bedrock_shard: "基",
   emerald: "绿",
   meat: "肉",
   wool: "毛",
@@ -3176,23 +3204,56 @@ const minecraftInventoryIcons = {
   wheat: "麦",
   xp: "星"
 };
-const minecraftCraftingPlaceableMaterials = new Set(["wood", "coal", "stick", "iron"]);
+const minecraftCraftingPlaceableMaterials = new Set(["wood", "stone", "coal", "stick", "iron", "diamond", "bedrock_shard"]);
 minecraftInventoryIcons.meteor = "银";
 minecraftInventoryIcons.meteor_dust = "银粉";
 minecraftInventoryIcons.ender_pearl = "珍";
 minecraftInventoryIcons.ender_eye = "眼";
 minecraftInventoryIcons.diamond_sword = "剑";
+minecraftInventoryIcons.wood_pickaxe = "木镐";
+minecraftInventoryIcons.stone_pickaxe = "石镐";
+minecraftInventoryIcons.iron_pickaxe = "铁镐";
+minecraftInventoryIcons.diamond_pickaxe = "钻镐";
+minecraftInventoryIcons.bedrock_pickaxe = "基镐";
 minecraftCraftingPlaceableMaterials.add("meteor_dust");
 minecraftCraftingPlaceableMaterials.add("ender_pearl");
 
 function getMinecraftCraftingMaterialCount(material) {
   if (material === "wood") return minecraftInventory.wood || 0;
+  if (material === "stone") return minecraftInventory.stone || 0;
   if (material === "coal") return minecraftCoal;
   if (material === "stick") return minecraftSticks;
   if (material === "iron") return minecraftIron;
+  if (material === "diamond") return minecraftDiamond;
+  if (material === "bedrock_shard") return minecraftBedrockShard;
   if (material === "meteor_dust") return minecraftMeteorDust;
   if (material === "ender_pearl") return minecraftEnderPearls;
   return 0;
+}
+
+function getMinecraftPickaxeLevel() {
+  if (minecraftPickaxes.bedrock > 0) return 5;
+  if (minecraftPickaxes.diamond > 0) return 4;
+  if (minecraftPickaxes.iron > 0) return 3;
+  if (minecraftPickaxes.stone > 0) return 2;
+  if (minecraftPickaxes.wood > 0) return 1;
+  return 0;
+}
+
+function canMineMinecraftBlock(blockType) {
+  const level = getMinecraftPickaxeLevel();
+  if (!blockType) return false;
+  if (blockType === "crafting_table" || blockType === "bed") return true;
+  if (blockType === "wood" || blockType === "leaves") return true;
+  if (blockType === "grass" || blockType === "dirt" || blockType === "stone" || blockType === "coal_ore") return level >= 1;
+  if (blockType === "iron_ore") return level >= 2;
+  if (blockType === "diamond_ore") return level >= 3;
+  if (blockType === "bedrock_ore") return level >= 4;
+  return level >= 1;
+}
+
+function getMinecraftPickaxeName() {
+  return ["手", "木稿", "石稿", "铁稿", "钻石稿", "基岩稿"][getMinecraftPickaxeLevel()] || "手";
 }
 
 function getMinecraftWorkbenchInventoryItems() {
@@ -3206,6 +3267,13 @@ function getMinecraftWorkbenchInventoryItems() {
     { id: "coal", material: "coal", count: minecraftCoal },
     { id: "stick", material: "stick", count: minecraftSticks },
     { id: "iron", material: "iron", count: minecraftIron },
+    { id: "diamond", material: "diamond", count: minecraftDiamond },
+    { id: "bedrock_shard", material: "bedrock_shard", count: minecraftBedrockShard },
+    { id: "wood_pickaxe", material: "wood_pickaxe", count: minecraftPickaxes.wood || 0 },
+    { id: "stone_pickaxe", material: "stone_pickaxe", count: minecraftPickaxes.stone || 0 },
+    { id: "iron_pickaxe", material: "iron_pickaxe", count: minecraftPickaxes.iron || 0 },
+    { id: "diamond_pickaxe", material: "diamond_pickaxe", count: minecraftPickaxes.diamond || 0 },
+    { id: "bedrock_pickaxe", material: "bedrock_pickaxe", count: minecraftPickaxes.bedrock || 0 },
     { id: "emerald", material: "emerald", count: minecraftEmerald },
     { id: "meteor_dust", material: "meteor_dust", count: minecraftMeteorDust },
     { id: "ender_pearl", material: "ender_pearl", count: minecraftEnderPearls },
@@ -3229,6 +3297,20 @@ function setMinecraftCraftingStatus(message) {
 
 function getMinecraftCraftingOutput() {
   const filled = minecraftCraftingSlots.filter(Boolean).length;
+  const pickaxeMaterials = [
+    { material: "wood", recipe: "wood_pickaxe", label: "木稿", icon: "木镐" },
+    { material: "stone", recipe: "stone_pickaxe", label: "石稿", icon: "石镐" },
+    { material: "iron", recipe: "iron_pickaxe", label: "铁稿", icon: "铁镐" },
+    { material: "diamond", recipe: "diamond_pickaxe", label: "钻石稿", icon: "钻镐" },
+    { material: "bedrock_shard", recipe: "bedrock_pickaxe", label: "基岩稿", icon: "基镐" }
+  ];
+  const pickaxe = pickaxeMaterials.find((entry) => minecraftCraftingSlots[0] === entry.material
+    && minecraftCraftingSlots[1] === entry.material
+    && minecraftCraftingSlots[2] === entry.material
+    && minecraftCraftingSlots[4] === "stick"
+    && minecraftCraftingSlots[7] === "stick"
+    && filled === 5);
+  if (pickaxe) return { recipe: pickaxe.recipe, label: pickaxe.label, icon: pickaxe.icon, count: 1 };
   if (minecraftCraftingSlots[4] === "wood" && filled === 1) {
     return { recipe: "sticks", label: "木棍", icon: "棍", count: 4 };
   }
@@ -3350,9 +3432,12 @@ function renderMinecraftCraftingTable() {
 function spendMinecraftCraftingMaterials(materials) {
   materials.forEach((material) => {
     if (material === "wood") minecraftInventory.wood = Math.max(0, (minecraftInventory.wood || 0) - 1);
+    if (material === "stone") minecraftInventory.stone = Math.max(0, (minecraftInventory.stone || 0) - 1);
     if (material === "coal") minecraftCoal = Math.max(0, minecraftCoal - 1);
     if (material === "stick") minecraftSticks = Math.max(0, minecraftSticks - 1);
     if (material === "iron") minecraftIron = Math.max(0, minecraftIron - 1);
+    if (material === "diamond") minecraftDiamond = Math.max(0, minecraftDiamond - 1);
+    if (material === "bedrock_shard") minecraftBedrockShard = Math.max(0, minecraftBedrockShard - 1);
     if (material === "meteor_dust") minecraftMeteorDust = Math.max(0, minecraftMeteorDust - 1);
     if (material === "ender_pearl") minecraftEnderPearls = Math.max(0, minecraftEnderPearls - 1);
   });
@@ -3367,6 +3452,30 @@ function canSpendMinecraftCraftingMaterials(materials) {
 }
 
 function craftMinecraftRecipe(recipe = "") {
+  const pickaxeRecipes = {
+    wood_pickaxe: { material: "wood", key: "wood", label: "木稿" },
+    stone_pickaxe: { material: "stone", key: "stone", label: "石稿" },
+    iron_pickaxe: { material: "iron", key: "iron", label: "铁稿" },
+    diamond_pickaxe: { material: "diamond", key: "diamond", label: "钻石稿" },
+    bedrock_pickaxe: { material: "bedrock_shard", key: "bedrock", label: "基岩稿" }
+  };
+  const pickaxeRecipe = pickaxeRecipes[recipe || getMinecraftCraftingOutput()?.recipe || ""];
+  if (pickaxeRecipe
+    && minecraftCraftingSlots[0] === pickaxeRecipe.material
+    && minecraftCraftingSlots[1] === pickaxeRecipe.material
+    && minecraftCraftingSlots[2] === pickaxeRecipe.material
+    && minecraftCraftingSlots[4] === "stick"
+    && minecraftCraftingSlots[7] === "stick"
+    && minecraftCraftingSlots.filter(Boolean).length === 5) {
+    spendMinecraftCraftingMaterials([pickaxeRecipe.material, pickaxeRecipe.material, pickaxeRecipe.material, "stick", "stick"]);
+    minecraftPickaxes[pickaxeRecipe.key] = (minecraftPickaxes[pickaxeRecipe.key] || 0) + 1;
+    minecraftCraftingSlots = Array(9).fill("");
+    renderMinecraftCraftingTable();
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus(`合成了 1 把${pickaxeRecipe.label}。`);
+    saveGameState();
+    return;
+  }
   if ((recipe === "ender_eye" || !recipe)
     && minecraftCraftingSlots[4] === "ender_pearl"
     && minecraftCraftingSlots[5] === "ender_pearl"
@@ -3772,6 +3881,10 @@ function mineMinecraftBlock(cell) {
     updateMinecraftStatus("这里是空气，挖不到方块。");
     return;
   }
+  if (!canMineMinecraftBlock(blockType)) {
+    updateMinecraftStatus(`现在只有${getMinecraftPickaxeName()}，还挖不动这个方块。先按木稿、石稿、铁稿、钻石稿的顺序升级。`);
+    return;
+  }
   if (blockType === "bed") {
     minecraftInventory.bed = (minecraftInventory.bed || 0) + 1;
     clearMinecraftBedAt(x, z, y);
@@ -3840,6 +3953,22 @@ function mineMinecraftBlock(cell) {
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
     updateMinecraftStatus(`挖到铁了。铁 ${minecraftIron}。`);
+    saveGameState();
+    return;
+  }
+  if (blockType === "diamond_ore") {
+    minecraftDiamond += 1;
+    setMinecraftBlockAt(x, z, y, null);
+    renderMinecraftWorld();
+    updateMinecraftStatus(`挖到钻石了。钻石 ${minecraftDiamond}。`);
+    saveGameState();
+    return;
+  }
+  if (blockType === "bedrock_ore") {
+    minecraftBedrockShard += 1;
+    setMinecraftBlockAt(x, z, y, null);
+    renderMinecraftWorld();
+    updateMinecraftStatus(`挖到黑黑的基岩矿了。基岩碎片 ${minecraftBedrockShard}。`);
     saveGameState();
     return;
   }
@@ -4120,6 +4249,10 @@ function digMinecraftDown() {
     updateMinecraftStatus("末地传送门不能往下挖掉，走到黑色中间就能进去。");
     return;
   }
+  if (block && !canMineMinecraftBlock(blockType)) {
+    updateMinecraftStatus(`现在只有${getMinecraftPickaxeName()}，还不能向下挖这个方块。`);
+    return;
+  }
   if (block) {
     if (blockType === "bed") {
       minecraftInventory.bed = (minecraftInventory.bed || 0) + 1;
@@ -4135,6 +4268,18 @@ function digMinecraftDown() {
         minecraftLavaBuckets += 1;
         setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
       }
+    } else if (blockType === "coal_ore") {
+      minecraftCoal += 1;
+      setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
+    } else if (blockType === "iron_ore") {
+      minecraftIron += 1;
+      setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
+    } else if (blockType === "diamond_ore") {
+      minecraftDiamond += 1;
+      setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
+    } else if (blockType === "bedrock_ore") {
+      minecraftBedrockShard += 1;
+      setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
     } else {
       minecraftInventory[blockType] = (minecraftInventory[blockType] || 0) + 1;
       setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, null);
@@ -4215,6 +4360,9 @@ function resetMinecraftWorld() {
   minecraftSticks = 0;
   minecraftCoal = 0;
   minecraftIron = 0;
+  minecraftDiamond = 0;
+  minecraftBedrockShard = 0;
+  minecraftPickaxes = { wood: 0, stone: 0, iron: 0, diamond: 0, bedrock: 0 };
   minecraftBuckets = 0;
   minecraftWaterBuckets = 0;
   minecraftLavaBuckets = 0;

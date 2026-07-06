@@ -5761,6 +5761,7 @@ body.computer-away .call-back-toggle {
 .minecraft-cube.minecraft-iron_ore,
 .minecraft-cube.minecraft-gold_ore,
 .minecraft-cube.minecraft-diamond_ore,
+.minecraft-cube.minecraft-bedrock_ore,
 .minecraft-cube.minecraft-nether_gold_ore {
   background:
     radial-gradient(circle at 28% 32%, var(--ore-color) 0 12%, transparent 13%),
@@ -5790,6 +5791,14 @@ body.computer-away .call-back-toggle {
 
 .minecraft-cube.minecraft-diamond_ore {
   --ore-color: #22a8ff;
+}
+
+.minecraft-cube.minecraft-bedrock_ore {
+  --ore-color: #050505;
+  background:
+    radial-gradient(circle at 28% 32%, #1b1b1b 0 13%, transparent 14%),
+    radial-gradient(circle at 68% 64%, #050505 0 12%, transparent 13%),
+    repeating-linear-gradient(45deg, #202020 0 7px, #090909 7px 14px);
 }
 
 .minecraft-cube.minecraft-crafting_table {

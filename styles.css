@@ -3717,6 +3717,294 @@ body.computer-away .call-back-toggle {
   color: #ffffff;
 }
 
+:root {
+  --minecraft-texture-grass: url("./assets/minecraft-blocks/grass.png");
+  --minecraft-texture-dirt: url("./assets/minecraft-blocks/dirt.png");
+  --minecraft-texture-mossy-dirt: url("./assets/minecraft-blocks/mossy-dirt.png");
+  --minecraft-texture-fungus: url("./assets/minecraft-blocks/fungus.png");
+  --minecraft-texture-stone-bricks: url("./assets/minecraft-blocks/stone-bricks.png");
+  --minecraft-texture-cobblestone: url("./assets/minecraft-blocks/cobblestone.png");
+  --minecraft-texture-sand: url("./assets/minecraft-blocks/sand.png");
+  --minecraft-texture-red-sand: url("./assets/minecraft-blocks/red-sand.png");
+  --minecraft-texture-gold-ore: url("./assets/minecraft-blocks/gold-ore.png");
+  --minecraft-texture-snow: url("./assets/minecraft-blocks/snow.png");
+  --minecraft-texture-ice: url("./assets/minecraft-blocks/ice.png");
+  --minecraft-texture-packed-ice: url("./assets/minecraft-blocks/packed-ice.png");
+  --minecraft-texture-blue-ice: url("./assets/minecraft-blocks/blue-ice.png");
+  --minecraft-texture-obsidian: url("./assets/minecraft-blocks/obsidian.png");
+  --minecraft-texture-bedrock: url("./assets/minecraft-blocks/bedrock.png");
+  --minecraft-texture-deepslate: url("./assets/minecraft-blocks/deepslate.png");
+  --minecraft-texture-tuff: url("./assets/minecraft-blocks/tuff.png");
+  --minecraft-texture-diorite: url("./assets/minecraft-blocks/diorite.png");
+  --minecraft-texture-granite: url("./assets/minecraft-blocks/granite.png");
+  --minecraft-tool-wood-sword: url("./assets/minecraft-tools/wood-sword.png");
+  --minecraft-tool-stone-sword: url("./assets/minecraft-tools/stone-sword.png");
+  --minecraft-tool-iron-sword: url("./assets/minecraft-tools/iron-sword.png");
+  --minecraft-tool-gold-sword: url("./assets/minecraft-tools/gold-sword.png");
+  --minecraft-tool-diamond-sword: url("./assets/minecraft-tools/diamond-sword.png");
+  --minecraft-tool-wood-pickaxe: url("./assets/minecraft-tools/wood-pickaxe.png");
+  --minecraft-tool-stone-pickaxe: url("./assets/minecraft-tools/stone-pickaxe.png");
+  --minecraft-tool-iron-pickaxe: url("./assets/minecraft-tools/iron-pickaxe.png");
+  --minecraft-tool-gold-pickaxe: url("./assets/minecraft-tools/gold-pickaxe.png");
+  --minecraft-tool-diamond-pickaxe: url("./assets/minecraft-tools/diamond-pickaxe.png");
+  --minecraft-tool-wood-axe: url("./assets/minecraft-tools/wood-axe.png");
+  --minecraft-tool-stone-axe: url("./assets/minecraft-tools/stone-axe.png");
+  --minecraft-tool-iron-axe: url("./assets/minecraft-tools/iron-axe.png");
+  --minecraft-tool-bow: url("./assets/minecraft-tools/bow.png");
+  --minecraft-tool-arrow: url("./assets/minecraft-tools/arrow.png");
+  --minecraft-tool-shield: url("./assets/minecraft-tools/shield.png");
+  --minecraft-tool-fishing-rod: url("./assets/minecraft-tools/fishing-rod.png");
+  --minecraft-tool-shears: url("./assets/minecraft-tools/shears.png");
+  --minecraft-tool-flint-and-steel: url("./assets/minecraft-tools/flint-and-steel.png");
+  --minecraft-tool-carrot-on-a-stick: url("./assets/minecraft-tools/carrot-on-a-stick.png");
+  --minecraft-tool-torch: url("./assets/minecraft-tools/torch.png");
+}
+
+.minecraft-grass,
+.minecraft-dirt,
+.minecraft-stone,
+.minecraft-wood,
+.minecraft-leaves,
+.minecraft-cube.minecraft-grass,
+.minecraft-cube.minecraft-dirt,
+.minecraft-cube.minecraft-stone,
+.minecraft-cube.minecraft-wood,
+.minecraft-cube.minecraft-leaves,
+.minecraft-cube.minecraft-water,
+.minecraft-cube.minecraft-lava,
+.minecraft-cube.minecraft-obsidian,
+.minecraft-cube.minecraft-netherrack,
+.minecraft-cube.minecraft-nether_brick,
+.minecraft-cube.minecraft-meteor,
+.minecraft-cube.minecraft-warped_nylium,
+.minecraft-cube.minecraft-warped_stem,
+.minecraft-cube.minecraft-warped_leaves,
+.minecraft-cube.minecraft-glowstone,
+.minecraft-cube.minecraft-end_stone,
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge,
+.minecraft-cube.minecraft-end_portal_frame,
+.minecraft-cube.minecraft-end_portal_frame_eye,
+.minecraft-cube.minecraft-obsidian_pillar,
+.minecraft-cube.minecraft-end_chest,
+.minecraft-cube.minecraft-coal_ore,
+.minecraft-cube.minecraft-iron_ore,
+.minecraft-cube.minecraft-gold_ore,
+.minecraft-cube.minecraft-diamond_ore,
+.minecraft-cube.minecraft-bedrock_ore,
+.minecraft-cube.minecraft-nether_gold_ore,
+.minecraft-cube.minecraft-crafting_table,
+.minecraft-cube.minecraft-bed {
+  background-size: cover;
+  background-position: center;
+  image-rendering: pixelated;
+}
+
+.minecraft-cube .cube-top,
+.minecraft-cube .cube-left,
+.minecraft-cube .cube-right {
+  background-size: cover;
+  background-position: center;
+  image-rendering: pixelated;
+}
+
+.minecraft-grass,
+.minecraft-cube.minecraft-grass,
+.minecraft-cube.minecraft-grass .cube-top,
+.minecraft-cube.minecraft-grass .cube-left,
+.minecraft-cube.minecraft-grass .cube-right {
+  background-image: var(--minecraft-texture-grass);
+}
+
+.minecraft-dirt,
+.minecraft-cube.minecraft-dirt,
+.minecraft-cube.minecraft-dirt .cube-top,
+.minecraft-cube.minecraft-dirt .cube-left,
+.minecraft-cube.minecraft-dirt .cube-right {
+  background-image: var(--minecraft-texture-dirt);
+}
+
+.minecraft-stone,
+.minecraft-cube.minecraft-stone,
+.minecraft-cube.minecraft-stone .cube-top,
+.minecraft-cube.minecraft-stone .cube-left,
+.minecraft-cube.minecraft-stone .cube-right {
+  background-image: var(--minecraft-texture-stone-bricks);
+}
+
+.minecraft-wood,
+.minecraft-cube.minecraft-wood,
+.minecraft-cube.minecraft-wood .cube-top,
+.minecraft-cube.minecraft-wood .cube-left,
+.minecraft-cube.minecraft-wood .cube-right {
+  background-image: var(--minecraft-texture-tuff);
+}
+
+.minecraft-leaves,
+.minecraft-cube.minecraft-leaves,
+.minecraft-cube.minecraft-leaves .cube-top,
+.minecraft-cube.minecraft-leaves .cube-left,
+.minecraft-cube.minecraft-leaves .cube-right {
+  background-image: var(--minecraft-texture-mossy-dirt);
+}
+
+.minecraft-cube.minecraft-water,
+.minecraft-cube.minecraft-water .cube-top,
+.minecraft-cube.minecraft-water .cube-left,
+.minecraft-cube.minecraft-water .cube-right {
+  background-image: var(--minecraft-texture-blue-ice);
+}
+
+.minecraft-cube.minecraft-lava,
+.minecraft-cube.minecraft-lava .cube-top,
+.minecraft-cube.minecraft-lava .cube-left,
+.minecraft-cube.minecraft-lava .cube-right {
+  background-image: var(--minecraft-texture-red-sand);
+}
+
+.minecraft-cube.minecraft-obsidian,
+.minecraft-cube.minecraft-obsidian .cube-top,
+.minecraft-cube.minecraft-obsidian .cube-left,
+.minecraft-cube.minecraft-obsidian .cube-right,
+.minecraft-cube.minecraft-obsidian_pillar,
+.minecraft-cube.minecraft-obsidian_pillar .cube-top,
+.minecraft-cube.minecraft-obsidian_pillar .cube-left,
+.minecraft-cube.minecraft-obsidian_pillar .cube-right {
+  background-image: var(--minecraft-texture-obsidian);
+}
+
+.minecraft-cube.minecraft-netherrack,
+.minecraft-cube.minecraft-netherrack .cube-top,
+.minecraft-cube.minecraft-netherrack .cube-left,
+.minecraft-cube.minecraft-netherrack .cube-right {
+  background-image: var(--minecraft-texture-granite);
+}
+
+.minecraft-cube.minecraft-nether_brick,
+.minecraft-cube.minecraft-nether_brick .cube-top,
+.minecraft-cube.minecraft-nether_brick .cube-left,
+.minecraft-cube.minecraft-nether_brick .cube-right {
+  background-image: var(--minecraft-texture-deepslate);
+}
+
+.minecraft-cube.minecraft-meteor,
+.minecraft-cube.minecraft-meteor .cube-top,
+.minecraft-cube.minecraft-meteor .cube-left,
+.minecraft-cube.minecraft-meteor .cube-right,
+.minecraft-cube.minecraft-diorite,
+.minecraft-cube.minecraft-diorite .cube-top,
+.minecraft-cube.minecraft-diorite .cube-left,
+.minecraft-cube.minecraft-diorite .cube-right {
+  background-image: var(--minecraft-texture-diorite);
+}
+
+.minecraft-cube.minecraft-warped_nylium,
+.minecraft-cube.minecraft-warped_nylium .cube-top,
+.minecraft-cube.minecraft-warped_nylium .cube-left,
+.minecraft-cube.minecraft-warped_nylium .cube-right,
+.minecraft-cube.minecraft-sky_grass,
+.minecraft-cube.minecraft-sky_grass .cube-top,
+.minecraft-cube.minecraft-sky_grass .cube-left,
+.minecraft-cube.minecraft-sky_grass .cube-right {
+  background-image: var(--minecraft-texture-mossy-dirt);
+}
+
+.minecraft-cube.minecraft-warped_stem,
+.minecraft-cube.minecraft-warped_stem .cube-top,
+.minecraft-cube.minecraft-warped_stem .cube-left,
+.minecraft-cube.minecraft-warped_stem .cube-right,
+.minecraft-cube.minecraft-warped_leaves,
+.minecraft-cube.minecraft-warped_leaves .cube-top,
+.minecraft-cube.minecraft-warped_leaves .cube-left,
+.minecraft-cube.minecraft-warped_leaves .cube-right {
+  background-image: var(--minecraft-texture-packed-ice);
+}
+
+.minecraft-cube.minecraft-glowstone,
+.minecraft-cube.minecraft-glowstone .cube-top,
+.minecraft-cube.minecraft-glowstone .cube-left,
+.minecraft-cube.minecraft-glowstone .cube-right {
+  background-image: var(--minecraft-texture-sand);
+}
+
+.minecraft-cube.minecraft-end_stone,
+.minecraft-cube.minecraft-end_stone .cube-top,
+.minecraft-cube.minecraft-end_stone .cube-left,
+.minecraft-cube.minecraft-end_stone .cube-right {
+  background-image: var(--minecraft-texture-snow);
+}
+
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge,
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge .cube-top,
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge .cube-left,
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge .cube-right {
+  background-image: var(--minecraft-texture-fungus);
+}
+
+.minecraft-cube.minecraft-end_portal_frame,
+.minecraft-cube.minecraft-end_portal_frame .cube-top,
+.minecraft-cube.minecraft-end_portal_frame .cube-left,
+.minecraft-cube.minecraft-end_portal_frame .cube-right,
+.minecraft-cube.minecraft-end_portal_frame_eye,
+.minecraft-cube.minecraft-end_portal_frame_eye .cube-top,
+.minecraft-cube.minecraft-end_portal_frame_eye .cube-left,
+.minecraft-cube.minecraft-end_portal_frame_eye .cube-right,
+.minecraft-cube.minecraft-end_chest,
+.minecraft-cube.minecraft-end_chest .cube-top,
+.minecraft-cube.minecraft-end_chest .cube-left,
+.minecraft-cube.minecraft-end_chest .cube-right,
+.minecraft-cube.minecraft-crafting_table,
+.minecraft-cube.minecraft-crafting_table .cube-top,
+.minecraft-cube.minecraft-crafting_table .cube-left,
+.minecraft-cube.minecraft-crafting_table .cube-right {
+  background-image: var(--minecraft-texture-stone-bricks);
+}
+
+.minecraft-cube.minecraft-coal_ore,
+.minecraft-cube.minecraft-coal_ore .cube-top,
+.minecraft-cube.minecraft-coal_ore .cube-left,
+.minecraft-cube.minecraft-coal_ore .cube-right {
+  background-image: var(--minecraft-texture-bedrock);
+}
+
+.minecraft-cube.minecraft-iron_ore,
+.minecraft-cube.minecraft-iron_ore .cube-top,
+.minecraft-cube.minecraft-iron_ore .cube-left,
+.minecraft-cube.minecraft-iron_ore .cube-right {
+  background-image: var(--minecraft-texture-cobblestone);
+}
+
+.minecraft-cube.minecraft-gold_ore,
+.minecraft-cube.minecraft-gold_ore .cube-top,
+.minecraft-cube.minecraft-gold_ore .cube-left,
+.minecraft-cube.minecraft-gold_ore .cube-right,
+.minecraft-cube.minecraft-nether_gold_ore,
+.minecraft-cube.minecraft-nether_gold_ore .cube-top,
+.minecraft-cube.minecraft-nether_gold_ore .cube-left,
+.minecraft-cube.minecraft-nether_gold_ore .cube-right {
+  background-image: var(--minecraft-texture-gold-ore);
+}
+
+.minecraft-cube.minecraft-diamond_ore,
+.minecraft-cube.minecraft-diamond_ore .cube-top,
+.minecraft-cube.minecraft-diamond_ore .cube-left,
+.minecraft-cube.minecraft-diamond_ore .cube-right {
+  background-image: var(--minecraft-texture-ice);
+}
+
+.minecraft-cube.minecraft-bedrock_ore,
+.minecraft-cube.minecraft-bedrock_ore .cube-top,
+.minecraft-cube.minecraft-bedrock_ore .cube-left,
+.minecraft-cube.minecraft-bedrock_ore .cube-right {
+  background-image: var(--minecraft-texture-bedrock);
+}
+
+.minecraft-cube.minecraft-bed,
+.minecraft-cube.minecraft-bed .cube-top,
+.minecraft-cube.minecraft-bed .cube-left,
+.minecraft-cube.minecraft-bed .cube-right {
+  background-image: var(--minecraft-texture-snow);
+}
+
 .diary-room-link {
   position: fixed;
   right: max(14px, env(safe-area-inset-right));
@@ -3883,6 +4171,20 @@ body.computer-away .call-back-toggle {
   box-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.2), inset -3px -3px 0 rgba(0, 0, 0, 0.25);
 }
 
+.minecraft-tool[data-minecraft-tool="torch"]::before,
+.minecraft-tool[data-minecraft-tool="diamond_sword"]::before,
+.minecraft-tool[data-minecraft-tool="pickaxe"]::before {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  box-shadow: none;
+  image-rendering: pixelated;
+}
+
 .minecraft-tool[data-minecraft-tool="grass"]::before {
   background: linear-gradient(180deg, #35a236 0 36%, #7a4c26 36% 100%);
 }
@@ -3921,8 +4223,7 @@ body.computer-away .call-back-toggle {
 }
 
 .minecraft-tool[data-minecraft-tool="torch"]::before {
-  width: 8px;
-  background: linear-gradient(180deg, #f63c20 0 26%, #7a4c26 26% 100%);
+  background-image: var(--minecraft-tool-torch);
 }
 
 .minecraft-tool[data-minecraft-tool="bucket"]::before,
@@ -3949,21 +4250,11 @@ body.computer-away .call-back-toggle {
 }
 
 .minecraft-tool[data-minecraft-tool="diamond_sword"]::before {
-  content: "剑";
-  display: grid;
-  place-items: center;
-  color: #081d2e;
-  font-size: 12px;
-  background: linear-gradient(135deg, #d8ffff 0 35%, #22a8ff 35% 65%, #32465a 65% 100%);
+  background-image: var(--minecraft-tool-diamond-sword);
 }
 
 .minecraft-tool[data-minecraft-tool="pickaxe"]::before {
-  content: "⛏";
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-  background: #555555;
+  background-image: var(--minecraft-tool-iron-pickaxe);
 }
 
 .minecraft-tool span {
@@ -4836,8 +5127,33 @@ body.computer-away .call-back-toggle {
 }
 
 .minecraft-crafting-inventory-item.material-torch {
-  background: linear-gradient(90deg, transparent 0 40%, #7a4c26 40% 60%, transparent 60% 100%),
-    linear-gradient(180deg, #f63c20 0 32%, transparent 32% 100%);
+  background: #2a241d url("./assets/minecraft-tools/torch.png") center / 82% 82% no-repeat;
+  color: transparent;
+}
+
+.minecraft-crafting-inventory-item.material-diamond_sword {
+  background: #233348 url("./assets/minecraft-tools/diamond-sword.png") center / 86% 86% no-repeat;
+  color: transparent;
+}
+
+.minecraft-crafting-inventory-item.material-wood_pickaxe {
+  background: #4a3528 url("./assets/minecraft-tools/wood-pickaxe.png") center / 86% 86% no-repeat;
+  color: transparent;
+}
+
+.minecraft-crafting-inventory-item.material-stone_pickaxe {
+  background: #3c3c3c url("./assets/minecraft-tools/stone-pickaxe.png") center / 86% 86% no-repeat;
+  color: transparent;
+}
+
+.minecraft-crafting-inventory-item.material-iron_pickaxe {
+  background: #3c3c3c url("./assets/minecraft-tools/iron-pickaxe.png") center / 86% 86% no-repeat;
+  color: transparent;
+}
+
+.minecraft-crafting-inventory-item.material-diamond_pickaxe {
+  background: #203b48 url("./assets/minecraft-tools/diamond-pickaxe.png") center / 86% 86% no-repeat;
+  color: transparent;
 }
 
 .minecraft-crafting-inventory-item.material-bucket {
@@ -8667,6 +8983,789 @@ body.terror-night .tree-right::before {
   }
   45% {
     transform: translate(-50%, -95%);
+  }
+}
+
+:root {
+  --minecraft-texture-oak-planks: url("./assets/minecraft-blocks/oak-planks.png");
+  --minecraft-texture-spruce-planks: url("./assets/minecraft-blocks/spruce-planks.png");
+  --minecraft-texture-birch-planks: url("./assets/minecraft-blocks/birch-planks.png");
+  --minecraft-texture-jungle-planks: url("./assets/minecraft-blocks/jungle-planks.png");
+  --minecraft-texture-acacia-planks: url("./assets/minecraft-blocks/acacia-planks.png");
+  --minecraft-texture-stone-brick: url("./assets/minecraft-blocks/stone-brick.png");
+  --minecraft-texture-bricks: url("./assets/minecraft-blocks/bricks.png");
+  --minecraft-texture-quartz-block: url("./assets/minecraft-blocks/quartz-block.png");
+  --minecraft-texture-sandstone: url("./assets/minecraft-blocks/sandstone.png");
+  --minecraft-texture-red-sandstone: url("./assets/minecraft-blocks/red-sandstone.png");
+  --minecraft-texture-prismarine: url("./assets/minecraft-blocks/prismarine.png");
+  --minecraft-texture-end-stone: url("./assets/minecraft-blocks/end-stone.png");
+  --minecraft-texture-purpur-block: url("./assets/minecraft-blocks/purpur-block.png");
+  --minecraft-texture-white-concrete: url("./assets/minecraft-blocks/white-concrete.png");
+  --minecraft-texture-white-wool: url("./assets/minecraft-blocks/white-wool.png");
+  --minecraft-texture-bookshelf: url("./assets/minecraft-blocks/bookshelf.png");
+}
+
+.minecraft-block,
+.minecraft-cube,
+.minecraft-cube .cube-top,
+.minecraft-cube .cube-left,
+.minecraft-cube .cube-right {
+  background-size: cover !important;
+  background-position: center !important;
+  image-rendering: pixelated;
+}
+
+.minecraft-grass,
+.minecraft-cube.minecraft-grass,
+.minecraft-cube.minecraft-grass .cube-top,
+.minecraft-cube.minecraft-grass .cube-left,
+.minecraft-cube.minecraft-grass .cube-right {
+  background-image: var(--minecraft-texture-grass) !important;
+}
+
+.minecraft-dirt,
+.minecraft-cube.minecraft-dirt,
+.minecraft-cube.minecraft-dirt .cube-top,
+.minecraft-cube.minecraft-dirt .cube-left,
+.minecraft-cube.minecraft-dirt .cube-right {
+  background-image: var(--minecraft-texture-dirt) !important;
+}
+
+.minecraft-stone,
+.minecraft-cube.minecraft-stone,
+.minecraft-cube.minecraft-stone .cube-top,
+.minecraft-cube.minecraft-stone .cube-left,
+.minecraft-cube.minecraft-stone .cube-right,
+.minecraft-cube.minecraft-end_portal_frame,
+.minecraft-cube.minecraft-end_portal_frame .cube-top,
+.minecraft-cube.minecraft-end_portal_frame .cube-left,
+.minecraft-cube.minecraft-end_portal_frame .cube-right,
+.minecraft-cube.minecraft-end_portal_frame_eye,
+.minecraft-cube.minecraft-end_portal_frame_eye .cube-top,
+.minecraft-cube.minecraft-end_portal_frame_eye .cube-left,
+.minecraft-cube.minecraft-end_portal_frame_eye .cube-right {
+  background-image: var(--minecraft-texture-stone-brick) !important;
+}
+
+.minecraft-wood,
+.minecraft-cube.minecraft-wood,
+.minecraft-cube.minecraft-wood .cube-top,
+.minecraft-cube.minecraft-wood .cube-left,
+.minecraft-cube.minecraft-wood .cube-right,
+.minecraft-cube.minecraft-crafting_table,
+.minecraft-cube.minecraft-crafting_table .cube-top,
+.minecraft-cube.minecraft-crafting_table .cube-left,
+.minecraft-cube.minecraft-crafting_table .cube-right {
+  background-image: var(--minecraft-texture-oak-planks) !important;
+}
+
+.minecraft-cube.minecraft-wood::after {
+  display: none;
+}
+
+.minecraft-cube.minecraft-sky_wood,
+.minecraft-cube.minecraft-sky_wood .cube-top,
+.minecraft-cube.minecraft-sky_wood .cube-left,
+.minecraft-cube.minecraft-sky_wood .cube-right {
+  background-image: var(--minecraft-texture-spruce-planks) !important;
+}
+
+.minecraft-cube.minecraft-bed,
+.minecraft-cube.minecraft-bed .cube-top,
+.minecraft-cube.minecraft-bed .cube-left,
+.minecraft-cube.minecraft-bed .cube-right {
+  background-image: var(--minecraft-texture-white-wool) !important;
+}
+
+.minecraft-cube.minecraft-nether_brick,
+.minecraft-cube.minecraft-nether_brick .cube-top,
+.minecraft-cube.minecraft-nether_brick .cube-left,
+.minecraft-cube.minecraft-nether_brick .cube-right {
+  background-image: var(--minecraft-texture-bricks) !important;
+}
+
+.minecraft-cube.minecraft-netherrack,
+.minecraft-cube.minecraft-netherrack .cube-top,
+.minecraft-cube.minecraft-netherrack .cube-left,
+.minecraft-cube.minecraft-netherrack .cube-right {
+  background-image: var(--minecraft-texture-red-sandstone) !important;
+}
+
+.minecraft-cube.minecraft-glowstone,
+.minecraft-cube.minecraft-glowstone .cube-top,
+.minecraft-cube.minecraft-glowstone .cube-left,
+.minecraft-cube.minecraft-glowstone .cube-right {
+  background-image: var(--minecraft-texture-acacia-planks) !important;
+}
+
+.minecraft-cube.minecraft-end_stone,
+.minecraft-cube.minecraft-end_stone .cube-top,
+.minecraft-cube.minecraft-end_stone .cube-left,
+.minecraft-cube.minecraft-end_stone .cube-right {
+  background-image: var(--minecraft-texture-end-stone) !important;
+}
+
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge,
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge .cube-top,
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge .cube-left,
+.minecraft-cube.minecraft-end_stone.minecraft-end-edge .cube-right {
+  background-image: var(--minecraft-texture-purpur-block) !important;
+}
+
+.minecraft-cube.minecraft-end_chest,
+.minecraft-cube.minecraft-end_chest .cube-top,
+.minecraft-cube.minecraft-end_chest .cube-left,
+.minecraft-cube.minecraft-end_chest .cube-right {
+  background-image: var(--minecraft-texture-bookshelf) !important;
+}
+
+.minecraft-cube.minecraft-warped_nylium,
+.minecraft-cube.minecraft-warped_nylium .cube-top,
+.minecraft-cube.minecraft-warped_nylium .cube-left,
+.minecraft-cube.minecraft-warped_nylium .cube-right,
+.minecraft-cube.minecraft-sky_grass,
+.minecraft-cube.minecraft-sky_grass .cube-top,
+.minecraft-cube.minecraft-sky_grass .cube-left,
+.minecraft-cube.minecraft-sky_grass .cube-right {
+  background-image: var(--minecraft-texture-prismarine) !important;
+}
+
+.minecraft-cube.minecraft-warped_stem,
+.minecraft-cube.minecraft-warped_stem .cube-top,
+.minecraft-cube.minecraft-warped_stem .cube-left,
+.minecraft-cube.minecraft-warped_stem .cube-right {
+  background-image: var(--minecraft-texture-birch-planks) !important;
+}
+
+.minecraft-cube.minecraft-warped_leaves,
+.minecraft-cube.minecraft-warped_leaves .cube-top,
+.minecraft-cube.minecraft-warped_leaves .cube-left,
+.minecraft-cube.minecraft-warped_leaves .cube-right {
+  background-image: var(--minecraft-texture-jungle-planks) !important;
+}
+
+.minecraft-cube.minecraft-meteor,
+.minecraft-cube.minecraft-meteor .cube-top,
+.minecraft-cube.minecraft-meteor .cube-left,
+.minecraft-cube.minecraft-meteor .cube-right {
+  background-image: var(--minecraft-texture-diorite) !important;
+}
+
+.minecraft-cube.minecraft-coal_ore,
+.minecraft-cube.minecraft-coal_ore .cube-top,
+.minecraft-cube.minecraft-coal_ore .cube-left,
+.minecraft-cube.minecraft-coal_ore .cube-right,
+.minecraft-cube.minecraft-bedrock_ore,
+.minecraft-cube.minecraft-bedrock_ore .cube-top,
+.minecraft-cube.minecraft-bedrock_ore .cube-left,
+.minecraft-cube.minecraft-bedrock_ore .cube-right {
+  background-image: var(--minecraft-texture-bedrock) !important;
+}
+
+.minecraft-cube.minecraft-iron_ore,
+.minecraft-cube.minecraft-iron_ore .cube-top,
+.minecraft-cube.minecraft-iron_ore .cube-left,
+.minecraft-cube.minecraft-iron_ore .cube-right {
+  background-image: var(--minecraft-texture-cobblestone) !important;
+}
+
+.minecraft-cube.minecraft-gold_ore,
+.minecraft-cube.minecraft-gold_ore .cube-top,
+.minecraft-cube.minecraft-gold_ore .cube-left,
+.minecraft-cube.minecraft-gold_ore .cube-right,
+.minecraft-cube.minecraft-nether_gold_ore,
+.minecraft-cube.minecraft-nether_gold_ore .cube-top,
+.minecraft-cube.minecraft-nether_gold_ore .cube-left,
+.minecraft-cube.minecraft-nether_gold_ore .cube-right {
+  background-image: var(--minecraft-texture-gold-ore) !important;
+}
+
+.minecraft-cube.minecraft-diamond_ore,
+.minecraft-cube.minecraft-diamond_ore .cube-top,
+.minecraft-cube.minecraft-diamond_ore .cube-left,
+.minecraft-cube.minecraft-diamond_ore .cube-right {
+  background-image: var(--minecraft-texture-blue-ice) !important;
+}
+
+:root {
+  --minecraft-mob-zombie: url("./assets/minecraft-mobs/zombie.png");
+  --minecraft-mob-skeleton: url("./assets/minecraft-mobs/skeleton.png");
+  --minecraft-mob-creeper: url("./assets/minecraft-mobs/creeper.png");
+  --minecraft-mob-spider: url("./assets/minecraft-mobs/spider.png");
+  --minecraft-mob-enderman: url("./assets/minecraft-mobs/enderman.png");
+  --minecraft-mob-slime: url("./assets/minecraft-mobs/slime.png");
+  --minecraft-mob-magma-cube: url("./assets/minecraft-mobs/magma-cube.png");
+  --minecraft-mob-witch: url("./assets/minecraft-mobs/witch.png");
+  --minecraft-mob-villager: url("./assets/minecraft-mobs/villager.png");
+  --minecraft-mob-pig: url("./assets/minecraft-mobs/pig.png");
+  --minecraft-mob-cow: url("./assets/minecraft-mobs/cow.png");
+  --minecraft-mob-sheep: url("./assets/minecraft-mobs/sheep.png");
+  --minecraft-mob-chicken: url("./assets/minecraft-mobs/chicken.png");
+  --minecraft-mob-horse: url("./assets/minecraft-mobs/horse.png");
+  --minecraft-mob-wolf: url("./assets/minecraft-mobs/wolf.png");
+  --minecraft-mob-cat: url("./assets/minecraft-mobs/cat.png");
+  --minecraft-mob-parrot: url("./assets/minecraft-mobs/parrot.png");
+  --minecraft-mob-bat: url("./assets/minecraft-mobs/bat.png");
+  --minecraft-mob-turtle: url("./assets/minecraft-mobs/turtle.png");
+}
+
+.mine-grid {
+  position: relative;
+}
+
+.minecraft-zombie,
+.minecraft-skeleton,
+.minecraft-animal,
+.minecraft-villager,
+.minecraft-piglin,
+.minecraft-enderman,
+.minecraft-bat {
+  background-color: transparent !important;
+  background-repeat: no-repeat !important;
+  background-position: center bottom !important;
+  background-size: contain !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  image-rendering: pixelated;
+}
+
+.minecraft-zombie::before,
+.minecraft-zombie::after,
+.minecraft-villager::before,
+.minecraft-villager::after,
+.minecraft-piglin::before,
+.minecraft-enderman::before,
+.minecraft-enderman::after,
+.minecraft-animal::before,
+.minecraft-animal::after {
+  display: none !important;
+}
+
+.minecraft-zombie {
+  width: min(7vw, 58px);
+  height: min(9vw, 78px);
+  background-image: var(--minecraft-mob-zombie) !important;
+}
+
+.minecraft-skeleton {
+  width: min(7vw, 62px);
+  height: min(9vw, 78px);
+  background-image: var(--minecraft-mob-skeleton) !important;
+}
+
+.minecraft-enderman {
+  width: min(7vw, 60px);
+  height: min(10vw, 86px);
+  background-image: var(--minecraft-mob-enderman) !important;
+}
+
+.minecraft-villager,
+.minecraft-villager.sleeping {
+  width: min(7vw, 58px);
+  height: min(9vw, 76px);
+  transform: translate(-50%, -70%) !important;
+  background-image: var(--minecraft-mob-villager) !important;
+}
+
+.minecraft-piglin {
+  width: min(7vw, 58px);
+  height: min(9vw, 76px);
+  background-image: var(--minecraft-mob-villager) !important;
+}
+
+.minecraft-animal {
+  width: min(8vw, 70px);
+  height: min(7vw, 62px);
+}
+
+.minecraft-animal-sheep {
+  background-image: var(--minecraft-mob-sheep) !important;
+}
+
+.minecraft-animal-cow {
+  background-image: var(--minecraft-mob-cow) !important;
+}
+
+.minecraft-animal-pig {
+  background-image: var(--minecraft-mob-pig) !important;
+}
+
+.minecraft-animal-chicken {
+  width: min(6vw, 52px);
+  height: min(7vw, 62px);
+  background-image: var(--minecraft-mob-chicken) !important;
+}
+
+.minecraft-animal-horse {
+  width: min(10vw, 86px);
+  height: min(8vw, 68px);
+  background-image: var(--minecraft-mob-horse) !important;
+}
+
+.minecraft-animal-wolf {
+  width: min(9vw, 82px);
+  height: min(7vw, 62px);
+  background-image: var(--minecraft-mob-wolf) !important;
+}
+
+.minecraft-animal-cat {
+  width: min(8vw, 70px);
+  height: min(8vw, 70px);
+  background-image: var(--minecraft-mob-cat) !important;
+}
+
+.minecraft-animal-parrot {
+  width: min(6vw, 54px);
+  height: min(8vw, 74px);
+  background-image: var(--minecraft-mob-parrot) !important;
+}
+
+.minecraft-animal-turtle {
+  width: min(9vw, 78px);
+  height: min(6vw, 54px);
+  background-image: var(--minecraft-mob-turtle) !important;
+}
+
+.minecraft-creeper {
+  background-image: var(--minecraft-mob-creeper) !important;
+}
+
+.minecraft-spider {
+  background-image: var(--minecraft-mob-spider) !important;
+}
+
+.minecraft-slime {
+  background-image: var(--minecraft-mob-slime) !important;
+}
+
+.minecraft-magma-cube {
+  background-image: var(--minecraft-mob-magma-cube) !important;
+}
+
+.minecraft-witch {
+  background-image: var(--minecraft-mob-witch) !important;
+}
+
+.minecraft-bat {
+  position: absolute;
+  left: 8%;
+  top: 10%;
+  z-index: 8;
+  width: 76px;
+  height: 52px;
+  pointer-events: none;
+  background-image: var(--minecraft-mob-bat) !important;
+  animation: minecraft-bat-fly 5.4s ease-in-out infinite;
+}
+
+@keyframes minecraft-bat-fly {
+  0% {
+    transform: translate(0, 0) scaleX(1);
+  }
+  25% {
+    transform: translate(130px, 18px) scaleX(1);
+  }
+  50% {
+    transform: translate(260px, -2px) scaleX(-1);
+  }
+  75% {
+    transform: translate(130px, 26px) scaleX(-1);
+  }
+  100% {
+    transform: translate(0, 0) scaleX(1);
+  }
+}
+
+:root {
+  --minecraft-texture-oak-log: url("./assets/minecraft-blocks/oak-log.png");
+  --minecraft-texture-nether-pumpkin: url("./assets/minecraft-blocks/nether-pumpkin.png");
+  --minecraft-texture-nether-watermelon: url("./assets/minecraft-blocks/nether-watermelon.png");
+}
+
+.minecraft-wood,
+.minecraft-cube.minecraft-wood,
+.minecraft-cube.minecraft-wood .cube-top,
+.minecraft-cube.minecraft-wood .cube-left,
+.minecraft-cube.minecraft-wood .cube-right {
+  background-image: var(--minecraft-texture-oak-log) !important;
+}
+
+.minecraft-cube.minecraft-nether_pumpkin,
+.minecraft-cube.minecraft-nether_pumpkin .cube-top,
+.minecraft-cube.minecraft-nether_pumpkin .cube-left,
+.minecraft-cube.minecraft-nether_pumpkin .cube-right {
+  background-image: var(--minecraft-texture-nether-pumpkin) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  image-rendering: pixelated;
+}
+
+.minecraft-cube.minecraft-nether_watermelon,
+.minecraft-cube.minecraft-nether_watermelon .cube-top,
+.minecraft-cube.minecraft-nether_watermelon .cube-left,
+.minecraft-cube.minecraft-nether_watermelon .cube-right {
+  background-image: var(--minecraft-texture-nether-watermelon) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  image-rendering: pixelated;
+}
+
+.minecraft-side-world {
+  overflow: hidden;
+  border-color: #29415c;
+  background: linear-gradient(180deg, #8fc8ec 0 65%, #57aa2d 65% 100%) !important;
+  perspective: none;
+}
+
+.minecraft-side-nether {
+  border-color: #5a1818;
+  background: linear-gradient(180deg, #44101b 0 58%, #792719 58% 100%) !important;
+}
+
+.minecraft-side-end {
+  border-color: #252036;
+  background: linear-gradient(180deg, #161326 0 58%, #d8d09b 58% 100%) !important;
+}
+
+.minecraft-side-sky-dimension {
+  border-color: #4b75a0;
+  background: linear-gradient(180deg, #a9dcff 0 65%, #dcefff 65% 100%) !important;
+}
+
+.minecraft-side-cave {
+  border-color: #2a2a2a;
+  background: url("./assets/minecraft-backgrounds/cave.png") center / cover no-repeat !important;
+}
+
+.minecraft-side-cave::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.05) 48%, rgba(0, 0, 0, 0.22));
+}
+
+.minecraft-side-sky {
+  position: absolute;
+  inset: 0 0 34% 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, #8ec8ed, #b7dcf0);
+}
+
+.minecraft-side-nether .minecraft-side-sky {
+  background:
+    linear-gradient(180deg, rgba(64, 12, 20, 0.84), rgba(102, 28, 15, 0.76)),
+    radial-gradient(circle at 18% 22%, rgba(255, 174, 66, 0.42), transparent 18%);
+}
+
+.minecraft-side-end .minecraft-side-sky {
+  background:
+    radial-gradient(circle at 76% 22%, rgba(171, 128, 255, 0.28), transparent 15%),
+    linear-gradient(180deg, #12101f, #252036);
+}
+
+.minecraft-side-sky-dimension .minecraft-side-sky {
+  background: linear-gradient(180deg, #9edcff, #d8f1ff);
+}
+
+.minecraft-side-cave .minecraft-side-sky,
+.minecraft-side-cave .minecraft-side-tree,
+.minecraft-side-nether .minecraft-side-tree,
+.minecraft-side-end .minecraft-side-tree {
+  display: none;
+}
+
+.minecraft-side-sun {
+  position: absolute;
+  left: 6%;
+  top: 12%;
+  width: min(10vw, 92px);
+  height: min(10vw, 92px);
+  background: #ffd91a;
+  box-shadow: 0 0 28px rgba(255, 230, 64, 0.72);
+  animation: minecraft-side-sun-glow 3s ease-in-out infinite;
+}
+
+.minecraft-side-clouds,
+.minecraft-side-cloud {
+  position: absolute;
+  inset: 0;
+}
+
+.minecraft-side-cloud {
+  width: 120px;
+  height: 42px;
+  background:
+    linear-gradient(90deg, #ffffff 0 44%, transparent 44% 52%, #ffffff 52% 100%),
+    linear-gradient(90deg, transparent 0 28%, #ffffff 28% 72%, transparent 72% 100%);
+  background-size: 100% 22px, 100% 20px;
+  background-position: 0 0, 0 22px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 12px 0 rgba(176, 215, 224, 0.38));
+  animation: minecraft-side-cloud-drift 18s linear infinite;
+}
+
+.minecraft-side-cloud-1 {
+  top: 12%;
+  left: 28%;
+  width: 140px;
+  animation-duration: 22s;
+}
+
+.minecraft-side-cloud-2 {
+  top: 25%;
+  left: 42%;
+  width: 110px;
+  animation-duration: 17s;
+  animation-delay: -7s;
+}
+
+.minecraft-side-cloud-3 {
+  top: 16%;
+  left: 74%;
+  width: 170px;
+  animation-duration: 25s;
+  animation-delay: -13s;
+}
+
+.minecraft-side-cloud-4 {
+  top: 34%;
+  left: 18%;
+  width: 90px;
+  animation-duration: 16s;
+  animation-delay: -5s;
+}
+
+.minecraft-side-cloud-5 {
+  top: 33%;
+  left: 50%;
+  width: 120px;
+  animation-duration: 20s;
+  animation-delay: -11s;
+}
+
+.minecraft-side-tree {
+  --tree-left: calc(50% + var(--tree-column) * 5.55%);
+  position: absolute;
+  left: var(--tree-left);
+  bottom: 34%;
+  z-index: 8;
+  width: min(15vw, 128px);
+  height: min(25vw, 220px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.minecraft-side-tree-trunk {
+  position: absolute;
+  left: 42%;
+  bottom: 0;
+  width: 24%;
+  height: 58%;
+  background-image: var(--minecraft-texture-oak-log);
+  background-size: cover;
+  image-rendering: pixelated;
+}
+
+.minecraft-side-tree-leaves {
+  position: absolute;
+  background-image: var(--minecraft-texture-mossy-dirt);
+  background-size: cover;
+  image-rendering: pixelated;
+  box-shadow: inset -18px -18px 0 rgba(26, 83, 18, 0.28);
+}
+
+.minecraft-side-tree-leaves.leaf-a {
+  left: 10%;
+  top: 18%;
+  width: 80%;
+  height: 34%;
+}
+
+.minecraft-side-tree-leaves.leaf-b {
+  left: 24%;
+  top: 4%;
+  width: 52%;
+  height: 36%;
+}
+
+.minecraft-side-tree-leaves.leaf-c {
+  left: 0;
+  top: 34%;
+  width: 48%;
+  height: 36%;
+}
+
+.minecraft-side-tree-leaves.leaf-d {
+  right: 0;
+  top: 34%;
+  width: 48%;
+  height: 36%;
+}
+
+.minecraft-side-block {
+  position: absolute;
+  left: calc(var(--side-column) * 5.5556%);
+  top: calc(66% + var(--side-row) * 8.5%);
+  z-index: 10;
+  width: 5.5556%;
+  height: 8.5%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  cursor: crosshair;
+  background-color: transparent;
+  background-size: cover !important;
+  background-position: center !important;
+  image-rendering: pixelated;
+}
+
+.minecraft-side-block .cube-top,
+.minecraft-side-block .cube-left,
+.minecraft-side-block .cube-right {
+  display: none;
+}
+
+.minecraft-side-air {
+  background-image: none !important;
+}
+
+.minecraft-side-block.minecraft-grass {
+  background-image: var(--minecraft-texture-grass) !important;
+}
+
+.minecraft-side-block.minecraft-dirt {
+  background-image: var(--minecraft-texture-dirt) !important;
+}
+
+.minecraft-side-block.minecraft-stone {
+  background-image: var(--minecraft-texture-cobblestone) !important;
+}
+
+.minecraft-side-block.minecraft-wood {
+  background-image: var(--minecraft-texture-oak-log) !important;
+}
+
+.minecraft-side-block.minecraft-leaves {
+  background-image: var(--minecraft-texture-mossy-dirt) !important;
+}
+
+.minecraft-side-block.minecraft-netherrack {
+  background-image: var(--minecraft-texture-red-sand) !important;
+}
+
+.minecraft-side-block.minecraft-nether_brick,
+.minecraft-side-block.minecraft-stone_brick,
+.minecraft-side-block.minecraft-stone_bricks {
+  background-image: var(--minecraft-texture-stone-bricks) !important;
+}
+
+.minecraft-side-block.minecraft-nether_gold_ore,
+.minecraft-side-block.minecraft-gold_ore {
+  background-image: var(--minecraft-texture-gold-ore) !important;
+}
+
+.minecraft-side-block.minecraft-end_stone {
+  background-image: var(--minecraft-texture-end-stone) !important;
+}
+
+.minecraft-side-block.minecraft-obsidian,
+.minecraft-side-block.minecraft-obsidian_pillar {
+  background-image: var(--minecraft-texture-obsidian) !important;
+}
+
+.minecraft-side-block.minecraft-sky_grass {
+  background-image: var(--minecraft-texture-grass) !important;
+}
+
+.minecraft-side-block.minecraft-sky_wood,
+.minecraft-side-block.minecraft-warped_stem {
+  background-image: var(--minecraft-texture-oak-log) !important;
+}
+
+.minecraft-side-block.minecraft-sky_leaves,
+.minecraft-side-block.minecraft-warped_leaves,
+.minecraft-side-block.minecraft-warped_nylium {
+  background-image: var(--minecraft-texture-mossy-dirt) !important;
+}
+
+.minecraft-side-block.minecraft-glowstone {
+  background-image: var(--minecraft-texture-sand) !important;
+}
+
+.minecraft-side-block.minecraft-nether_pumpkin {
+  background-image: var(--minecraft-texture-nether-pumpkin) !important;
+}
+
+.minecraft-side-block.minecraft-nether_watermelon {
+  background-image: var(--minecraft-texture-nether-watermelon) !important;
+}
+
+.minecraft-side-block.minecraft-coal_ore,
+.minecraft-side-block.minecraft-iron_ore,
+.minecraft-side-block.minecraft-diamond_ore,
+.minecraft-side-block.minecraft-bedrock_ore {
+  background-image: var(--minecraft-texture-cobblestone) !important;
+}
+
+.minecraft-cube.minecraft-torch,
+.minecraft-cube.minecraft-torch::before {
+  background-image: var(--minecraft-tool-torch) !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}
+
+.minecraft-side-player {
+  position: absolute;
+  left: 50%;
+  bottom: 34%;
+  z-index: 24;
+  width: min(7vw, 64px);
+  height: min(13vw, 118px);
+  transform: translateX(-50%);
+  background: url("./assets/minecraft-player/steve.png") center bottom / contain no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+  animation: minecraft-side-player-land 260ms ease-out;
+}
+
+.minecraft-side-world .minecraft-xp-bar,
+.minecraft-side-world .minecraft-hud {
+  z-index: 40;
+}
+
+@keyframes minecraft-side-sun-glow {
+  0%,
+  100% {
+    transform: translateY(0);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateY(8px);
+    filter: brightness(1.12);
+  }
+}
+
+@keyframes minecraft-side-cloud-drift {
+  from {
+    transform: translateX(-18vw);
+  }
+  to {
+    transform: translateX(26vw);
+  }
+}
+
+@keyframes minecraft-side-player-land {
+  from {
+    transform: translate(-50%, -18px);
+  }
+  to {
+    transform: translate(-50%, 0);
   }
 }
 

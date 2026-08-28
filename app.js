@@ -470,6 +470,8 @@ const minecraftBlockTypes = {
 };
 minecraftBlockTypes.obsidian = { label: "黑曜石" };
 minecraftBlockTypes.netherrack = { label: "下界红土" };
+minecraftBlockTypes.nether_pumpkin = { label: "下界南瓜零食" };
+minecraftBlockTypes.nether_watermelon = { label: "下界西瓜零食" };
 minecraftBlockTypes.nether_gold_ore = { label: "下界金矿" };
 minecraftBlockTypes.nether_brick = { label: "猪灵堡垒砖" };
 minecraftBlockTypes.meteor = { label: "银石" };
@@ -491,7 +493,12 @@ const minecraftAnimalTypes = {
   sheep: { label: "羊", icon: "羊", meat: 1, wool: 1 },
   cow: { label: "牛", icon: "牛", meat: 2, wool: 0 },
   pig: { label: "猪", icon: "猪", meat: 2, wool: 0 },
-  chicken: { label: "鸡", icon: "鸡", meat: 1, wool: 0 }
+  chicken: { label: "鸡", icon: "鸡", meat: 1, wool: 0 },
+  horse: { label: "马", icon: "马", meat: 0, wool: 0 },
+  wolf: { label: "狼", icon: "狼", meat: 0, wool: 0 },
+  cat: { label: "猫", icon: "猫", meat: 0, wool: 0 },
+  parrot: { label: "鹦鹉", icon: "鹦", meat: 0, wool: 0 },
+  turtle: { label: "海龟", icon: "龟", meat: 0, wool: 0 }
 };
 const mineralTypes = [
   { id: "stone", label: "石头", icon: "▣", value: 3, chance: 36, hardness: 2 },
@@ -1515,6 +1522,15 @@ function renderMineGrid() {
     cell.addEventListener("click", () => mineCell(cell));
     mineGrid.appendChild(cell);
   }
+  mineGrid.appendChild(makeMinecraftBatElement());
+}
+
+function makeMinecraftBatElement() {
+  const bat = document.createElement("span");
+  bat.className = "minecraft-bat";
+  bat.setAttribute("aria-label", "蝙蝠");
+  bat.setAttribute("role", "img");
+  return bat;
 }
 
 function mineCell(cell) {
@@ -2219,6 +2235,8 @@ function getDefaultMinecraftNetherBlockAt(x, z, y) {
   if (y === 0 && isMinecraftNetherLavaPoolAt(x, z)) return "lava";
   if (y === 0 && isMinecraftBastionAt(x, z)) return "nether_brick";
   if (y === 0 && isMinecraftWarpedForestAt(x, z)) return "warped_nylium";
+  if (y === 0 && Math.abs((x * 29 + z * 41) % 61) === 0) return "nether_pumpkin";
+  if (y === 0 && Math.abs((x * 47 + z * 19) % 67) === 0) return "nether_watermelon";
   if (y === 0 && Math.abs((x * 37 + z * 17) % 43) <= 1) return "glowstone";
   if (y <= 0 && Math.abs((x * 13 + z * 11 + y * 5) % 19) <= 2) return "nether_gold_ore";
   return "netherrack";
@@ -2373,21 +2391,31 @@ function getMinecraftAnimalKey(x, z) {
 
 function getDefaultMinecraftAnimalAt(x, z) {
   if (getMinecraftBlockAt(x, z, 1)) return null;
-  const seed = Math.abs((x * 31 + z * 43) % 37);
+  const seed = Math.abs((x * 31 + z * 43) % 73);
   if (seed === 0) return "sheep";
   if (seed === 5) return "cow";
   if (seed === 11) return "pig";
   if (seed === 17) return "chicken";
+  if (seed === 23) return "horse";
+  if (seed === 31) return "wolf";
+  if (seed === 41) return "cat";
+  if (seed === 53) return "parrot";
+  if (seed === 67) return "turtle";
   return null;
 }
 
 function getMinecraftSkyAnimalAt(x, z) {
   if (minecraftDimension !== "sky" || !isMinecraftSkyIslandAt(x, z) || getMinecraftBlockAt(x, z, 1)) return null;
-  const seed = Math.abs((x * 31 + z * 43) % 37);
+  const seed = Math.abs((x * 31 + z * 43) % 73);
   if (seed === 0) return "sheep";
   if (seed === 5) return "cow";
   if (seed === 11) return "pig";
   if (seed === 17) return "chicken";
+  if (seed === 23) return "horse";
+  if (seed === 31) return "wolf";
+  if (seed === 41) return "cat";
+  if (seed === 53) return "parrot";
+  if (seed === 67) return "turtle";
   return null;
 }
 
@@ -3604,6 +3632,64 @@ function makeMinecraftHud() {
   return hud;
 }
 
+function makeMinecraftSideMeter(className, count, total) {
+  const meter = document.createElement("div");
+  meter.className = className;
+  for (let index = 0; index < total; index += 1) {
+    const icon = document.createElement("span");
+    icon.className = index < count ? "filled" : "empty";
+    meter.appendChild(icon);
+  }
+  return meter;
+}
+
+function getMinecraftHotbarItems() {
+  return [
+    { type: "diamond_sword", count: minecraftInventory.diamond_sword || 0 },
+    { type: "wood_pickaxe", count: minecraftPickaxes.wood || 0 },
+    { type: "iron_pickaxe", count: minecraftPickaxes.iron || 0 },
+    { type: "grass", count: minecraftInventory.grass || 0 },
+    { type: "dirt", count: minecraftInventory.dirt || 0 },
+    { type: "stone", count: minecraftInventory.stone || 0 },
+    { type: "bow", count: minecraftInventory.bow || 0 },
+    { type: "torch", count: minecraftInventory.torch || 0 }
+  ];
+}
+
+function makeMinecraftSideHud() {
+  const hud = document.createElement("div");
+  hud.className = "minecraft-side-hud";
+  const top = document.createElement("div");
+  top.className = "minecraft-side-hud-top";
+  top.append(
+    makeMinecraftSideMeter("minecraft-side-hearts", minecraftHealth, 10),
+    makeMinecraftSideMeter("minecraft-side-hunger", minecraftHunger, 10)
+  );
+  const xp = makeMinecraftXpBar();
+  xp.classList.add("minecraft-side-xp");
+  const hotbar = document.createElement("div");
+  hotbar.className = "minecraft-side-hotbar";
+  getMinecraftHotbarItems().forEach((item) => {
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = `minecraft-side-hotbar-slot hotbar-${item.type}`;
+    if ((item.type === minecraftSelectedTool) || (item.type === "iron_pickaxe" && minecraftSelectedTool === "pickaxe")) {
+      slot.classList.add("selected");
+    }
+    slot.dataset.minecraftTool = item.type === "iron_pickaxe" ? "pickaxe" : item.type;
+    slot.setAttribute("aria-label", item.type);
+    if (item.count > 0) {
+      const count = document.createElement("span");
+      count.textContent = `${item.count}`;
+      slot.appendChild(count);
+    }
+    slot.addEventListener("click", () => setMinecraftTool(slot.dataset.minecraftTool || "pickaxe"));
+    hotbar.appendChild(slot);
+  });
+  hud.append(top, xp, hotbar);
+  return hud;
+}
+
 function renderMinecraftMap() {
   if (!minecraftMap) return;
   minecraftMap.innerHTML = "";
@@ -3644,6 +3730,144 @@ function renderMinecraftMap() {
   minecraftMap.dataset.coords = `你在 X${minecraftPlayerX} Z${minecraftPlayerZ}`;
 }
 
+function makeMinecraftSideSky() {
+  const sky = document.createElement("div");
+  sky.className = "minecraft-side-sky";
+  const sun = document.createElement("span");
+  sun.className = "minecraft-side-sun";
+  sun.setAttribute("aria-label", "太阳公公");
+  sky.append(sun, makeMinecraftSideClouds());
+  return sky;
+}
+
+function makeMinecraftSideClouds() {
+  const clouds = document.createElement("div");
+  clouds.className = "minecraft-side-clouds";
+  for (let index = 0; index < 5; index += 1) {
+    const cloud = document.createElement("span");
+    cloud.className = `minecraft-side-cloud minecraft-side-cloud-${index + 1}`;
+    clouds.appendChild(cloud);
+  }
+  return clouds;
+}
+
+function makeMinecraftSideTree(column) {
+  const tree = document.createElement("span");
+  tree.className = "minecraft-side-tree";
+  tree.style.setProperty("--tree-column", `${column}`);
+  tree.innerHTML = '<span class="minecraft-side-tree-trunk"></span><span class="minecraft-side-tree-leaves leaf-a"></span><span class="minecraft-side-tree-leaves leaf-b"></span><span class="minecraft-side-tree-leaves leaf-c"></span><span class="minecraft-side-tree-leaves leaf-d"></span>';
+  return tree;
+}
+
+function makeMinecraftSidePlayer() {
+  const player = document.createElement("span");
+  player.className = "minecraft-side-player";
+  player.setAttribute("aria-label", "史蒂夫，玩家");
+  return player;
+}
+
+function makeMinecraftSideAnimalElement(animalType, x, z, localX) {
+  const animal = minecraftAnimalTypes[animalType];
+  if (!animal) return null;
+  const animalElement = document.createElement("button");
+  animalElement.type = "button";
+  animalElement.className = `minecraft-side-animal minecraft-side-animal-${animalType}`;
+  animalElement.style.setProperty("--side-column", `${localX + 9}`);
+  animalElement.style.setProperty("--animal-run-delay", `${Math.abs((x * 97 + z * 31) % 1200)}ms`);
+  animalElement.setAttribute("aria-label", animal.label);
+  animalElement.addEventListener("click", (event) => {
+    event.stopPropagation();
+    hitMinecraftAnimal(x, z);
+  });
+  return animalElement;
+}
+
+function getMinecraftSideTreeColumns() {
+  const columns = [];
+  for (let localX = -12; localX <= 11; localX += 1) {
+    const x = minecraftPlayerX + localX;
+    const z = minecraftPlayerZ;
+    if (getMinecraftBlockAt(x, z, 1) === "wood" && getMinecraftBlockAt(x, z, 0) !== "water") {
+      columns.push(localX);
+    }
+  }
+  return columns;
+}
+
+function makeMinecraftSideBlockElement(blockType, x, z, y, localX, rowIndex) {
+  const cell = document.createElement("button");
+  cell.type = "button";
+  cell.className = `minecraft-side-block minecraft-side-row-${rowIndex}`;
+  if (blockType) {
+    cell.classList.add("minecraft-side-solid", `minecraft-${blockType}`);
+  } else {
+    cell.classList.add("minecraft-side-air");
+    const backBlock = getDefaultMinecraftBlockAt(x, z, y);
+    if (backBlock && backBlock.includes("ore")) {
+      cell.classList.add("minecraft-side-dug-back", "minecraft-stone");
+    } else if (backBlock && backBlock !== "water") {
+      cell.classList.add("minecraft-side-dug-back", `minecraft-${backBlock}`);
+    }
+  }
+  cell.dataset.x = `${x}`;
+  cell.dataset.z = `${z}`;
+  cell.dataset.y = `${y}`;
+  cell.style.setProperty("--side-column", `${localX + 9}`);
+  cell.style.setProperty("--side-row", `${rowIndex}`);
+  const label = blockType ? minecraftBlockTypes[blockType]?.label || "方块" : "空气";
+  cell.setAttribute("aria-label", `${label} ${x}, ${y}, ${z}`);
+  cell.innerHTML = '<span class="cube-top"></span><span class="cube-left"></span><span class="cube-right"></span>';
+  cell.addEventListener("click", () => handleMinecraftCellClick(cell));
+  cell.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    mineMinecraftBlock(cell);
+  });
+  return cell;
+}
+
+const minecraftCaveEntryDepth = -9;
+const minecraftHandMineBlocks = new Set(["grass", "dirt", "wood", "leaves", "sky_grass", "sky_wood", "sky_leaves", "warped_stem", "warped_leaves"]);
+
+function renderMinecraftSideWorld() {
+  minecraftPanel?.classList.add("minecraft-platformer-fullscreen");
+  minecraftWorld.classList.add("minecraft-side-world");
+  minecraftWorld.classList.toggle("minecraft-side-nether", minecraftDimension === "nether");
+  minecraftWorld.classList.toggle("minecraft-side-end", minecraftDimension === "end");
+  minecraftWorld.classList.toggle("minecraft-side-sky-dimension", minecraftDimension === "sky");
+  minecraftWorld.classList.toggle("minecraft-side-cave", minecraftDimension === "overworld" && minecraftDepth <= minecraftCaveEntryDepth);
+  minecraftWorld.setAttribute("data-minecraft-cave-entry-depth", `${minecraftCaveEntryDepth}`);
+  minecraftWorld.innerHTML = "";
+  minecraftWorld.appendChild(makeMinecraftSideSky());
+  if (minecraftDimension === "overworld" && minecraftDepth >= 0) {
+    getMinecraftSideTreeColumns().forEach((column) => minecraftWorld.appendChild(makeMinecraftSideTree(column)));
+  }
+  const topY = minecraftDepth > 0 ? 0 : minecraftDepth;
+  const rows = Array.from({ length: 7 }, (_, index) => topY - index);
+  rows.forEach((y, rowIndex) => {
+    for (let localX = -9; localX <= 8; localX += 1) {
+      const x = minecraftPlayerX + localX;
+      const z = minecraftPlayerZ;
+      const blockType = getMinecraftBlockAt(x, z, y)
+        || (minecraftDimension === "overworld" && y <= 0 && minecraftDepth > minecraftCaveEntryDepth ? "stone" : null);
+      minecraftWorld.appendChild(makeMinecraftSideBlockElement(blockType, x, z, y, localX, rowIndex));
+    }
+  });
+  if (minecraftDimension === "overworld" && minecraftDepth === 0) {
+    for (let localX = -9; localX <= 8; localX += 1) {
+      const x = minecraftPlayerX + localX;
+      const z = minecraftPlayerZ;
+      const animalType = getMinecraftBlockAt(x, z, 0) === "grass" ? getMinecraftAnimalAt(x, z) : null;
+      const animalElement = animalType ? makeMinecraftSideAnimalElement(animalType, x, z, localX) : null;
+      if (animalElement) minecraftWorld.appendChild(animalElement);
+    }
+  }
+  minecraftWorld.appendChild(makeMinecraftSidePlayer());
+  minecraftWorld.appendChild(makeMinecraftSideHud());
+  updateMinecraftInventoryUI();
+  renderMinecraftMap();
+  updateMinecraftStatus("主世界变成横版了。史蒂夫就是你，挖脚下的方块会往下掉。");
+}
+
 function renderMinecraftWorld() {
   if (!minecraftWorld) return;
   ensureMinecraftWorldBlocks();
@@ -3662,6 +3886,11 @@ function renderMinecraftWorld() {
   minecraftWorld.classList.toggle("surface-night", minecraftDimension === "overworld" && minecraftIsNight && minecraftDepth >= 0);
   minecraftWorld.classList.toggle("underground-dark", minecraftDepth < 0 && !isMinecraftTorchNearPlayer());
   minecraftWorld.classList.toggle("underground-lit", minecraftDepth < 0 && isMinecraftTorchNearPlayer());
+  minecraftWorld.classList.remove("minecraft-side-world", "minecraft-side-nether", "minecraft-side-end", "minecraft-side-sky-dimension", "minecraft-side-cave");
+  if (!minecraftGuardianFound) {
+    renderMinecraftSideWorld();
+    return;
+  }
   for (let localZ = -4; localZ <= 4; localZ += 1) {
     for (let localX = -7; localX <= 6; localX += 1) {
       const offset = getMinecraftViewOffset(localX, localZ);
@@ -3881,7 +4110,7 @@ function mineMinecraftBlock(cell) {
     updateMinecraftStatus("这里是空气，挖不到方块。");
     return;
   }
-  if (!canMineMinecraftBlock(blockType)) {
+  if (!minecraftHandMineBlocks.has(blockType) && !canMineMinecraftBlock(blockType)) {
     updateMinecraftStatus(`现在只有${getMinecraftPickaxeName()}，还挖不动这个方块。先按木稿、石稿、铁稿、钻石稿的顺序升级。`);
     return;
   }
@@ -4242,6 +4471,18 @@ function startMinecraftJoystick(event) {
   }, 170);
 }
 
+const minecraftEasyDigDownBlocks = new Set(["grass", "dirt", "stone", "water"]);
+
+function placeMinecraftStepBlockForJump() {
+  if (!minecraftBlockTypes[minecraftSelectedTool]) return false;
+  if ((minecraftInventory[minecraftSelectedTool] || 0) <= 0) return false;
+  if (minecraftDimension !== "overworld") return false;
+  if (getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth)) return false;
+  minecraftInventory[minecraftSelectedTool] -= 1;
+  setMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth, minecraftSelectedTool);
+  return true;
+}
+
 function digMinecraftDown() {
   const blockType = getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth);
   const block = minecraftBlockTypes[blockType];
@@ -4249,7 +4490,7 @@ function digMinecraftDown() {
     updateMinecraftStatus("末地传送门不能往下挖掉，走到黑色中间就能进去。");
     return;
   }
-  if (block && !canMineMinecraftBlock(blockType)) {
+  if (block && !minecraftEasyDigDownBlocks.has(blockType) && !canMineMinecraftBlock(blockType)) {
     updateMinecraftStatus(`现在只有${getMinecraftPickaxeName()}，还不能向下挖这个方块。`);
     return;
   }

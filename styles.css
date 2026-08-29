@@ -501,8 +501,12 @@ body.sky-moon-away .sky-moon {
 }
 
 .sun-core {
-  background: radial-gradient(circle, #fff675 0%, #ffd73d 58%, #ffb200 100%);
-  box-shadow: 0 0 42px rgba(255, 211, 77, 0.5);
+  background:
+    radial-gradient(circle at 40% 32%, rgba(255, 255, 255, 0.72) 0 10%, transparent 11%),
+    radial-gradient(circle, #fff675 0%, #ffd73d 58%, #ffb200 100%);
+  box-shadow:
+    0 0 0 10px rgba(255, 199, 61, 0.28),
+    0 0 42px rgba(255, 211, 77, 0.5);
   animation: sun-bob 4.4s ease-in-out infinite;
 }
 
@@ -548,7 +552,8 @@ body.sky-moon-away .sky-moon {
   width: 24px;
   height: 11px;
   margin-left: -12px;
-  border-bottom: 4px solid #2e2400;
+  border: 4px solid #2e2400;
+  border-top: 0;
   border-radius: 0 0 24px 24px;
   transition: transform 240ms ease;
 }
@@ -557,13 +562,13 @@ body.sky-moon-away .sky-moon {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 22px;
-  height: 38px;
-  margin-left: -11px;
-  margin-top: -55px;
+  width: 24px;
+  height: 44px;
+  margin-left: -12px;
+  margin-top: -62px;
   background: linear-gradient(180deg, #ff7f00, #ff9f00);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  transform-origin: center 64px;
+  transform-origin: center 72px;
 }
 
 .sun-ray-1 { transform: rotate(0deg); }
@@ -885,6 +890,7 @@ body.terror-night .sun-eye-right {
   position: relative;
   z-index: 5;
   max-width: 300px;
+  width: min(300px, 86vw);
   margin: clamp(168px, 25svh, 230px) auto 0;
   padding: 34px 0 0;
   border-radius: 0;
@@ -1282,6 +1288,37 @@ body.terror-night .sun-eye-right {
   transform: translate(var(--hat-x, 0px), var(--hat-y, 0px));
 }
 
+body.town-app-open .hat-assembly {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.town-app-open {
+  overflow: hidden;
+}
+
+body.town-app-open .stage {
+  visibility: hidden;
+}
+
+body.town-app-open .computer-app-window {
+  visibility: visible;
+}
+
+body.town-app-open .mine-toggle,
+body.town-app-open .shop-toggle,
+body.town-app-open .mine-panel,
+body.town-app-open .shop-panel,
+body.town-app-open .minecraft-panel,
+body.town-app-open .diary-room-link,
+body.town-app-open .reset-save-toggle,
+body.town-app-open .yard-toggle,
+body.town-app-open .home-toggle,
+body.town-app-open .call-back-toggle,
+body.town-app-open .money-display {
+  display: none !important;
+}
+
 .hat-assembly.detached .bamboo-copter,
 .hat-assembly.detached .head-hat {
   cursor: grab;
@@ -1516,6 +1553,577 @@ body.light-on .mood-panel {
 
 .mood-panel.face-mode .screen-subtitle {
   display: none;
+}
+
+.mood-panel.desktop-mode {
+  display: block;
+  padding: 14px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(180deg, #58b7f0 0%, #2a77bd 100%);
+  background-size: 18px 18px, 18px 18px, auto;
+}
+
+.mood-panel.desktop-mode .face-display,
+.mood-panel.desktop-mode .screen-subtitle,
+.mood-panel.desktop-mode .rain-error-code {
+  display: none;
+}
+
+.computer-desktop[hidden] {
+  display: none;
+}
+
+.computer-desktop {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  min-height: 150px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.38);
+}
+
+.desktop-titlebar {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 2px solid #11345a;
+  background: #174f96;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.24);
+}
+
+.desktop-apps,
+.desktop-installed-apps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: flex-start;
+  padding-top: 10px;
+}
+
+.desktop-app {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  width: 42px;
+  min-height: 46px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  font-size: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.desktop-app span {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border: 2px solid #11345a;
+  background: #ffe76a;
+  color: #17314f;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
+}
+
+.desktop-app-chat span {
+  background: #c8ff74;
+}
+
+.desktop-app-store span {
+  background: #ffd174;
+}
+
+.desktop-app-minecraft span {
+  background:
+    linear-gradient(180deg, #63b94d 0 44%, #7a4f28 44% 100%);
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #183d12;
+}
+
+.desktop-app-town span {
+  background:
+    linear-gradient(180deg, #65c9ff 0 45%, #f4cf69 45% 70%, #d16b6b 70% 100%);
+  color: #17314f;
+}
+
+.mood-panel.app-open .desktop-apps,
+.mood-panel.app-open .desktop-installed-apps,
+.mood-panel.app-open .desktop-titlebar {
+  visibility: hidden;
+}
+
+.computer-app-window {
+  position: absolute;
+  inset: 8px;
+  z-index: 12;
+  display: grid;
+  grid-template-rows: 25px 1fr;
+  border: 3px solid #11345a;
+  background: #eef7ff;
+  color: #17314f;
+  text-shadow: none;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.28);
+}
+
+.computer-app-window.town-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  grid-template-rows: 1fr;
+  border: 0;
+  background: #101728;
+}
+
+.computer-app-window.town-fullscreen.town-minimized {
+  inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) auto;
+  width: min(330px, calc(100vw - 24px));
+  height: min(220px, calc(100vh - 24px));
+  border: 3px solid #11345a;
+  background: #101728;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
+}
+
+.computer-app-window.town-fullscreen .computer-app-titlebar {
+  position: fixed;
+  left: max(8px, env(safe-area-inset-left));
+  top: max(8px, env(safe-area-inset-top));
+  z-index: 280;
+  display: flex;
+  gap: 5px;
+  padding: 0;
+  background: transparent;
+  color: transparent;
+}
+
+.computer-app-window.town-fullscreen.town-minimized .computer-app-titlebar {
+  position: absolute;
+}
+
+.computer-app-window.town-fullscreen .computer-app-close,
+.computer-app-window.town-fullscreen .computer-app-minimize {
+  width: 19px;
+  height: 19px;
+  border-width: 2px;
+  font-size: 14px;
+}
+
+.computer-app-window.town-fullscreen .computer-app-titlebar strong {
+  display: none;
+}
+
+.computer-app-window.town-fullscreen .computer-app-content {
+  align-content: stretch;
+  padding: 0;
+  grid-row: 1;
+}
+
+.computer-app-window[hidden] {
+  display: none;
+}
+
+.computer-app-titlebar {
+  display: grid;
+  grid-template-columns: 23px 23px 1fr;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px 2px 2px;
+  background: #174f96;
+  color: #ffffff;
+  font-size: 10px;
+}
+
+.computer-app-close,
+.computer-app-minimize {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border: 2px solid #11345a;
+  border-radius: 0;
+  background: #ff5a52;
+  color: #ffffff;
+  padding: 0;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  text-shadow: none;
+}
+
+.computer-app-minimize {
+  background: #ffd65d;
+  color: #17314f;
+}
+
+.computer-app-minimize[hidden] {
+  display: none;
+}
+
+.computer-face-close {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  z-index: 18;
+}
+
+.computer-face-close[hidden] {
+  display: none;
+}
+
+.computer-app-content {
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  padding: 8px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.computer-store-list {
+  display: grid;
+  gap: 6px;
+}
+
+.computer-store-list button {
+  min-height: 28px;
+  border: 2px solid #11345a;
+  border-radius: 0;
+  background: #ffffff;
+  color: #17314f;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.computer-store-list button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.computer-app-message {
+  margin: 0;
+  color: #17314f;
+  line-height: 1.3;
+}
+
+.computer-town-app {
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background:
+    linear-gradient(180deg, #8fd7ff 0 54%, #4da85b 54% 100%);
+}
+
+.computer-town-3d-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: #17233a;
+}
+
+.computer-town-3d-shell canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.computer-town-3d-shell.loading::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  border: 4px solid rgba(255, 255, 255, 0.28);
+  border-top-color: #fff36b;
+  border-radius: 50%;
+  animation: town-loading-spin 900ms linear infinite;
+}
+
+.computer-town-3d-shell.fallback {
+  display: none;
+}
+
+.computer-town-app:has(.computer-town-3d-shell:not(.fallback)) .computer-town-fallback {
+  opacity: 0;
+}
+
+.computer-town-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.computer-town-speech {
+  position: absolute;
+  left: 50%;
+  top: 44px;
+  z-index: 8;
+  max-width: min(520px, calc(100vw - 36px));
+  transform: translateX(-50%) translateY(-10px);
+  border: 3px solid #101728;
+  background: rgba(255, 255, 255, 0.92);
+  color: #142033;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  text-shadow: none;
+}
+
+.computer-town-speech.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.computer-town-shop-panel,
+.computer-town-character-panel {
+  position: absolute;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(720px, calc(100vw - 34px));
+  padding: 9px 10px;
+  border: 3px solid #101728;
+  background: rgba(255, 255, 255, 0.93);
+  color: #142033;
+  transform: translateX(-50%);
+  text-shadow: none;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+}
+
+.computer-town-shop-panel[hidden],
+.computer-town-character-panel[hidden] {
+  display: none;
+}
+
+.computer-town-shop-panel strong,
+.computer-town-character-panel strong {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.computer-town-shop-panel button,
+.computer-town-character-panel button {
+  min-height: 30px;
+  border: 2px solid #142033;
+  border-radius: 0;
+  background: #fff8d8;
+  color: #142033;
+  padding: 5px 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.computer-town-character-panel {
+  bottom: max(70px, calc(env(safe-area-inset-bottom) + 70px));
+}
+
+.computer-town-sky span {
+  position: absolute;
+  top: 14px;
+  width: 26px;
+  height: 10px;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: 12px 0 0 #ffffff, 6px -6px 0 #ffffff;
+  animation: town-cloud-slide 16s linear infinite;
+}
+
+.computer-town-sky span:first-child {
+  left: -40px;
+}
+
+.computer-town-sky span:last-child {
+  left: 35px;
+  animation-duration: 22s;
+}
+
+.computer-town-street {
+  position: absolute;
+  inset: 0;
+}
+
+.computer-town-building {
+  position: absolute;
+  bottom: 28px;
+  width: 34px;
+  height: 34px;
+  border: 2px solid #11345a;
+  border-radius: 17px 17px 4px 4px;
+  background: #ffd66b;
+  box-shadow: inset 0 9px 0 rgba(255, 255, 255, 0.28);
+}
+
+.computer-town-building.shop {
+  left: 12px;
+  background: #f1c75b;
+}
+
+.computer-town-building.home {
+  right: 14px;
+  background: #e77964;
+}
+
+.computer-town-building::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: -13px;
+  height: 13px;
+  border-radius: 50% 50% 0 0;
+  background: #8b4a2c;
+}
+
+.computer-town-building::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  bottom: 0;
+  width: 9px;
+  height: 16px;
+  background: #56331f;
+}
+
+.computer-town-stage {
+  position: absolute;
+  left: 50%;
+  bottom: 25px;
+  width: 54px;
+  height: 23px;
+  transform: translateX(-50%);
+  border: 2px solid #11345a;
+  border-radius: 50%;
+  background: #34314a;
+}
+
+.town-member {
+  position: absolute;
+  bottom: 24px;
+  width: 15px;
+  height: 27px;
+  border: 2px solid #11345a;
+  border-radius: 999px;
+  animation: town-member-walk 4.5s linear infinite;
+}
+
+.town-member::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 7px;
+  width: 3px;
+  height: 3px;
+  background: #111;
+  box-shadow: 7px 0 0 #111;
+}
+
+.town-member.oren {
+  left: 52px;
+  background: #ff9d4d;
+}
+
+.town-member.raddy {
+  left: 84px;
+  background: #f26060;
+  animation-delay: -1s;
+}
+
+.town-member.clukr {
+  left: 122px;
+  background: #b8bdc8;
+  animation-delay: -2s;
+}
+
+.town-member.pinki {
+  left: 158px;
+  background: #ff9cd3;
+  animation-delay: -3s;
+}
+
+.computer-town-concert {
+  position: absolute;
+  left: 50%;
+  bottom: 52px;
+  display: flex;
+  gap: 3px;
+  height: 24px;
+  transform: translateX(-50%);
+}
+
+.computer-town-concert i {
+  width: 5px;
+  height: 10px;
+  align-self: flex-end;
+  background: #fff36b;
+  animation: town-concert-bars 580ms ease-in-out infinite;
+}
+
+.computer-town-concert i:nth-child(2) {
+  animation-delay: -120ms;
+}
+
+.computer-town-concert i:nth-child(3) {
+  animation-delay: -240ms;
+}
+
+.computer-town-concert i:nth-child(4) {
+  animation-delay: -360ms;
+}
+
+.computer-town-concert i:nth-child(5) {
+  animation-delay: -480ms;
+}
+
+.desktop-store {
+  position: absolute;
+  right: 0;
+  top: 36px;
+  z-index: 7;
+  display: grid;
+  gap: 5px;
+  width: 92px;
+  padding: 6px;
+  border: 3px solid #11345a;
+  background: #eef7ff;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.25);
+}
+
+.desktop-store[hidden] {
+  display: none;
+}
+
+.desktop-store button {
+  min-height: 24px;
+  border: 2px solid #11345a;
+  background: #ffffff;
+  color: #17314f;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 .hat-ball {
@@ -3691,6 +4299,11 @@ body.computer-away .call-back-toggle {
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
 }
 
+.mine-toggle[hidden],
+.shop-toggle[hidden] {
+  display: none !important;
+}
+
 .mine-toggle.active {
   background: rgba(31, 91, 63, 0.94);
 }
@@ -4102,7 +4715,7 @@ body.computer-away .call-back-toggle {
 
 .minecraft-toolbar {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 4px;
   min-width: 0;
@@ -9415,8 +10028,13 @@ body.terror-night .tree-right::before {
 .minecraft-side-world {
   overflow: hidden;
   border-color: #29415c;
-  background: linear-gradient(180deg, #8fc8ec 0 65%, #57aa2d 65% 100%) !important;
+  background: linear-gradient(180deg, #8fc8ec 0 65%, #6a4428 65% 100%) !important;
   perspective: none;
+}
+
+.minecraft-side-world.surface-night,
+.minecraft-side-world:has(.minecraft-side-sky.night) {
+  background: linear-gradient(180deg, #12243d 0 65%, #322817 65% 100%) !important;
 }
 
 .minecraft-side-nether {
@@ -9481,13 +10099,48 @@ body.terror-night .tree-right::before {
 
 .minecraft-side-sun {
   position: absolute;
-  left: 6%;
-  top: 12%;
+  left: var(--sky-x, 6%);
+  top: var(--sky-y, 12%);
   width: min(10vw, 92px);
   height: min(10vw, 92px);
+  transform: translate(-50%, -50%);
   background: #ffd91a;
   box-shadow: 0 0 28px rgba(255, 230, 64, 0.72);
-  animation: minecraft-side-sun-glow 3s ease-in-out infinite;
+  animation:
+    minecraft-side-orbit var(--sky-duration, 120s) linear infinite,
+    minecraft-side-sun-glow 3s ease-in-out infinite;
+  animation-delay: var(--sky-delay, 0s), 0s;
+  transition: left 1s linear, top 1s linear;
+}
+
+.minecraft-side-moon {
+  position: absolute;
+  left: var(--sky-x, 88%);
+  top: var(--sky-y, 16%);
+  display: none;
+  width: min(9vw, 82px);
+  height: min(9vw, 82px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 62% 34%, #12243d 0 24%, transparent 25%),
+    #e9efff;
+  box-shadow: 0 0 22px rgba(213, 225, 255, 0.65);
+  animation: minecraft-side-orbit var(--sky-duration, 120s) linear infinite;
+  animation-delay: var(--sky-delay, 0s);
+  transition: left 1s linear, top 1s linear;
+}
+
+.minecraft-side-sky.night {
+  background: linear-gradient(180deg, #12243d, #263b59);
+}
+
+.minecraft-side-sky.night .minecraft-side-sun {
+  display: none;
+}
+
+.minecraft-side-sky.night .minecraft-side-moon {
+  display: block;
 }
 
 .minecraft-side-clouds,
@@ -9549,7 +10202,6 @@ body.terror-night .tree-right::before {
 }
 
 .minecraft-side-tree {
-  --tree-left: calc(50% + var(--tree-column) * 5.55%);
   position: absolute;
   left: var(--tree-left);
   bottom: 34%;
@@ -9609,7 +10261,7 @@ body.terror-night .tree-right::before {
 
 .minecraft-side-block {
   position: absolute;
-  left: calc(var(--side-column) * 5.5556%);
+  left: var(--side-left);
   top: calc(66% + var(--side-row) * 8.5%);
   z-index: 10;
   width: 5.5556%;
@@ -9619,6 +10271,7 @@ body.terror-night .tree-right::before {
   border-radius: 0;
   cursor: crosshair;
   background-color: transparent;
+  background-repeat: repeat !important;
   background-size: cover !important;
   background-position: center !important;
   image-rendering: pixelated;
@@ -9652,6 +10305,28 @@ body.terror-night .tree-right::before {
 
 .minecraft-side-block.minecraft-leaves {
   background-image: var(--minecraft-texture-mossy-dirt) !important;
+}
+
+.minecraft-side-block.minecraft-water {
+  background-image: var(--minecraft-texture-blue-ice) !important;
+}
+
+.minecraft-side-block.minecraft-lava {
+  background-image: var(--minecraft-texture-red-sand) !important;
+}
+
+.minecraft-side-block.minecraft-bed {
+  background-image: var(--minecraft-texture-white-wool) !important;
+}
+
+.minecraft-side-block.minecraft-crafting_table {
+  background-image: var(--minecraft-texture-oak-planks) !important;
+}
+
+.minecraft-side-block.minecraft-torch {
+  background-image: var(--minecraft-tool-torch) !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
 }
 
 .minecraft-side-block.minecraft-netherrack {
@@ -9712,6 +10387,320 @@ body.terror-night .tree-right::before {
   background-image: var(--minecraft-texture-cobblestone) !important;
 }
 
+.minecraft-side-village,
+.minecraft-side-animal,
+.minecraft-side-villager,
+.minecraft-side-hostile {
+  position: absolute;
+  left: var(--side-left);
+  bottom: calc(34% + var(--side-depth-lift, 0%));
+  z-index: var(--side-z, 24);
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+  image-rendering: pixelated;
+}
+
+.minecraft-side-village {
+  width: min(13vw, 116px);
+  height: min(11vw, 98px);
+}
+
+.minecraft-side-village-house,
+.minecraft-side-village-bed {
+  border: 4px solid #1f1711;
+  background-image: var(--minecraft-texture-oak-planks);
+  background-size: 48px 48px;
+  filter: drop-shadow(5px 6px 0 rgba(0, 0, 0, 0.24));
+}
+
+.minecraft-side-village-house::before,
+.minecraft-side-village-bed::before {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: -28%;
+  height: 34%;
+  border: 4px solid #1f1711;
+  background-image: var(--minecraft-texture-oak-log);
+  background-size: 48px 48px;
+}
+
+.minecraft-side-village-bed::after {
+  content: "";
+  position: absolute;
+  left: 28%;
+  bottom: 10%;
+  width: 44%;
+  height: 22%;
+  background: linear-gradient(90deg, #f4ead4 0 30%, #c83d42 30% 100%);
+  border: 3px solid #1f1711;
+}
+
+.minecraft-side-village-door {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24%;
+  height: 46%;
+  transform: translateX(-50%);
+  border: 3px solid #1f1711;
+  background-image: var(--minecraft-texture-oak-log);
+  background-size: cover;
+  box-shadow: inset -6px 0 0 rgba(0, 0, 0, 0.18);
+}
+
+.minecraft-side-village-door::after {
+  content: "";
+  position: absolute;
+  right: 18%;
+  top: 48%;
+  width: 5px;
+  height: 5px;
+  background: #f5d25c;
+}
+
+.minecraft-side-village-farm {
+  width: min(10vw, 92px);
+  height: min(6vw, 54px);
+  bottom: calc(33% + var(--side-depth-lift, 0%));
+  background:
+    repeating-linear-gradient(90deg, rgba(95, 58, 4, 0.55) 0 7px, transparent 7px 13px),
+    linear-gradient(180deg, #ffd35b 0 48%, #7a4c26 48% 100%);
+  border: 3px solid #5f3a04;
+  box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+.minecraft-side-village-torch {
+  width: min(5vw, 42px);
+  height: min(8vw, 72px);
+  background-image: var(--minecraft-tool-torch);
+  filter: drop-shadow(0 0 10px rgba(255, 204, 66, 0.9));
+}
+
+.minecraft-side-animal {
+  width: min(8vw, 76px);
+  height: min(7vw, 62px);
+  animation: minecraft-side-animal-hop 1s linear infinite;
+  animation-delay: var(--animal-run-delay);
+  filter: drop-shadow(4px 5px 0 rgba(0, 0, 0, 0.22));
+}
+
+.minecraft-side-animal.minecraft-animal-chicken,
+.minecraft-side-animal.minecraft-animal-parrot {
+  width: min(6vw, 54px);
+  height: min(8vw, 74px);
+}
+
+.minecraft-side-animal.minecraft-animal-horse {
+  width: min(11vw, 96px);
+  height: min(8vw, 72px);
+}
+
+.minecraft-side-villager {
+  width: min(7vw, 58px);
+  height: min(9vw, 76px);
+  background-image: var(--minecraft-mob-villager);
+  filter: drop-shadow(4px 5px 0 rgba(0, 0, 0, 0.24));
+  animation: minecraft-side-villager-walk 1s steps(2, end) infinite;
+}
+
+.minecraft-side-villager.sleeping {
+  width: min(9vw, 82px);
+  height: min(6vw, 54px);
+  transform: translateX(-50%) rotate(0deg);
+}
+
+.minecraft-side-iron-golem {
+  position: absolute;
+  left: var(--side-left);
+  bottom: calc(34% + var(--side-depth-lift, 0%));
+  z-index: var(--side-z, 22);
+  width: min(8vw, 72px);
+  height: min(24vw, 210px);
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+  filter: drop-shadow(6px 6px 0 rgba(0, 0, 0, 0.25));
+  background:
+    linear-gradient(90deg, transparent 0 17%, #d9e1dc 17% 83%, transparent 83% 100%) 50% 0 / 100% 23% no-repeat,
+    linear-gradient(90deg, #bfc9c7 0 46%, #96a4a2 46% 54%, #dfe8e5 54% 100%) 50% 24% / 82% 35% no-repeat,
+    linear-gradient(90deg, #d7dfdc 0 34%, transparent 34% 66%, #b8c2c0 66% 100%) 50% 58% / 92% 24% no-repeat,
+    linear-gradient(90deg, #b5c0be 0 38%, transparent 38% 62%, #dce5e2 62% 100%) 50% 100% / 72% 25% no-repeat;
+}
+
+.minecraft-side-iron-golem::before {
+  content: "";
+  position: absolute;
+  left: 36%;
+  top: 8%;
+  width: 8%;
+  height: 4%;
+  background: #245952;
+  box-shadow: 18px 0 0 #245952;
+}
+
+.minecraft-side-iron-golem::after {
+  content: "";
+  position: absolute;
+  left: 38%;
+  top: 44%;
+  width: 24%;
+  height: 32%;
+  background:
+    linear-gradient(180deg, #6dbb76 0 20%, transparent 20% 100%),
+    linear-gradient(90deg, #bfc9c7 0 35%, transparent 35% 65%, #dfe8e5 65% 100%);
+}
+
+.minecraft-side-iron-golem.angry {
+  animation: minecraft-side-golem-angry 360ms steps(2, end) infinite;
+  filter: drop-shadow(0 0 12px rgba(255, 70, 70, 0.85)) drop-shadow(6px 6px 0 rgba(0, 0, 0, 0.25));
+}
+
+.minecraft-side-hostile.minecraft-zombie,
+.minecraft-side-hostile.minecraft-skeleton {
+  top: auto;
+  width: min(7vw, 60px);
+  height: min(10vw, 86px);
+  transform: translateX(-50%);
+  animation: minecraft-side-zombie-step 1s linear infinite;
+}
+
+.minecraft-side-hostile.minecraft-zombie {
+  background-image: var(--minecraft-mob-zombie) !important;
+}
+
+.minecraft-side-hostile.minecraft-skeleton {
+  background-image: var(--minecraft-mob-skeleton) !important;
+}
+
+.minecraft-side-house-interior {
+  border-color: #1f1711;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0 65%, transparent 65%),
+    var(--minecraft-texture-oak-planks) !important;
+  background-size: auto, 64px 64px !important;
+}
+
+.minecraft-side-house-wall {
+  position: absolute;
+  inset: 7% 8% 35% 8%;
+  z-index: 4;
+  border: 4px solid #1f1711;
+  background-image: var(--minecraft-texture-oak-planks);
+  background-size: 64px 64px;
+  box-shadow: inset 0 -16px 0 rgba(0, 0, 0, 0.14);
+}
+
+.minecraft-side-house-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 35%;
+  z-index: 5;
+  border-top: 4px solid #1f1711;
+  background-image: var(--minecraft-texture-spruce-planks);
+  background-size: 64px 64px;
+}
+
+.minecraft-side-house-door {
+  position: absolute;
+  left: 12%;
+  bottom: 35%;
+  z-index: 12;
+  width: min(10vw, 86px);
+  height: min(18vw, 156px);
+  border: 4px solid #1f1711;
+  background-image: var(--minecraft-texture-oak-log);
+  background-size: cover;
+  image-rendering: pixelated;
+  cursor: pointer;
+  box-shadow: inset -10px 0 0 rgba(0, 0, 0, 0.18), 5px 5px 0 rgba(0, 0, 0, 0.22);
+}
+
+.minecraft-side-house-door::after {
+  content: "";
+  position: absolute;
+  right: 18%;
+  top: 48%;
+  width: 8px;
+  height: 8px;
+  background: #f5d25c;
+}
+
+.minecraft-side-house-bed {
+  position: absolute;
+  left: 31%;
+  bottom: 35%;
+  z-index: 13;
+  width: min(18vw, 150px);
+  height: min(7vw, 62px);
+  border: 4px solid #1f1711;
+  background:
+    linear-gradient(90deg, #ffffff 0 28%, #c93030 28% 100%);
+  image-rendering: pixelated;
+  cursor: pointer;
+  box-shadow:
+    inset 0 -10px 0 rgba(0, 0, 0, 0.14),
+    5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+.minecraft-side-house-bed::before,
+.minecraft-side-house-bed::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 10px;
+  height: 10px;
+  background: #5a351d;
+}
+
+.minecraft-side-house-bed::before {
+  left: 12%;
+}
+
+.minecraft-side-house-bed::after {
+  right: 12%;
+}
+
+.minecraft-side-house-villager {
+  position: absolute;
+  left: 55%;
+  bottom: 35%;
+  z-index: 14;
+  width: min(8vw, 70px);
+  height: min(12vw, 106px);
+  border: 0;
+  background: var(--minecraft-mob-villager) center bottom / contain no-repeat;
+  image-rendering: pixelated;
+  cursor: pointer;
+  filter: drop-shadow(5px 5px 0 rgba(0, 0, 0, 0.24));
+  animation: minecraft-side-villager-walk 1s steps(2, end) infinite;
+}
+
+.minecraft-side-house-wheat {
+  position: absolute;
+  right: 14%;
+  bottom: 35%;
+  z-index: 13;
+  width: min(14vw, 122px);
+  height: min(8vw, 70px);
+  border: 4px solid #5f3a04;
+  background:
+    repeating-linear-gradient(90deg, rgba(95, 58, 4, 0.55) 0 7px, transparent 7px 13px),
+    linear-gradient(180deg, #ffd35b 0 48%, #7a4c26 48% 100%);
+  image-rendering: pixelated;
+  cursor: pointer;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
 .minecraft-cube.minecraft-torch,
 .minecraft-cube.minecraft-torch::before {
   background-image: var(--minecraft-tool-torch) !important;
@@ -9739,15 +10728,131 @@ body.terror-night .tree-right::before {
   z-index: 40;
 }
 
+.minecraft-side-hud {
+  position: absolute;
+  inset: 10px 10px auto 10px;
+  z-index: 70;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 6px;
+  pointer-events: none;
+  font-family: "Courier New", "Lucida Console", monospace;
+}
+
+.minecraft-side-hud-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.minecraft-side-hearts,
+.minecraft-side-hunger {
+  display: flex;
+  gap: 2px;
+  padding: 4px 5px;
+  border: 3px solid #1f1711;
+  background: rgba(18, 15, 12, 0.86);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
+}
+
+.minecraft-side-hearts span,
+.minecraft-side-hunger span {
+  display: block;
+  width: 10px;
+  height: 10px;
+  image-rendering: pixelated;
+}
+
+.minecraft-side-hearts span {
+  background: #481313;
+  clip-path: polygon(50% 100%, 0 46%, 0 16%, 24% 0, 50% 16%, 76% 0, 100% 16%, 100% 46%);
+}
+
+.minecraft-side-hearts .filled {
+  background: #ff4f5f;
+  filter: drop-shadow(0 0 3px rgba(255, 79, 95, 0.8));
+}
+
+.minecraft-side-hunger span {
+  background: #4a2400;
+  clip-path: polygon(18% 0, 82% 0, 100% 42%, 72% 100%, 28% 100%, 0 42%);
+}
+
+.minecraft-side-hunger .filled {
+  background: #ffb13b;
+  filter: drop-shadow(0 0 3px rgba(255, 177, 59, 0.78));
+}
+
+.minecraft-side-xp {
+  position: static;
+  justify-self: start;
+  width: 180px;
+  max-width: 46%;
+  transform: none;
+  pointer-events: none;
+}
+
+.minecraft-side-hotbar {
+  position: fixed;
+  left: 50%;
+  bottom: 76px;
+  z-index: 72;
+  display: flex;
+  gap: 4px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.minecraft-side-hotbar-slot {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: 3px solid #1f1711;
+  border-radius: 0;
+  background: rgba(226, 214, 178, 0.92);
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.minecraft-side-hotbar-slot.selected {
+  outline: 3px solid #fff36b;
+}
+
+.minecraft-side-hotbar-slot span {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  text-shadow: 1px 1px 0 #000;
+}
+
 @keyframes minecraft-side-sun-glow {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translate(-50%, -50%) translateY(0);
     filter: brightness(1);
   }
   50% {
-    transform: translateY(8px);
+    transform: translate(-50%, -50%) translateY(8px);
     filter: brightness(1.12);
+  }
+}
+
+@keyframes minecraft-side-orbit {
+  0% {
+    left: 8%;
+    top: 16%;
+  }
+  50% {
+    left: 49%;
+    top: 5%;
+  }
+  100% {
+    left: 90%;
+    top: 16%;
   }
 }
 
@@ -9766,6 +10871,96 @@ body.terror-night .tree-right::before {
   }
   to {
     transform: translate(-50%, 0);
+  }
+}
+
+@keyframes minecraft-side-animal-hop {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(calc(-50% + var(--animal-run-half-x, 2.7778vw))) translateY(-8%);
+  }
+  100% {
+    transform: translateX(calc(-50% + var(--animal-run-x, 5.5556vw))) translateY(0);
+  }
+}
+
+@keyframes minecraft-side-villager-walk {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(calc(-50% + 10px)) translateY(-2px);
+  }
+}
+
+@keyframes minecraft-side-zombie-step {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(calc(-50% + var(--hostile-run-half-x, -2.7778vw))) translateY(-3px);
+  }
+  100% {
+    transform: translateX(calc(-50% + var(--hostile-run-x, -5.5556vw))) translateY(0);
+  }
+}
+
+@keyframes minecraft-side-golem-angry {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(calc(-50% - 6px)) translateY(-4px);
+  }
+}
+
+@keyframes town-cloud-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(230px);
+  }
+}
+
+@keyframes town-member-walk {
+  0% {
+    transform: translateX(-10px) translateY(0);
+  }
+  25% {
+    transform: translateX(18px) translateY(-3px);
+  }
+  50% {
+    transform: translateX(42px) translateY(0);
+  }
+  75% {
+    transform: translateX(16px) translateY(-3px);
+  }
+  100% {
+    transform: translateX(-10px) translateY(0);
+  }
+}
+
+@keyframes town-concert-bars {
+  0%,
+  100% {
+    height: 8px;
+  }
+  50% {
+    height: 24px;
+  }
+}
+
+@keyframes town-loading-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>电脑先生</title>
-    <link rel="stylesheet" href="./styles.css?v=sprunki-song-fast-v2" />
+    <link rel="stylesheet" href="./styles.css?v=sprunki-town-cp-baby-v1" />
   </head>
   <body>
     <div class="sky-scene" aria-hidden="true">
@@ -149,8 +149,43 @@
                   <span class="terror-mask-mouth"></span>
                 </div>
               </div>
+              <div id="computer-desktop" class="computer-desktop" aria-label="电脑桌面">
+                <div class="desktop-window desktop-titlebar">电脑先生</div>
+                <div class="desktop-apps" aria-label="软件">
+                  <button class="desktop-app desktop-app-chat" type="button" data-computer-app="chat">
+                    <span>聊</span>
+                    聊天
+                  </button>
+                  <button class="desktop-app desktop-app-store" type="button" data-computer-app="store">
+                    <span>店</span>
+                    应用商店
+                  </button>
+                  <button class="desktop-app desktop-app-minecraft" type="button" data-computer-app="minecraft">
+                    <span>方</span>
+                    我的世界
+                  </button>
+                  <button class="desktop-app desktop-app-town" type="button" data-computer-app="town">
+                    <span>镇</span>
+                    小镇
+                  </button>
+                </div>
+                <div id="computer-app-window" class="computer-app-window" hidden>
+                  <div class="computer-app-titlebar">
+                    <button id="computer-app-close" class="computer-app-close" type="button" aria-label="退出软件">×</button>
+                    <button id="computer-app-minimize" class="computer-app-minimize" type="button" aria-label="缩小小镇" hidden>−</button>
+                    <strong id="computer-app-title">软件</strong>
+                  </div>
+                  <div id="computer-app-content" class="computer-app-content"></div>
+                </div>
+                <div id="desktop-store" class="desktop-store" hidden>
+                  <button type="button" data-download-app="paint">下载画画</button>
+                  <button type="button" data-download-app="music">下载音乐</button>
+                  <button type="button" data-download-app="clock">下载时钟</button>
+                </div>
+                <div id="desktop-installed-apps" class="desktop-installed-apps" aria-label="已安装软件"></div>
+              </div>
+              <button id="computer-face-close" class="computer-app-close computer-face-close" type="button" aria-label="退出聊天" hidden>×</button>
               <p id="screen-subtitle" class="screen-subtitle">滴。我在听。</p>
-              <button id="minecraft-toggle" class="minecraft-toggle" type="button">我的世界</button>
             </div>
           </div>
         </div>
@@ -345,7 +380,7 @@
             </span>
             <span class="happy-robot-name">太阳公公</span>
           </button>
-          <button id="moon-picker" class="happy-robot-picker moon-picker" type="button" aria-label="拖动月亮姑姑">
+          <button id="moon-picker" class="happy-robot-picker moon-picker" type="button" aria-label="拖动月亮公公">
             <span class="happy-robot-icon moon-icon" aria-hidden="true">
               <span class="moon-character-face">
                 <span class="moon-character-eye eye-left"></span>
@@ -353,7 +388,7 @@
                 <span class="moon-character-mouth"></span>
               </span>
             </span>
-            <span class="happy-robot-name">月亮姑姑</span>
+            <span class="happy-robot-name">月亮公公</span>
           </button>
         </div>
         <div id="rhythm-stage" class="rhythm-stage" aria-label="音乐角色槽">
@@ -401,8 +436,8 @@
       </section>
       <section id="minecraft-panel" class="minecraft-panel" aria-label="我的世界" hidden>
         <div class="minecraft-toolbar">
-          <strong>我的世界</strong>
           <button id="minecraft-close" class="minecraft-close" type="button" aria-label="退出我的世界">×</button>
+          <strong>我的世界</strong>
         </div>
         <div id="minecraft-status" class="minecraft-status">先用镐子挖方块，背包有方块之后才能放。</div>
         <div id="minecraft-world" class="minecraft-world" aria-label="方块世界"></div>
@@ -468,6 +503,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=pickaxe-progression-v1"></script>
+    <script src="./app.js?v=sprunki-town-cp-baby-v1"></script>
   </body>
 </html>

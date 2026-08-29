@@ -4,6 +4,7 @@
   "private": true,
   "description": "Local preview server for the Mr. Computer game.",
   "scripts": {
+    "build": "node scripts/build-sites-static.js",
     "start": "node server.js"
   }
 }

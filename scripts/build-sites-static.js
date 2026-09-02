@@ -45,6 +45,11 @@ if (fs.existsSync(assetsDir)) {
   includeFiles.push(...walk(assetsDir, "assets").filter((file) => file !== "assets\\minecraft-audio\\minecraft-background.mp3"));
 }
 
+const rhythmWorldDir = path.join(root, "rhythm-world");
+if (fs.existsSync(rhythmWorldDir)) {
+  includeFiles.push(...walk(rhythmWorldDir, "rhythm-world"));
+}
+
 const files = {};
 includeFiles.forEach((file) => {
   const abs = path.join(root, file);

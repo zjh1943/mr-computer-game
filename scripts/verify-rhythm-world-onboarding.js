@@ -1,0 +1,1 @@
+const fs=require('fs'),h=fs.readFileSync('rhythm-world.html','utf8'),j=fs.readFileSync('rhythm-world.js','utf8');for(const x of ['创建新世界','世界正在生成','快乐机器人','语音输入','roleGrid','3800','factory'])if(!(h+j).includes(x))throw Error('Missing onboarding '+x);console.log('Rhythm world onboarding verification passed.');

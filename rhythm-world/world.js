@@ -1,0 +1,6 @@
+export const CHUNK=720;
+export const chunkKey=(cx,cy)=>`${cx},${cy}`;
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6d2b79f5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+export function generateChunk(seed,cx,cy){const r=rng(hash(`${seed}:${cx}:${cy}`)),biomes=['meadow','flowers','grove','stone'];const decorations=[];for(let i=0;i<22;i++)decorations.push({kind:r()<.55?'tree':r()<.7?'flower':'rock',x:40+r()*(CHUNK-80),y:40+r()*(CHUNK-80),size:.7+r()*.7});const buildings=[];if((Math.abs(cx)+Math.abs(cy))%3===0){const kinds=['shop','housePlot','music','cave'];buildings.push({kind:kinds[Math.floor(r()*kinds.length)],x:170+r()*380,y:160+r()*360})}if(cx===0&&cy===0)buildings.push({kind:'factory',x:CHUNK/2,y:CHUNK/2});return{cx,cy,biome:biomes[Math.floor(r()*biomes.length)],roads:{horizontal:(cy%2===0),vertical:(cx%3===0)},decorations,buildings}}
+export function getNearbyChunks(seed,x,y,radius=2){const cx=Math.floor(x/CHUNK),cy=Math.floor(y/CHUNK),out=[];for(let yy=cy-radius;yy<=cy+radius;yy++)for(let xx=cx-radius;xx<=cx+radius;xx++)out.push(generateChunk(seed,xx,yy));return out}

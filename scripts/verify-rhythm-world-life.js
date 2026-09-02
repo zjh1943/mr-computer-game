@@ -1,0 +1,1 @@
+const fs=require('fs'),s=fs.readFileSync('rhythm-world/life.js','utf8');for(const x of ['CATALOG','house','bed','sofa','piano','basementKit','digBasement','placeFurniture'])if(!s.includes(x))throw Error('Missing life feature '+x);console.log('Rhythm world life verification passed.');

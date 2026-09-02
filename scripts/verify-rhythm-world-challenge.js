@@ -1,0 +1,1 @@
+const fs=require('fs'),s=fs.readFileSync('rhythm-world/rhythm.js','utf8');for(const x of ["['left','down','up','right']",'combo','opponent','highScore','handleLane'])if(!s.includes(x))throw Error('Missing challenge feature '+x);console.log('Rhythm world challenge verification passed.');

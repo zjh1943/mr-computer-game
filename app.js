@@ -64,6 +64,14 @@ const minecraftPanel = document.querySelector("#minecraft-panel");
 const minecraftWorld = document.querySelector("#minecraft-world");
 const minecraftMap = document.querySelector("#minecraft-map");
 const minecraftStatus = document.querySelector("#minecraft-status");
+const minecraftBackgroundMusic = document.querySelector("#minecraft-background-music");
+const minecraftBackpackToggle = document.querySelector("#minecraft-backpack-toggle");
+const minecraftBackpackPanel = document.querySelector("#minecraft-backpack-panel");
+const minecraftBackpackGrid = document.querySelector("#minecraft-backpack-grid");
+const minecraftBackpackHotbar = document.querySelector("#minecraft-backpack-hotbar");
+const minecraftBackpackClose = document.querySelector("#minecraft-backpack-close");
+const minecraftPocketCraftingGrid = document.querySelector("#minecraft-pocket-crafting-grid");
+const minecraftPocketCraftingOutput = document.querySelector("#minecraft-pocket-crafting-output");
 const minecraftToolButtons = Array.from(document.querySelectorAll(".minecraft-tool"));
 const minecraftMoveButtons = Array.from(document.querySelectorAll(".minecraft-move"));
 const minecraftJumpUpButton = document.querySelector("#minecraft-jump-up");
@@ -332,6 +340,16 @@ let minecraftSelectedTool = "pickaxe";
 let minecraftOpenedAt = 0;
 let minecraftWorldBlocks = [];
 let minecraftInventory = {};
+let minecraftBackpackOpen = false;
+let minecraftBackpackHeldItem = null;
+let minecraftBackpackSlotOrder = [];
+let minecraftPocketCraftingSlots = Array(4).fill("");
+let minecraftPlayerActionPulse = { type: "", until: 0 };
+let minecraftPickupItems = [];
+let minecraftPickupId = 0;
+const minecraftAnimalSounds = {};
+let minecraftCurrentAnimalSound = null;
+let minecraftAnimalSoundsLoading = null;
 let minecraftPlayerX = 0;
 let minecraftPlayerZ = 0;
 let minecraftDepth = 0;
@@ -362,6 +380,7 @@ let minecraftMeat = 0;
 let minecraftWool = 0;
 let minecraftAnimals = {};
 let minecraftFleeingAnimals = {};
+let minecraftAnimalDirections = {};
 let minecraftInsideVillageHouse = null;
 let minecraftSpawnPoint = null;
 let minecraftSticks = 0;
@@ -384,8 +403,10 @@ let minecraftHasSkyRabbit = false;
 let minecraftLastSkeletonShotAt = 0;
 let minecraftLastZombieHitAt = 0;
 let minecraftLastZombieStepAt = 0;
+let minecraftPlayerLandingPulse = 0;
 let minecraftJoystickTimer = null;
 let minecraftJoystickDirection = "";
+const townStageThreeZoomKeys = new Set();
 let houseBought = false;
 let shopPanelOpen = false;
 let computerMovedIn = false;
@@ -485,6 +506,8 @@ const minecraftBlockTypes = {
   grass: { label: "草方块" },
   dirt: { label: "泥土" },
   stone: { label: "石头" },
+  sand: { label: "沙子" },
+  cactus: { label: "仙人掌" },
   wood: { label: "木头" },
   leaves: { label: "树叶" },
   water: { label: "河水" },
@@ -1183,6 +1206,7 @@ function saveGameState() {
     minecraftWool,
     minecraftAnimals,
     minecraftFleeingAnimals,
+    minecraftAnimalDirections,
     minecraftInsideVillageHouse,
     minecraftSpawnPoint,
     minecraftSticks,
@@ -1321,6 +1345,9 @@ function loadGameState() {
     : {};
   minecraftFleeingAnimals = saveData.minecraftFleeingAnimals && typeof saveData.minecraftFleeingAnimals === "object" && !Array.isArray(saveData.minecraftFleeingAnimals)
     ? Object.fromEntries(Object.entries(saveData.minecraftFleeingAnimals).filter(([, animal]) => minecraftAnimalTypes[animal]))
+    : {};
+  minecraftAnimalDirections = saveData.minecraftAnimalDirections && typeof saveData.minecraftAnimalDirections === "object" && !Array.isArray(saveData.minecraftAnimalDirections)
+    ? Object.fromEntries(Object.entries(saveData.minecraftAnimalDirections).filter(([, direction]) => direction === -1 || direction === 1))
     : {};
   minecraftInsideVillageHouse = saveData.minecraftInsideVillageHouse
     && Number.isFinite(saveData.minecraftInsideVillageHouse.x)
@@ -1773,16 +1800,24 @@ function getMinecraftKey(x, z, y = minecraftDepth) {
   return `${x},${z},${y}`;
 }
 
+function getMinecraftBiomeAt(x, z) {
+  if (minecraftDimension !== "overworld") return "";
+  if (getMinecraftVillageOriginAt(x, z)) return "village";
+  const band = ((Math.floor((x + 80) / 34) % 4) + 4) % 4;
+  return ["plains", "forest", "desert", "village"][band];
+}
+
 function getMinecraftTreeOrigin(x, z) {
+  if (getMinecraftBiomeAt(x, z) !== "forest" && getMinecraftBiomeAt(x, z) !== "village") return null;
   for (let originX = x - 1; originX <= x + 1; originX += 1) {
-    for (let originZ = z; originZ <= z + 3; originZ += 1) {
-      const originSeed = Math.abs((originX * 17 + originZ * 29) % 23);
+    for (let originZ = z - 1; originZ <= z + 1; originZ += 1) {
+      const originBiome = getMinecraftBiomeAt(originX, originZ);
+      if (originBiome !== "forest" && originBiome !== "village") continue;
+      const originSeed = Math.abs((originX * 17 + originZ * 29) % (originBiome === "forest" ? 11 : 29));
       if (originSeed !== 0) continue;
       const dx = x - originX;
       const dz = z - originZ;
-      if ((dx === 0 && (dz === 0 || dz === -1))
-        || (dz === -2 && Math.abs(dx) <= 1)
-        || (dx === 0 && dz === -3)) {
+      if ((dx === 0 && dz === 0) || (Math.abs(dx) <= 1 && Math.abs(dz) <= 1)) {
         return { x: originX, z: originZ };
       }
     }
@@ -1791,8 +1826,14 @@ function getMinecraftTreeOrigin(x, z) {
 }
 
 function isMinecraftRiverAt(x, z) {
+  if (getMinecraftBiomeAt(x, z) === "desert") return false;
   const riverCenter = Math.round(Math.sin(x / 4) * 2);
   return Math.abs(z - riverCenter) <= 1;
+}
+
+function isMinecraftCactusAt(x, z, y) {
+  if (getMinecraftBiomeAt(x, z) !== "desert" || y < 1 || y > 3) return false;
+  return Math.abs((x * 19 + z * 37) % 17) === 0;
 }
 
 function isMinecraftVillageAreaAt(x, z) {
@@ -1809,7 +1850,15 @@ function getMinecraftVillageOriginAt(x, z) {
     { x: 6, z: 26 },
     { x: 54, z: 24 }
   ];
-  return origins.find((origin) => x >= origin.x && x <= origin.x + 14 && z >= origin.z && z <= origin.z + 14) || null;
+  const fixedOrigin = origins.find((origin) => x >= origin.x && x <= origin.x + 14 && z >= origin.z && z <= origin.z + 14);
+  if (fixedOrigin) return fixedOrigin;
+  const bandIndex = Math.floor((x + 80) / 34);
+  const band = ((bandIndex % 4) + 4) % 4;
+  const originX = bandIndex * 34 - 72;
+  if (band === 3 && x >= originX && x <= originX + 14 && z >= -7 && z <= 7) {
+    return { x: originX, z: -7 };
+  }
+  return null;
 }
 
 function isMinecraftVillageHouseAt(x, z) {
@@ -2312,19 +2361,22 @@ function getDefaultMinecraftBlockAt(x, z, y = minecraftDepth) {
   if (minecraftDimension === "end") return getDefaultMinecraftEndBlockAt(x, z, y);
   if (minecraftDimension === "nether") return getDefaultMinecraftNetherBlockAt(x, z, y);
   if (minecraftDimension === "sky") return getDefaultMinecraftSkyBlockAt(x, z, y);
-  if (y >= 2) return null;
-  if (y === 1) {
+  if (y >= 6) return null;
+  if (y >= 1) {
+    if (isMinecraftCactusAt(x, z, y)) return "cactus";
     if (isMinecraftMeteorAt(x, z)) return "meteor";
     const treeOrigin = getMinecraftTreeOrigin(x, z);
     if (treeOrigin) {
       const dx = x - treeOrigin.x;
       const dz = z - treeOrigin.z;
-      if (dx === 0 && (dz === 0 || dz === -1)) return "wood";
-      if ((dz === -2 && Math.abs(dx) <= 1) || (dx === 0 && dz === -3)) return "leaves";
+      if (dx === 0 && dz === 0 && y >= 1 && y <= 3) return "wood";
+      if (y === 4 && Math.abs(dx) <= 1 && Math.abs(dz) <= 1) return "leaves";
+      if (y === 5 && dx === 0 && dz === 0) return "leaves";
     }
     return null;
   }
   if (y === 0) {
+    const biome = getMinecraftBiomeAt(x, z);
     const strongholdPortalPart = getMinecraftStrongholdPortalPart(x, z);
     if (strongholdPortalPart?.type === "frame") {
       return strongholdPortalPart.index >= 0 && strongholdPortalPart.index < minecraftEndPortalEyes
@@ -2337,6 +2389,8 @@ function getDefaultMinecraftBlockAt(x, z, y = minecraftDepth) {
     if (isMinecraftVillageTorchAt(x, z)) return "torch";
     if (isMinecraftVillageHouseAt(x, z)) return "wood";
     if (isMinecraftRiverAt(x, z)) return "water";
+    if (biome === "desert") return "sand";
+    if (biome === "plains" || biome === "forest" || biome === "village") return "grass";
     return "grass";
   }
   if (y === -1) return "dirt";
@@ -2513,6 +2567,7 @@ function isMinecraftTorchNearPoint(x, z, radius = 4) {
 function setMinecraftAnimalAt(x, z, animalType) {
   const key = getMinecraftAnimalKey(x, z);
   delete minecraftFleeingAnimals[key];
+  if (!animalType) delete minecraftAnimalDirections[key];
   const defaultAnimal = getDefaultMinecraftAnimalAt(x, z);
   if (animalType === defaultAnimal) {
     delete minecraftAnimals[key];
@@ -2656,7 +2711,7 @@ function isMinecraftSelectableTool(tool) {
 function setMinecraftTool(tool) {
   if (!isMinecraftSelectableTool(tool)) return;
   if (tool !== "pickaxe" && getMinecraftToolCount(tool) <= 0) {
-    updateMinecraftStatus("背包里没有这个方块，先用镐子去挖。");
+    updateMinecraftStatus("背包里没有这个物品，先去收集。");
     return;
   }
   minecraftSelectedTool = tool;
@@ -2702,6 +2757,7 @@ function updateMinecraftInventoryUI() {
     button.classList.toggle("active", minecraftSelectedTool === tool);
   });
   renderMinecraftExtraInventoryUI();
+  renderMinecraftBackpack();
 }
 
 function renderMinecraftExtraInventoryUI() {
@@ -2732,6 +2788,9 @@ function hitMinecraftAnimal(x, z) {
   const animalType = getMinecraftAnimalAt(x, z);
   const animal = minecraftAnimalTypes[animalType];
   if (!animal) return;
+  pulseMinecraftPlayerAction(minecraftSelectedTool === "diamond_sword" ? "sword" : "mine");
+  playMinecraftAnimalSound(animalType);
+  delete minecraftAnimalDirections[getMinecraftAnimalKey(x, z)];
   delete minecraftFleeingAnimals[getMinecraftAnimalKey(x, z)];
   setMinecraftAnimalAt(x, z, null);
   minecraftMeat += animal.meat;
@@ -2758,13 +2817,18 @@ function scareMinecraftSideAnimal(x, z) {
   setMinecraftAnimalAt(x, z, null);
   minecraftFleeingAnimals[getMinecraftAnimalKey(targetX, targetZ)] = animalType;
   minecraftAnimals[getMinecraftAnimalKey(targetX, targetZ)] = animalType;
+  minecraftAnimalDirections[getMinecraftAnimalKey(targetX, targetZ)] = direction;
   renderMinecraftWorld();
   updateMinecraftStatus(`${minecraftAnimalTypes[animalType].label}被吓跑了！往${direction > 0 ? "右" : "左"}追过去还能打到。`);
   saveGameState();
 }
 
 function getMinecraftAnimalRunDirection(x, z) {
-  return ((x * 13 + z * 7 + minecraftDayTick) % 2) === 0 ? 1 : -1;
+  const key = getMinecraftAnimalKey(x, z);
+  if (minecraftAnimalDirections[key] === -1 || minecraftAnimalDirections[key] === 1) return minecraftAnimalDirections[key];
+  const direction = Math.abs(x * 13 + z * 7) % 2 === 0 ? 1 : -1;
+  minecraftAnimalDirections[key] = direction;
+  return direction;
 }
 
 function moveMinecraftSideAnimals() {
@@ -2780,15 +2844,17 @@ function moveMinecraftSideAnimals() {
       const animalType = getMinecraftAnimalAt(x, z);
       if (!minecraftAnimalTypes[animalType]) continue;
       seen.add(key);
-      const direction = minecraftFleeingAnimals[key] ? (x >= minecraftPlayerX ? 1 : -1) : getMinecraftAnimalRunDirection(x, z);
+      const direction = getMinecraftAnimalRunDirection(x, z);
       const nextX = x + direction;
       if (isMinecraftVillageAreaAt(nextX, z) || getMinecraftBlockAt(nextX, z, 0) !== "grass") continue;
-      moves.push({ x, z, nextX, animalType, fleeing: Boolean(minecraftFleeingAnimals[key]) });
+      moves.push({ x, z, nextX, animalType, direction, fleeing: Boolean(minecraftFleeingAnimals[key]) });
     }
   }
   moves.slice(0, 5).forEach((move) => {
     setMinecraftAnimalAt(move.x, move.z, null);
+    delete minecraftAnimalDirections[getMinecraftAnimalKey(move.x, move.z)];
     minecraftAnimals[getMinecraftAnimalKey(move.nextX, move.z)] = move.animalType;
+    minecraftAnimalDirections[getMinecraftAnimalKey(move.nextX, move.z)] = move.direction;
     if (move.fleeing) {
       delete minecraftFleeingAnimals[getMinecraftAnimalKey(move.x, move.z)];
       minecraftFleeingAnimals[getMinecraftAnimalKey(move.nextX, move.z)] = move.animalType;
@@ -3278,6 +3344,7 @@ function angerMinecraftIronGolem() {
 }
 
 function handleMinecraftVillagerClick() {
+  playMinecraftAnimalSound("villager");
   if (minecraftSelectedTool === "diamond_sword") {
     angerMinecraftIronGolem();
     return;
@@ -3336,25 +3403,63 @@ function tradeWithMinecraftVillager() {
   saveGameState();
 }
 
-const minecraftCraftingMaterials = ["", "wood", "stone", "coal", "stick", "iron", "diamond", "bedrock_shard", "meteor_dust", "ender_pearl"];
+const minecraftCraftingMaterials = [
+  "",
+  "wood",
+  "oak_planks",
+  "stone",
+  "coal",
+  "stick",
+  "iron",
+  "diamond",
+  "bedrock_shard",
+  "meteor_dust",
+  "ender_pearl",
+  "string",
+  "flint",
+  "redstone",
+  "gold",
+  "carrot",
+  "pumpkin",
+  "egg",
+  "sugar"
+];
 const minecraftCraftingLabels = {
   wood: "木",
+  oak_planks: "木板",
   stone: "石",
   coal: "煤",
   stick: "棍",
   iron: "铁",
   diamond: "钻",
-  bedrock_shard: "基"
+  bedrock_shard: "基",
+  string: "线",
+  flint: "燧",
+  redstone: "红",
+  gold: "金",
+  carrot: "胡",
+  pumpkin: "瓜",
+  egg: "蛋",
+  sugar: "糖"
 };
 
 const minecraftCraftingIcons = {
   wood: "木",
+  oak_planks: "板",
   stone: "石",
   coal: "煤",
   stick: "棍",
   iron: "铁",
   diamond: "钻",
-  bedrock_shard: "基"
+  bedrock_shard: "基",
+  string: "线",
+  flint: "燧",
+  redstone: "红",
+  gold: "金",
+  carrot: "胡",
+  pumpkin: "瓜",
+  egg: "蛋",
+  sugar: "糖"
 };
 
 minecraftCraftingIcons.meteor_dust = "银粉";
@@ -3364,7 +3469,10 @@ const minecraftInventoryIcons = {
   grass: "草",
   dirt: "土",
   stone: "石",
+  sand: "沙",
+  cactus: "掌",
   wood: "木",
+  oak_planks: "板",
   leaves: "叶",
   water: "水",
   bed: "床",
@@ -3386,6 +3494,64 @@ const minecraftInventoryIcons = {
   xp: "星"
 };
 const minecraftCraftingPlaceableMaterials = new Set(["wood", "stone", "coal", "stick", "iron", "diamond", "bedrock_shard"]);
+const minecraftRecipeInventoryTypes = [
+  "oak_planks",
+  "chest",
+  "furnace",
+  "ladder",
+  "diamond_helmet",
+  "diamond_chestplate",
+  "diamond_leggings",
+  "diamond_boots",
+  "wood_axe",
+  "stone_shovel",
+  "iron_hoe",
+  "fishing_rod",
+  "flint_and_steel",
+  "compass",
+  "clock",
+  "shears",
+  "golden_carrot",
+  "pumpkin_pie",
+  "string",
+  "flint",
+  "redstone",
+  "gold",
+  "carrot",
+  "pumpkin",
+  "egg",
+  "sugar"
+];
+const minecraftShapedRecipes = [
+  { recipe: "oak_planks", label: "木板", icon: "板", count: 4, shape: ["", "", "", "", "wood", "", "", "", ""] },
+  { recipe: "sticks", label: "木棍", icon: "棍", count: 4, shape: ["", "", "", "", "oak_planks", "", "", "oak_planks", ""] },
+  { recipe: "torch", label: "火把", icon: "火", count: 4, shape: ["", "coal", "", "", "stick", "", "", "", ""] },
+  { recipe: "crafting_table", label: "工作台", icon: "台", count: 1, shape: ["oak_planks", "oak_planks", "", "oak_planks", "oak_planks", "", "", "", ""] },
+  { recipe: "furnace", label: "熔炉", icon: "炉", count: 1, shape: ["stone", "stone", "stone", "stone", "", "stone", "stone", "stone", "stone"] },
+  { recipe: "chest", label: "箱子", icon: "箱", count: 1, shape: ["oak_planks", "oak_planks", "oak_planks", "oak_planks", "", "oak_planks", "oak_planks", "oak_planks", "oak_planks"] },
+  { recipe: "ladder", label: "梯子", icon: "梯", count: 3, shape: ["stick", "", "stick", "stick", "stick", "stick", "stick", "", "stick"] },
+  { recipe: "diamond_helmet", label: "钻石头盔", icon: "盔", count: 1, shape: ["diamond", "diamond", "diamond", "diamond", "", "diamond", "", "", ""] },
+  { recipe: "diamond_chestplate", label: "钻石胸甲", icon: "甲", count: 1, shape: ["diamond", "", "diamond", "diamond", "diamond", "diamond", "diamond", "diamond", "diamond"] },
+  { recipe: "diamond_leggings", label: "钻石护腿", icon: "腿", count: 1, shape: ["diamond", "diamond", "diamond", "diamond", "", "diamond", "diamond", "", "diamond"] },
+  { recipe: "diamond_boots", label: "钻石靴子", icon: "靴", count: 1, shape: ["", "", "", "diamond", "", "diamond", "diamond", "", "diamond"] },
+  { recipe: "wood_axe", label: "木斧", icon: "斧", count: 1, shape: ["oak_planks", "oak_planks", "", "oak_planks", "stick", "", "", "stick", ""] },
+  { recipe: "stone_shovel", label: "石铲", icon: "铲", count: 1, shape: ["", "stone", "", "", "stick", "", "", "stick", ""] },
+  { recipe: "iron_hoe", label: "铁锄", icon: "锄", count: 1, shape: ["iron", "iron", "", "", "stick", "", "", "stick", ""] },
+  { recipe: "fishing_rod", label: "钓鱼竿", icon: "竿", count: 1, shape: ["", "", "stick", "", "stick", "string", "stick", "", "string"] },
+  { recipe: "flint_and_steel", label: "打火石", icon: "火石", count: 1, shape: ["", "iron", "", "flint", "", "", "", "", ""] },
+  { recipe: "compass", label: "指南针", icon: "针", count: 1, shape: ["", "iron", "", "iron", "redstone", "iron", "", "iron", ""] },
+  { recipe: "clock", label: "钟", icon: "钟", count: 1, shape: ["", "gold", "", "gold", "redstone", "gold", "", "gold", ""] },
+  { recipe: "bucket", label: "铁桶", icon: "桶", count: 1, shape: ["", "", "", "iron", "", "iron", "", "iron", ""] },
+  { recipe: "shears", label: "剪刀", icon: "剪", count: 1, shape: ["", "iron", "", "", "", "iron", "", "", ""] },
+  { recipe: "golden_carrot", label: "金胡萝卜", icon: "金胡", count: 1, shape: ["gold", "gold", "gold", "gold", "carrot", "gold", "gold", "gold", "gold"] },
+  { recipe: "pumpkin_pie", label: "南瓜派", icon: "派", count: 1, shape: ["pumpkin", "sugar", "", "egg", "", "", "", "", ""] }
+];
+const minecraftPocketRecipes = [
+  { recipe: "oak_planks", label: "木板", icon: "板", count: 4, shape: ["", "wood", "", ""] },
+  { recipe: "sticks", label: "木棍", icon: "棍", count: 4, shape: ["oak_planks", "", "oak_planks", ""] },
+  { recipe: "torch", label: "火把", icon: "火", count: 4, shape: ["coal", "", "stick", ""] },
+  { recipe: "crafting_table", label: "工作台", icon: "台", count: 1, shape: ["oak_planks", "oak_planks", "oak_planks", "oak_planks"] }
+];
 minecraftInventoryIcons.meteor = "银";
 minecraftInventoryIcons.meteor_dust = "银粉";
 minecraftInventoryIcons.ender_pearl = "珍";
@@ -3396,11 +3562,33 @@ minecraftInventoryIcons.stone_pickaxe = "石镐";
 minecraftInventoryIcons.iron_pickaxe = "铁镐";
 minecraftInventoryIcons.diamond_pickaxe = "钻镐";
 minecraftInventoryIcons.bedrock_pickaxe = "基镐";
+minecraftInventoryIcons.chest = "箱";
+minecraftInventoryIcons.furnace = "炉";
+minecraftInventoryIcons.ladder = "梯";
+minecraftInventoryIcons.diamond_helmet = "盔";
+minecraftInventoryIcons.diamond_chestplate = "甲";
+minecraftInventoryIcons.diamond_leggings = "腿";
+minecraftInventoryIcons.diamond_boots = "靴";
+minecraftInventoryIcons.wood_axe = "木斧";
+minecraftInventoryIcons.stone_shovel = "石铲";
+minecraftInventoryIcons.iron_hoe = "铁锄";
+minecraftInventoryIcons.fishing_rod = "竿";
+minecraftInventoryIcons.flint_and_steel = "火石";
+minecraftInventoryIcons.compass = "针";
+minecraftInventoryIcons.clock = "钟";
+minecraftInventoryIcons.shears = "剪";
+minecraftInventoryIcons.golden_carrot = "金胡";
+minecraftInventoryIcons.pumpkin_pie = "派";
 minecraftCraftingPlaceableMaterials.add("meteor_dust");
 minecraftCraftingPlaceableMaterials.add("ender_pearl");
+minecraftCraftingPlaceableMaterials.add("oak_planks");
+minecraftCraftingMaterials.forEach((material) => {
+  if (material) minecraftCraftingPlaceableMaterials.add(material);
+});
 
 function getMinecraftCraftingMaterialCount(material) {
   if (material === "wood") return minecraftInventory.wood || 0;
+  if (material === "oak_planks") return minecraftInventory.oak_planks || 0;
   if (material === "stone") return minecraftInventory.stone || 0;
   if (material === "coal") return minecraftCoal;
   if (material === "stick") return minecraftSticks;
@@ -3409,7 +3597,31 @@ function getMinecraftCraftingMaterialCount(material) {
   if (material === "bedrock_shard") return minecraftBedrockShard;
   if (material === "meteor_dust") return minecraftMeteorDust;
   if (material === "ender_pearl") return minecraftEnderPearls;
-  return 0;
+  return minecraftInventory[material] || 0;
+}
+
+function matchMinecraftShapedRecipe(recipe) {
+  return recipe.shape.every((material, index) => (minecraftCraftingSlots[index] || "") === material);
+}
+
+function getMatchedMinecraftShapedRecipe() {
+  return minecraftShapedRecipes.find((recipe) => matchMinecraftShapedRecipe(recipe)) || null;
+}
+
+function addMinecraftCraftedItem(recipe, count) {
+  if (recipe === "sticks") {
+    minecraftSticks += count;
+    return;
+  }
+  if (recipe === "bucket") {
+    minecraftBuckets += count;
+    return;
+  }
+  if (recipe === "ender_eye") {
+    minecraftEnderEyes += count;
+    return;
+  }
+  minecraftInventory[recipe] = (minecraftInventory[recipe] || 0) + count;
 }
 
 function getMinecraftPickaxeLevel() {
@@ -3426,7 +3638,8 @@ function canMineMinecraftBlock(blockType) {
   if (!blockType) return false;
   if (blockType === "crafting_table" || blockType === "bed") return true;
   if (blockType === "wood" || blockType === "leaves") return true;
-  if (blockType === "grass" || blockType === "dirt" || blockType === "stone" || blockType === "coal_ore") return level >= 1;
+  if (blockType === "grass" || blockType === "dirt" || blockType === "sand" || blockType === "cactus") return true;
+  if (blockType === "stone" || blockType === "coal_ore") return level >= 1;
   if (blockType === "iron_ore") return level >= 2;
   if (blockType === "diamond_ore") return level >= 3;
   if (blockType === "bedrock_ore") return level >= 4;
@@ -3445,6 +3658,7 @@ function getMinecraftWorkbenchInventoryItems() {
     count: minecraftInventory[type] || 0
   }));
   items.push(
+    ...minecraftRecipeInventoryTypes.map((type) => ({ id: type, material: type, count: getMinecraftInventoryItemCount(type) })),
     { id: "coal", material: "coal", count: minecraftCoal },
     { id: "stick", material: "stick", count: minecraftSticks },
     { id: "iron", material: "iron", count: minecraftIron },
@@ -3472,11 +3686,63 @@ function getMinecraftWorkbenchInventoryItems() {
   return items.filter((item) => item.count > 0);
 }
 
+function getMinecraftInventoryItemCount(type) {
+  if (type === "bucket") return minecraftBuckets;
+  if (type === "water_bucket") return minecraftWaterBuckets;
+  if (type === "lava_bucket") return minecraftLavaBuckets;
+  if (type === "coal") return minecraftCoal;
+  if (type === "stick") return minecraftSticks;
+  if (type === "iron") return minecraftIron;
+  if (type === "diamond") return minecraftDiamond;
+  if (type === "bedrock_shard") return minecraftBedrockShard;
+  if (type === "emerald") return minecraftEmerald;
+  if (type === "meteor_dust") return minecraftMeteorDust;
+  if (type === "ender_pearl") return minecraftEnderPearls;
+  if (type === "ender_eye") return minecraftEnderEyes;
+  if (type === "meat") return minecraftMeat;
+  if (type === "wool") return minecraftWool;
+  if (type === "seeds") return minecraftSeeds;
+  if (type === "wheat") return minecraftWheat;
+  if (type === "xp") return minecraftXp;
+  if (type === "wood_pickaxe") return minecraftPickaxes.wood || 0;
+  if (type === "stone_pickaxe") return minecraftPickaxes.stone || 0;
+  if (type === "iron_pickaxe") return minecraftPickaxes.iron || 0;
+  if (type === "diamond_pickaxe") return minecraftPickaxes.diamond || 0;
+  if (type === "bedrock_pickaxe") return minecraftPickaxes.bedrock || 0;
+  return minecraftInventory[type] || 0;
+}
+
+function getMinecraftToolForInventoryItem(type) {
+  const pickaxeTools = new Set(["wood_pickaxe", "stone_pickaxe", "iron_pickaxe", "diamond_pickaxe", "bedrock_pickaxe"]);
+  if (pickaxeTools.has(type)) return "pickaxe";
+  if (isMinecraftSelectableTool(type)) return type;
+  return "";
+}
+
+function getMinecraftActivePickaxeHotbarItem() {
+  if (minecraftPickaxes.bedrock > 0) return { type: "bedrock_pickaxe", tool: "pickaxe", count: minecraftPickaxes.bedrock };
+  if (minecraftPickaxes.diamond > 0) return { type: "diamond_pickaxe", tool: "pickaxe", count: minecraftPickaxes.diamond };
+  if (minecraftPickaxes.iron > 0) return { type: "iron_pickaxe", tool: "pickaxe", count: minecraftPickaxes.iron };
+  if (minecraftPickaxes.stone > 0) return { type: "stone_pickaxe", tool: "pickaxe", count: minecraftPickaxes.stone };
+  if (minecraftPickaxes.wood > 0) return { type: "wood_pickaxe", tool: "pickaxe", count: minecraftPickaxes.wood };
+  return { type: "hand", tool: "pickaxe", count: 0 };
+}
+
 function setMinecraftCraftingStatus(message) {
   if (minecraftCraftingStatus) minecraftCraftingStatus.textContent = message;
 }
 
 function getMinecraftCraftingOutput() {
+  const shapedRecipe = getMatchedMinecraftShapedRecipe();
+  if (shapedRecipe) {
+    return {
+      recipe: shapedRecipe.recipe,
+      label: shapedRecipe.label,
+      icon: shapedRecipe.icon,
+      count: shapedRecipe.count,
+      materials: shapedRecipe.shape.filter(Boolean)
+    };
+  }
   const filled = minecraftCraftingSlots.filter(Boolean).length;
   const pickaxeMaterials = [
     { material: "wood", recipe: "wood_pickaxe", label: "木稿", icon: "木镐" },
@@ -3613,14 +3879,16 @@ function renderMinecraftCraftingTable() {
 function spendMinecraftCraftingMaterials(materials) {
   materials.forEach((material) => {
     if (material === "wood") minecraftInventory.wood = Math.max(0, (minecraftInventory.wood || 0) - 1);
-    if (material === "stone") minecraftInventory.stone = Math.max(0, (minecraftInventory.stone || 0) - 1);
-    if (material === "coal") minecraftCoal = Math.max(0, minecraftCoal - 1);
-    if (material === "stick") minecraftSticks = Math.max(0, minecraftSticks - 1);
-    if (material === "iron") minecraftIron = Math.max(0, minecraftIron - 1);
-    if (material === "diamond") minecraftDiamond = Math.max(0, minecraftDiamond - 1);
-    if (material === "bedrock_shard") minecraftBedrockShard = Math.max(0, minecraftBedrockShard - 1);
-    if (material === "meteor_dust") minecraftMeteorDust = Math.max(0, minecraftMeteorDust - 1);
-    if (material === "ender_pearl") minecraftEnderPearls = Math.max(0, minecraftEnderPearls - 1);
+    else if (material === "oak_planks") minecraftInventory.oak_planks = Math.max(0, (minecraftInventory.oak_planks || 0) - 1);
+    else if (material === "stone") minecraftInventory.stone = Math.max(0, (minecraftInventory.stone || 0) - 1);
+    else if (material === "coal") minecraftCoal = Math.max(0, minecraftCoal - 1);
+    else if (material === "stick") minecraftSticks = Math.max(0, minecraftSticks - 1);
+    else if (material === "iron") minecraftIron = Math.max(0, minecraftIron - 1);
+    else if (material === "diamond") minecraftDiamond = Math.max(0, minecraftDiamond - 1);
+    else if (material === "bedrock_shard") minecraftBedrockShard = Math.max(0, minecraftBedrockShard - 1);
+    else if (material === "meteor_dust") minecraftMeteorDust = Math.max(0, minecraftMeteorDust - 1);
+    else if (material === "ender_pearl") minecraftEnderPearls = Math.max(0, minecraftEnderPearls - 1);
+    else minecraftInventory[material] = Math.max(0, (minecraftInventory[material] || 0) - 1);
   });
 }
 
@@ -3633,6 +3901,22 @@ function canSpendMinecraftCraftingMaterials(materials) {
 }
 
 function craftMinecraftRecipe(recipe = "") {
+  const shapedRecipe = getMatchedMinecraftShapedRecipe();
+  if (shapedRecipe && (!recipe || recipe === shapedRecipe.recipe)) {
+    const materials = shapedRecipe.shape.filter(Boolean);
+    if (!canSpendMinecraftCraftingMaterials(materials)) {
+      setMinecraftCraftingStatus(`${shapedRecipe.label}材料不够。`);
+      return;
+    }
+    spendMinecraftCraftingMaterials(materials);
+    addMinecraftCraftedItem(shapedRecipe.recipe, shapedRecipe.count);
+    minecraftCraftingSlots = Array(9).fill("");
+    renderMinecraftCraftingTable();
+    renderMinecraftWorld();
+    setMinecraftCraftingStatus(`合成了 ${shapedRecipe.count} 个${shapedRecipe.label}。`);
+    saveGameState();
+    return;
+  }
   const pickaxeRecipes = {
     wood_pickaxe: { material: "wood", key: "wood", label: "木稿" },
     stone_pickaxe: { material: "stone", key: "stone", label: "石稿" },
@@ -3796,17 +4080,191 @@ function makeMinecraftSideMeter(className, count, total) {
   return meter;
 }
 
-function getMinecraftHotbarItems() {
-  return [
-    { type: "diamond_sword", count: minecraftInventory.diamond_sword || 0 },
-    { type: "wood_pickaxe", count: minecraftPickaxes.wood || 0 },
-    { type: "iron_pickaxe", count: minecraftPickaxes.iron || 0 },
-    { type: "grass", count: minecraftInventory.grass || 0 },
-    { type: "dirt", count: minecraftInventory.dirt || 0 },
-    { type: "stone", count: minecraftInventory.stone || 0 },
-    { type: "bow", count: minecraftInventory.bow || 0 },
-    { type: "torch", count: minecraftInventory.torch || 0 }
+function getOwnedMinecraftHotbarItems() {
+  const preferred = [
+    "diamond_sword",
+    getMinecraftActivePickaxeHotbarItem().type,
+    "grass",
+    "dirt",
+    "sand",
+    "stone",
+    "wood",
+    "leaves",
+    "cactus",
+    "torch",
+    "bow"
   ];
+  const seen = new Set();
+  const items = [];
+  preferred.forEach((type) => {
+    if (!type || seen.has(type)) return;
+    const count = getMinecraftInventoryItemCount(type);
+    if (count <= 0) return;
+    seen.add(type);
+    items.push({ type, count });
+  });
+  getMinecraftWorkbenchInventoryItems().forEach((item) => {
+    const type = item.type || item.material || item.id;
+    if (!type || seen.has(type) || items.length >= 8) return;
+    if ((item.count || 0) <= 0) return;
+    seen.add(type);
+    items.push({ type, count: item.count });
+  });
+  return items.slice(0, 8);
+}
+
+function getMinecraftHeldItemType() {
+  if (minecraftSelectedTool === "pickaxe") {
+    const pickaxe = getMinecraftActivePickaxeHotbarItem();
+    return pickaxe.count > 0 ? pickaxe.type : "";
+  }
+  return getMinecraftInventoryItemCount(minecraftSelectedTool) > 0 ? minecraftSelectedTool : "";
+}
+
+function matchMinecraftPocketRecipe(recipe) {
+  return recipe.shape.every((material, index) => (minecraftPocketCraftingSlots[index] || "") === material);
+}
+
+function getMatchedMinecraftPocketRecipe() {
+  return minecraftPocketRecipes.find((recipe) => matchMinecraftPocketRecipe(recipe)) || null;
+}
+
+function addMinecraftPocketMaterial(material) {
+  const alreadyPlaced = minecraftPocketCraftingSlots.filter((slot) => slot === material).length;
+  if (getMinecraftCraftingMaterialCount(material) <= alreadyPlaced) {
+    updateMinecraftStatus("这个材料已经都摆上去了。");
+    return;
+  }
+  const emptyIndex = minecraftPocketCraftingSlots.findIndex((slot) => !slot);
+  if (emptyIndex < 0) {
+    updateMinecraftStatus("随身合成格放满了，点一个格子先拿下来。");
+    return;
+  }
+  minecraftPocketCraftingSlots[emptyIndex] = material;
+  renderMinecraftPocketCrafting();
+}
+
+function renderMinecraftPocketCrafting() {
+  if (!minecraftPocketCraftingGrid || !minecraftPocketCraftingOutput) return;
+  minecraftPocketCraftingGrid.innerHTML = "";
+  minecraftPocketCraftingSlots.forEach((material, index) => {
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = `minecraft-pocket-crafting-slot${material ? ` item-${material}` : ""}`;
+    slot.textContent = material ? (minecraftInventoryIcons[material] || minecraftCraftingIcons[material] || material) : "";
+    slot.addEventListener("click", () => {
+      minecraftPocketCraftingSlots[index] = "";
+      renderMinecraftPocketCrafting();
+    });
+    minecraftPocketCraftingGrid.appendChild(slot);
+  });
+  const recipe = getMatchedMinecraftPocketRecipe();
+  minecraftPocketCraftingOutput.disabled = !recipe;
+  minecraftPocketCraftingOutput.dataset.recipe = recipe?.recipe || "";
+  minecraftPocketCraftingOutput.className = `minecraft-pocket-crafting-output${recipe ? ` item-${recipe.recipe}` : ""}`;
+  minecraftPocketCraftingOutput.innerHTML = recipe ? `<strong>${recipe.icon}</strong><span>${recipe.count}</span>` : "";
+}
+
+function craftMinecraftPocketRecipe() {
+  const recipe = getMatchedMinecraftPocketRecipe();
+  if (!recipe) return;
+  const materials = recipe.shape.filter(Boolean);
+  if (!canSpendMinecraftCraftingMaterials(materials)) {
+    updateMinecraftStatus(`${recipe.label}材料不够。`);
+    return;
+  }
+  spendMinecraftCraftingMaterials(materials);
+  addMinecraftCraftedItem(recipe.recipe, recipe.count);
+  minecraftPocketCraftingSlots = Array(4).fill("");
+  renderMinecraftBackpack();
+  renderMinecraftWorld();
+  updateMinecraftStatus(`随身合成了 ${recipe.count} 个${recipe.label}。`);
+  saveGameState();
+}
+
+function syncMinecraftBackpackSlotOrder(items) {
+  const availableTypes = new Set(items.map((item) => item.type || item.material || item.id).filter(Boolean));
+  minecraftBackpackSlotOrder = minecraftBackpackSlotOrder.filter((type) => availableTypes.has(type));
+  items.forEach((item) => {
+    const type = item.type || item.material || item.id;
+    if (type && !minecraftBackpackSlotOrder.includes(type)) minecraftBackpackSlotOrder.push(type);
+  });
+  if (minecraftBackpackHeldItem && !availableTypes.has(minecraftBackpackHeldItem.type)) {
+    minecraftBackpackHeldItem = null;
+  }
+}
+
+function swapMinecraftBackpackItems(fromIndex, toIndex) {
+  const fromType = minecraftBackpackSlotOrder[fromIndex] || "";
+  const toType = minecraftBackpackSlotOrder[toIndex] || "";
+  minecraftBackpackSlotOrder[fromIndex] = toType;
+  minecraftBackpackSlotOrder[toIndex] = fromType;
+  minecraftBackpackSlotOrder = minecraftBackpackSlotOrder.filter(Boolean);
+}
+
+function handleMinecraftBackpackSlotPick(index) {
+  const type = minecraftBackpackSlotOrder[index] || "";
+  if (!minecraftBackpackHeldItem) {
+    if (!type) return;
+    minecraftBackpackHeldItem = { index, type };
+    updateMinecraftStatus(`拿起了${minecraftInventoryIcons[type] || minecraftCraftingIcons[type] || type}，再点一个格子移动或交换。`);
+    renderMinecraftBackpack();
+    return;
+  }
+  if (minecraftBackpackHeldItem.index === index) {
+    minecraftBackpackHeldItem = null;
+    renderMinecraftBackpack();
+    return;
+  }
+  swapMinecraftBackpackItems(minecraftBackpackHeldItem.index, index);
+  minecraftBackpackHeldItem = null;
+  renderMinecraftBackpack();
+  saveGameState();
+}
+
+function renderMinecraftBackpack() {
+  if (!minecraftBackpackPanel || !minecraftBackpackGrid) return;
+  minecraftBackpackPanel.hidden = !minecraftBackpackOpen;
+  minecraftBackpackGrid.innerHTML = "";
+  if (minecraftBackpackHotbar) minecraftBackpackHotbar.innerHTML = "";
+  renderMinecraftPocketCrafting();
+  const items = getMinecraftWorkbenchInventoryItems();
+  syncMinecraftBackpackSlotOrder(items);
+  const itemByType = new Map(items.map((item) => [item.type || item.material || item.id, item]));
+  const slotCount = Math.max(18, Math.ceil((minecraftBackpackSlotOrder.length + 1) / 9) * 9);
+  for (let index = 0; index < slotCount; index += 1) {
+    const type = minecraftBackpackSlotOrder[index] || "";
+    const item = itemByType.get(type);
+    const tool = getMinecraftToolForInventoryItem(type);
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = `minecraft-side-backpack-slot${type ? ` item-${type}` : " empty"}`;
+    if (minecraftBackpackHeldItem?.index === index) slot.classList.add("minecraft-backpack-slot-picked");
+    if (tool) slot.dataset.minecraftTool = tool;
+    const label = type ? (minecraftInventoryIcons[type] || minecraftCraftingIcons[type] || type) : "空格";
+    slot.setAttribute("aria-label", type ? `${label} ${item?.count || 0}` : "空背包格");
+    slot.innerHTML = type ? `<strong>${label}</strong><span>${item?.count || 0}</span>` : "";
+    slot.addEventListener("click", () => handleMinecraftBackpackSlotPick(index));
+    slot.addEventListener("dblclick", () => {
+      if (type && minecraftCraftingPlaceableMaterials.has(type)) addMinecraftPocketMaterial(type);
+    });
+    minecraftBackpackGrid.appendChild(slot);
+  }
+  if (minecraftBackpackHeldItem) {
+    const heldPreview = document.createElement("div");
+    heldPreview.className = `minecraft-backpack-held-item item-${minecraftBackpackHeldItem.type}`;
+    heldPreview.textContent = minecraftInventoryIcons[minecraftBackpackHeldItem.type] || minecraftCraftingIcons[minecraftBackpackHeldItem.type] || minecraftBackpackHeldItem.type;
+    minecraftBackpackGrid.appendChild(heldPreview);
+  }
+  getOwnedMinecraftHotbarItems().forEach((item) => {
+    if (!minecraftBackpackHotbar) return;
+    const slot = document.createElement("span");
+    slot.className = `minecraft-side-hotbar-slot hotbar-${item.type}`;
+    const count = document.createElement("span");
+    count.textContent = `${item.count}`;
+    slot.appendChild(count);
+    minecraftBackpackHotbar.appendChild(slot);
+  });
 }
 
 function makeMinecraftSideHud() {
@@ -3820,26 +4278,41 @@ function makeMinecraftSideHud() {
   );
   const xp = makeMinecraftXpBar();
   xp.classList.add("minecraft-side-xp");
+  const hotbarWrap = document.createElement("div");
+  hotbarWrap.className = "minecraft-side-hotbar-wrap";
   const hotbar = document.createElement("div");
   hotbar.className = "minecraft-side-hotbar";
-  getMinecraftHotbarItems().forEach((item) => {
+  getOwnedMinecraftHotbarItems().forEach((item) => {
     const slot = document.createElement("button");
     slot.type = "button";
+    const tool = item.tool || getMinecraftToolForInventoryItem(item.type);
     slot.className = `minecraft-side-hotbar-slot hotbar-${item.type}`;
-    if ((item.type === minecraftSelectedTool) || (item.type === "iron_pickaxe" && minecraftSelectedTool === "pickaxe")) {
+    if ((tool === minecraftSelectedTool) || (item.type === minecraftSelectedTool)) {
       slot.classList.add("selected");
     }
-    slot.dataset.minecraftTool = item.type === "iron_pickaxe" ? "pickaxe" : item.type;
+    slot.dataset.minecraftTool = tool;
     slot.setAttribute("aria-label", item.type);
     if (item.count > 0) {
       const count = document.createElement("span");
       count.textContent = `${item.count}`;
       slot.appendChild(count);
     }
-    slot.addEventListener("click", () => setMinecraftTool(slot.dataset.minecraftTool || "pickaxe"));
+    slot.addEventListener("click", () => {
+      if (slot.dataset.minecraftTool) setMinecraftTool(slot.dataset.minecraftTool);
+    });
     hotbar.appendChild(slot);
   });
-  hud.append(top, xp, hotbar);
+  const backpack = document.createElement("button");
+  backpack.type = "button";
+  backpack.className = "minecraft-side-backpack-toggle";
+  backpack.setAttribute("aria-label", "打开背包");
+  backpack.textContent = "•••";
+  backpack.addEventListener("click", () => {
+    minecraftBackpackOpen = !minecraftBackpackOpen;
+    renderMinecraftBackpack();
+  });
+  hotbarWrap.append(hotbar, backpack);
+  hud.append(top, xp, hotbarWrap);
   return hud;
 }
 
@@ -3886,8 +4359,10 @@ function renderMinecraftMap() {
 function makeMinecraftSideSky() {
   const sky = document.createElement("div");
   sky.className = `minecraft-side-sky${minecraftIsNight ? " night" : " day"}`;
-  const phase = (minecraftDayTick % MINECRAFT_DAY_NIGHT_SECONDS) / MINECRAFT_DAY_NIGHT_SECONDS;
-  const skyDelay = `-${minecraftDayTick % MINECRAFT_DAY_NIGHT_SECONDS}s`;
+  const skyCycleMs = MINECRAFT_DAY_NIGHT_SECONDS * 1000;
+  const skyTime = Date.now();
+  const phase = (skyTime % skyCycleMs) / skyCycleMs;
+  const skyDelay = `-${skyTime % skyCycleMs}ms`;
   const sun = document.createElement("span");
   sun.className = "minecraft-side-sun";
   sun.style.setProperty("--sky-x", `${8 + phase * 82}%`);
@@ -3909,26 +4384,52 @@ function makeMinecraftSideSky() {
 function makeMinecraftSideClouds() {
   const clouds = document.createElement("div");
   clouds.className = "minecraft-side-clouds";
+  const cloudTime = Date.now();
   for (let index = 0; index < 5; index += 1) {
     const cloud = document.createElement("span");
     cloud.className = `minecraft-side-cloud minecraft-side-cloud-${index + 1}`;
+    const durationMs = [22000, 17000, 25000, 16000, 20000][index];
+    const offsetMs = [0, 7000, 13000, 5000, 11000][index];
+    cloud.style.setProperty("--cloud-delay", `-${(cloudTime + offsetMs) % durationMs}ms`);
     clouds.appendChild(cloud);
   }
   return clouds;
 }
 
-function makeMinecraftSideTree(column) {
+function makeMinecraftSideTree(treeInfo) {
   const tree = document.createElement("span");
   tree.className = "minecraft-side-tree";
-  tree.style.setProperty("--tree-left", `${50 + column * 5.5556}%`);
-  tree.innerHTML = '<span class="minecraft-side-tree-trunk"></span><span class="minecraft-side-tree-leaves leaf-a"></span><span class="minecraft-side-tree-leaves leaf-b"></span><span class="minecraft-side-tree-leaves leaf-c"></span><span class="minecraft-side-tree-leaves leaf-d"></span>';
+  tree.style.setProperty("--tree-left", `${50 + treeInfo.localX * 5.5556}%`);
+  for (let y = 1; y <= 3; y += 1) {
+    const trunk = document.createElement("button");
+    trunk.type = "button";
+    trunk.className = `minecraft-side-tree-trunk-block trunk-${y}`;
+    trunk.dataset.x = `${treeInfo.x}`;
+    trunk.dataset.z = `${treeInfo.z}`;
+    trunk.dataset.y = `${y}`;
+    trunk.setAttribute("aria-label", `树干 ${y}`);
+    trunk.addEventListener("click", () => mineMinecraftBlock(trunk));
+    trunk.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      mineMinecraftBlock(trunk);
+    });
+    tree.appendChild(trunk);
+  }
+  tree.insertAdjacentHTML("beforeend", '<span class="minecraft-side-tree-leaves leaf-a"></span><span class="minecraft-side-tree-leaves leaf-b"></span><span class="minecraft-side-tree-leaves leaf-c"></span><span class="minecraft-side-tree-leaves leaf-d"></span>');
   return tree;
 }
 
-function makeMinecraftSidePlayer() {
+function makeMinecraftSidePlayer(animateLanding = false) {
   const player = document.createElement("span");
-  player.className = "minecraft-side-player";
+  const actionClass = Date.now() < minecraftPlayerActionPulse.until ? ` minecraft-side-player-${minecraftPlayerActionPulse.type}` : "";
+  player.className = `minecraft-side-player${animateLanding ? " minecraft-side-player-land" : ""}${actionClass}`;
   player.setAttribute("aria-label", "史蒂夫，玩家");
+  const heldItem = getMinecraftHeldItemType();
+  if (heldItem) {
+    const handItem = document.createElement("span");
+    handItem.className = `minecraft-side-player-hand-item held-${heldItem}`;
+    player.appendChild(handItem);
+  }
   return player;
 }
 
@@ -3951,6 +4452,40 @@ function setMinecraftSideColumnStyle(element, localX, centered = true) {
   element.style.setProperty("--side-left", `${column * 5.5556}%`);
 }
 
+function pulseMinecraftPlayerAction(type) {
+  minecraftPlayerActionPulse = { type, until: Date.now() + 360 };
+}
+
+function spawnMinecraftPickup(blockType, x, z, y) {
+  if (!minecraftBlockTypes[blockType]) return;
+  const localX = clamp(x - minecraftPlayerX, -9, 8);
+  minecraftPickupId += 1;
+  const id = minecraftPickupId;
+  minecraftPickupItems.push({
+    id,
+    type: blockType,
+    x,
+    z,
+    y,
+    localX,
+    createdAt: Date.now()
+  });
+  minecraftPickupItems = minecraftPickupItems.slice(-8);
+  window.setTimeout(() => {
+    minecraftPickupItems = minecraftPickupItems.filter((item) => item.id !== id);
+    if (minecraftPanelOpen) renderMinecraftWorld();
+  }, 560);
+}
+
+function makeMinecraftPickupElement(pickup) {
+  const pickupElement = document.createElement("span");
+  pickupElement.className = `minecraft-side-pickup minecraft-${pickup.type}`;
+  setMinecraftSideColumnStyle(pickupElement, pickup.localX, false);
+  pickupElement.style.setProperty("--side-row", `${Math.max(0, minecraftDepth - pickup.y)}`);
+  pickupElement.setAttribute("aria-label", "飞向史蒂夫的小方块");
+  return pickupElement;
+}
+
 function makeMinecraftSideAnimalElement(animalType, x, z, localX) {
   const animal = minecraftAnimalTypes[animalType];
   if (!animal) return null;
@@ -3959,9 +4494,6 @@ function makeMinecraftSideAnimalElement(animalType, x, z, localX) {
   animalElement.className = `minecraft-side-animal minecraft-animal-${animalType}`;
   setMinecraftSideColumnStyle(animalElement, localX);
   setMinecraftSideDepthStyle(animalElement, z);
-  const runX = getMinecraftAnimalRunDirection(x, z) * 5.5556;
-  animalElement.style.setProperty("--animal-run-half-x", `${runX / 2}vw`);
-  animalElement.style.setProperty("--animal-run-x", `${runX}vw`);
   animalElement.style.setProperty("--animal-run-delay", `${Math.abs((x * 97 + z * 31) % 1200)}ms`);
   animalElement.setAttribute("aria-label", animal.label);
   animalElement.addEventListener("click", (event) => {
@@ -4167,12 +4699,17 @@ function renderMinecraftVillageHouseInterior() {
 
 function getMinecraftSideTreeColumns() {
   const columns = [];
+  const seen = new Set();
   for (let localX = -12; localX <= 11; localX += 1) {
     const x = minecraftPlayerX + localX;
     for (const zOffset of getMinecraftSideZOffsets(5)) {
       const z = minecraftPlayerZ + zOffset;
       if (getMinecraftBlockAt(x, z, 1) === "wood" && getMinecraftBlockAt(x, z, 0) !== "water") {
-        columns.push(localX);
+        const key = `${x},${z}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          columns.push({ localX, x, z });
+        }
         break;
       }
     }
@@ -4270,7 +4807,10 @@ function renderMinecraftSideWorld() {
       minecraftWorld.appendChild(makeMinecraftSideHostileElement("skeleton", skeleton, index));
     }
   });
-  minecraftWorld.appendChild(makeMinecraftSidePlayer());
+  minecraftPickupItems
+    .filter((pickup) => Math.abs(pickup.x - minecraftPlayerX) <= 9 && Math.abs(pickup.z - minecraftPlayerZ) <= 6)
+    .forEach((pickup) => minecraftWorld.appendChild(makeMinecraftPickupElement(pickup)));
+  minecraftWorld.appendChild(makeMinecraftSidePlayer(Date.now() - minecraftPlayerLandingPulse < 320));
   minecraftWorld.appendChild(makeMinecraftSideHud());
   updateMinecraftInventoryUI();
   renderMinecraftMap();
@@ -4526,8 +5066,10 @@ function mineMinecraftBlock(cell) {
     updateMinecraftStatus(`现在只有${getMinecraftPickaxeName()}，还挖不动这个方块。先按木稿、石稿、铁稿、钻石稿的顺序升级。`);
     return;
   }
+  pulseMinecraftPlayerAction(minecraftSelectedTool === "diamond_sword" ? "sword" : "mine");
   if (blockType === "bed") {
     minecraftInventory.bed = (minecraftInventory.bed || 0) + 1;
+    spawnMinecraftPickup(blockType, x, z, y);
     clearMinecraftBedAt(x, z, y);
     renderMinecraftWorld();
     updateMinecraftStatus("挖掉了整张床，床已经回到物品栏。");
@@ -4540,6 +5082,7 @@ function mineMinecraftBlock(cell) {
   }
   if (blockType === "meteor") {
     minecraftMeteorDust += 4;
+    spawnMinecraftPickup(blockType, x, z, y);
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
     updateMinecraftStatus(`挖掉了发黄光的银石，获得 4 个银石粉。银石粉 ${minecraftMeteorDust}。`);
@@ -4575,6 +5118,7 @@ function mineMinecraftBlock(cell) {
     }
     minecraftBuckets -= 1;
     minecraftLavaBuckets += 1;
+    spawnMinecraftPickup(blockType, x, z, y);
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
     updateMinecraftStatus("装到了一桶岩浆。");
@@ -4583,6 +5127,7 @@ function mineMinecraftBlock(cell) {
   }
   if (blockType === "coal_ore") {
     minecraftCoal += 1;
+    spawnMinecraftPickup(blockType, x, z, y);
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
     updateMinecraftStatus(`挖到煤炭了。煤炭 ${minecraftCoal}。`);
@@ -4591,6 +5136,7 @@ function mineMinecraftBlock(cell) {
   }
   if (blockType === "iron_ore") {
     minecraftIron += 1;
+    spawnMinecraftPickup(blockType, x, z, y);
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
     updateMinecraftStatus(`挖到铁了。铁 ${minecraftIron}。`);
@@ -4599,6 +5145,7 @@ function mineMinecraftBlock(cell) {
   }
   if (blockType === "diamond_ore") {
     minecraftDiamond += 1;
+    spawnMinecraftPickup(blockType, x, z, y);
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
     updateMinecraftStatus(`挖到钻石了。钻石 ${minecraftDiamond}。`);
@@ -4607,6 +5154,7 @@ function mineMinecraftBlock(cell) {
   }
   if (blockType === "bedrock_ore") {
     minecraftBedrockShard += 1;
+    spawnMinecraftPickup(blockType, x, z, y);
     setMinecraftBlockAt(x, z, y, null);
     renderMinecraftWorld();
     updateMinecraftStatus(`挖到黑黑的基岩矿了。基岩碎片 ${minecraftBedrockShard}。`);
@@ -4618,6 +5166,7 @@ function mineMinecraftBlock(cell) {
     minecraftInventory.crafting_table = 1;
   }
   minecraftInventory[blockType] = (minecraftInventory[blockType] || 0) + 1;
+  spawnMinecraftPickup(blockType, x, z, y);
   setMinecraftBlockAt(x, z, y, null);
   renderMinecraftWorld();
   updateMinecraftStatus(madeFirstCraftingTable ? "撸到第一块木头，自动做出了一个工作台。" : `挖到了${block.label}，现在可以放它了。`);
@@ -4625,6 +5174,7 @@ function mineMinecraftBlock(cell) {
 }
 
 function handleMinecraftCellClick(cell) {
+  startMinecraftBackgroundMusic();
   if (Date.now() - minecraftOpenedAt < 260) return;
   markChatActivity();
   wakeFromNightSleep();
@@ -4820,7 +5370,59 @@ function handleMinecraftCellClick(cell) {
   placeMinecraftBlock(cell, minecraftSelectedTool);
 }
 
+function startMinecraftBackgroundMusic() {
+  if (!minecraftBackgroundMusic) return;
+  minecraftBackgroundMusic.volume = 0.32;
+  const playAttempt = minecraftBackgroundMusic.play();
+  if (playAttempt?.catch) {
+    playAttempt.catch(() => {
+      updateMinecraftStatus("点一下、走一下或挖一下后，背景音乐就会响起来。");
+    });
+  }
+}
+
+function stopMinecraftBackgroundMusic() {
+  if (!minecraftBackgroundMusic) return;
+  minecraftBackgroundMusic.pause();
+}
+
+function loadMinecraftAnimalSounds() {
+  if (Object.keys(minecraftAnimalSounds).length) return Promise.resolve(minecraftAnimalSounds);
+  if (minecraftAnimalSoundsLoading) return minecraftAnimalSoundsLoading;
+  minecraftAnimalSoundsLoading = fetch("./assets/minecraft-audio/animal-soundboard.html")
+    .then((response) => response.ok ? response.text() : "")
+    .then((html) => {
+      const match = html.match(/const S = (\{[\s\S]*?\});\s*const KEYMAP/);
+      if (!match) return {};
+      Object.assign(minecraftAnimalSounds, JSON.parse(match[1]));
+      return minecraftAnimalSounds;
+    })
+    .catch(() => ({}));
+  return minecraftAnimalSoundsLoading;
+}
+
+function playMinecraftAnimalSound(animalType) {
+  const soundKey = animalType === "turtle" ? "rabbit" : animalType;
+  loadMinecraftAnimalSounds().then((sounds) => {
+    const soundList = sounds[soundKey];
+    if (!soundList?.length) return;
+    const audio = new Audio(soundList[Math.floor(Math.random() * soundList.length)]);
+    if (minecraftCurrentAnimalSound) {
+      try {
+        minecraftCurrentAnimalSound.pause();
+        minecraftCurrentAnimalSound.currentTime = 0;
+      } catch (error) {
+        // Browser may already have released the last short animal sound.
+      }
+    }
+    minecraftCurrentAnimalSound = audio;
+    audio.volume = soundKey === "villager" ? 0.82 : 0.72;
+    audio.play().catch(() => {});
+  });
+}
+
 function moveMinecraftPlayer(direction, options = {}) {
+  startMinecraftBackgroundMusic();
   const moves = {
     forward: { x: 0, z: -1 },
     back: { x: 0, z: 1 },
@@ -4896,6 +5498,7 @@ function placeMinecraftStepBlockForJump() {
 }
 
 function digMinecraftDown() {
+  startMinecraftBackgroundMusic();
   const blockType = getMinecraftBlockAt(minecraftPlayerX, minecraftPlayerZ, minecraftDepth);
   const block = minecraftBlockTypes[blockType];
   if (blockType === "end_portal_frame" || blockType === "end_portal_frame_eye" || blockType === "end_portal") {
@@ -4952,10 +5555,12 @@ function digMinecraftDown() {
 }
 
 function jumpMinecraftUp() {
+  startMinecraftBackgroundMusic();
   markChatActivity();
   wakeFromNightSleep();
   if (minecraftDepth < 1) {
     minecraftDepth += 1;
+    minecraftPlayerLandingPulse = Date.now();
     renderMinecraftWorld();
     updateMinecraftStatus(minecraftDepth === 1 ? "跳到最上面了，这里是地面和天空交界，树长在空气里。" : "往上跳了一层。");
     saveGameState();
@@ -5040,8 +5645,12 @@ function setMinecraftPanelOpen(open) {
     setShopPanelOpen(false);
     minecraftOpenedAt = Date.now();
     startMinecraftCycle();
+    startMinecraftBackgroundMusic();
+    loadMinecraftAnimalSounds();
     renderMinecraftWorld();
     updateMinecraftStatus("主世界变成横版了。史蒂夫就是你，挖脚下的方块会往下掉。");
+  } else {
+    stopMinecraftBackgroundMusic();
   }
   if (minecraftPanel) {
     minecraftPanel.hidden = !minecraftPanelOpen;
@@ -5085,12 +5694,21 @@ function setupMinecraftGame() {
     const recipe = minecraftCraftingOutput.dataset.recipe || "";
     if (recipe) craftMinecraftRecipe(recipe);
   });
+  minecraftPocketCraftingOutput?.addEventListener("click", craftMinecraftPocketRecipe);
   document.querySelectorAll(".minecraft-recipe").forEach((button) => {
     button.addEventListener("click", () => craftMinecraftRecipe(button.dataset.minecraftRecipe || ""));
   });
   minecraftJumpUpButton?.addEventListener("click", jumpMinecraftUp);
   minecraftDigDownButton?.addEventListener("click", digMinecraftDown);
   minecraftViewButton?.addEventListener("click", switchMinecraftView);
+  minecraftBackpackToggle?.addEventListener("click", () => {
+    minecraftBackpackOpen = !minecraftBackpackOpen;
+    renderMinecraftBackpack();
+  });
+  minecraftBackpackClose?.addEventListener("click", () => {
+    minecraftBackpackOpen = false;
+    renderMinecraftBackpack();
+  });
   startMinecraftCycle();
   setMinecraftTool(minecraftSelectedTool);
 }
@@ -6194,6 +6812,96 @@ const townSprunkiCharacters = [
   { name: "Black", zh: "布莱克", color: 0x17171c, gender: "shadow", voice: "dark", feature: "shadowHalo" }
 ];
 
+const townStageThreeBusinesses = [
+  { id: "supermarket", name: "小镇超市", kind: "food", color: 0xffd35a, x: 6.9, z: -3.9 },
+  { id: "clothing", name: "服装店", kind: "clothes", color: 0x88c7ff, x: -6.9, z: -3.8 }
+];
+
+const townResidentScale = 0.48;
+const townResidentFocusScale = 1.08;
+
+const townStageThreeProducts = [
+  { id: "apple-juice", store: "supermarket", kind: "food", name: "苹果汁", price: 1, icon: "🍎" },
+  { id: "berry-bread", store: "supermarket", kind: "food", name: "浆果面包", price: 2, icon: "🍞" },
+  { id: "melon-box", store: "supermarket", kind: "food", name: "西瓜盒", price: 2, icon: "🍉" },
+  { id: "pumpkin-pie", store: "supermarket", kind: "food", name: "南瓜派", price: 3, icon: "🥧" },
+  { id: "milk-cup", store: "supermarket", kind: "food", name: "牛奶杯", price: 2, icon: "🥛" },
+  { id: "carrot-pack", store: "supermarket", kind: "food", name: "胡萝卜包", price: 2, icon: "🥕" },
+  { id: "cookie-tin", store: "supermarket", kind: "food", name: "曲奇罐", price: 2, icon: "🍪" },
+  { id: "gold-snack", store: "supermarket", kind: "food", name: "金色零食", price: 4, icon: "⭐" },
+  { id: "tea-bottle", store: "supermarket", kind: "food", name: "青草茶", price: 1, icon: "🧃" },
+  { id: "soup-cup", store: "supermarket", kind: "food", name: "暖汤杯", price: 3, icon: "🍲" },
+  { id: "red-jacket", store: "clothing", kind: "clothes", name: "红色外套", price: 3, color: 0xe84848, icon: "■" },
+  { id: "blue-hoodie", store: "clothing", kind: "clothes", name: "蓝色帽衫", price: 3, color: 0x48a8ff, icon: "■" },
+  { id: "gold-coat", store: "clothing", kind: "clothes", name: "金色演出服", price: 5, color: 0xffd65d, icon: "■" },
+  { id: "green-vest", store: "clothing", kind: "clothes", name: "绿色背心", price: 3, color: 0x68c957, icon: "■" },
+  { id: "pink-dress", store: "clothing", kind: "clothes", name: "粉色裙装", price: 4, color: 0xf38fca, icon: "■" },
+  { id: "black-cape", store: "clothing", kind: "clothes", name: "黑色披风", price: 4, color: 0x17171c, icon: "■" },
+  { id: "orange-tee", store: "clothing", kind: "clothes", name: "橙色短袖", price: 2, color: 0xff8c3a, icon: "■" },
+  { id: "purple-coat", store: "clothing", kind: "clothes", name: "紫色长衣", price: 4, color: 0x8b66d8, icon: "■" },
+  { id: "white-scarf", store: "clothing", kind: "clothes", name: "白色围巾", price: 2, color: 0xffffff, icon: "■" },
+  { id: "gray-suit", store: "clothing", kind: "clothes", name: "灰色套装", price: 3, color: 0x8f8f98, icon: "■" },
+  { id: "stage-boots", store: "clothing", kind: "clothes", name: "舞台靴子", price: 3, color: 0x312b8f, icon: "■" },
+  { id: "rain-hat", store: "clothing", kind: "clothes", name: "雨天帽子", price: 2, color: 0xb88957, icon: "■" },
+  { id: "sleep-shirt", store: "clothing", kind: "clothes", name: "睡衣上衣", price: 3, color: 0x9fd6ff, icon: "■" },
+  { id: "market-apron", store: "clothing", kind: "clothes", name: "超市围裙", price: 3, color: 0x76bf6c, icon: "■" }
+];
+
+const townConcertPrograms = [
+  { id: "beat-start", name: "方块节拍", performers: ["Oren", "Raddy", "Clukr", "Fun Bot"], base: 110 },
+  { id: "leaf-pop", name: "树林旋律", performers: ["Vineria", "Pinki", "Sky", "Simon"], base: 146 },
+  { id: "night-bass", name: "夜晚低音", performers: ["Jevin", "Black", "Durple", "Tunner"], base: 82 }
+];
+
+const townLayoutRadius = 9.6;
+const townOuterLayoutRadius = 11.2;
+const townStageRadius = 2.35;
+const townStageSurfaceY = 0.43;
+const townZoomLevels = {
+  near: { height: 5.5, distance: 10.5, lookY: 0.9 },
+  overview: { height: 12.8, distance: 21.5, lookY: 0.35 }
+};
+const residentHomeOverrides = {
+  "Mr. Fun Computer": { x: 0, z: -12.2 },
+  "Mr. Tree": { x: 10.8, z: -10.7 },
+  "Oren": { x: -2.6, z: -9.8 },
+  "Raddy": { x: -5.6, z: -8.9 },
+  "Black": { x: 5.6, z: -8.9 }
+};
+
+const townConcertMelodies = {
+  "beat-start": [0, 3, 5, 7, 10, 7, 5, 3, 0, 5, 7, 12, 10, 7, 3, 0],
+  "leaf-pop": [0, 2, 4, 7, 9, 7, 4, 2, 0, 4, 7, 11, 9, 7, 4, 2],
+  "night-bass": [0, -2, 0, 3, 5, 3, 0, -5, 0, 3, 7, 10, 7, 3, 0, -2]
+};
+
+function townIconFile(name) {
+  const files = {
+    Oren: "oren",
+    Raddy: "raddy",
+    Clukr: "clukr",
+    "Fun Bot": "fun-bot",
+    Vineria: "vineria",
+    Gray: "gray",
+    Brud: "brud",
+    Garnold: "garnold",
+    Owakcx: "owakcx",
+    Sky: "sky",
+    "Mr. Sun": "mr-sun",
+    Durple: "durple",
+    "Mr. Tree": "mr-tree",
+    Simon: "simon",
+    Tunner: "tunner",
+    "Mr. Fun Computer": "mr-fun-computer",
+    Wenda: "wenda",
+    Pinki: "pinki",
+    Jevin: "jevin",
+    Black: "black",
+    "太阳公公": "mr-sun"
+  };
+  return files[name] ? `./assets/town-icons/${files[name]}.png` : "";
+}
+
 function loadComputerTownThree() {
   if (!computerTownThreePromise) {
     computerTownThreePromise = import("https://unpkg.com/three@0.160.0/build/three.module.js");
@@ -6245,8 +6953,39 @@ function playComputerTownTone(frequency, duration = 0.16, type = "sine", volume 
   oscillator.stop(audio.context.currentTime + duration + 0.02);
 }
 
+function playComputerTownBeatLayer(program, step) {
+  if (!program) return;
+  const base = program.base || 110;
+  if (step % 2 === 0) playComputerTownTone(base, 0.09, "triangle", 0.045);
+  if (step % 4 === 0) playComputerTownTone(base / 2, 0.12, "sine", 0.07);
+  if (step % 4 === 2) playComputerTownTone(base * 1.5, 0.08, "square", 0.032);
+  if (step % 8 === 5) playComputerTownTone(base * 2, 0.11, "sawtooth", 0.025);
+}
+
+function playComputerTownSongNote(program, step, layer = 0) {
+  const melody = townConcertMelodies[program?.id] || townConcertMelodies["beat-start"];
+  const base = program?.base || 110;
+  const semitone = melody[step % melody.length] + layer * 7;
+  const frequency = base * Math.pow(2, semitone / 12);
+  const voices = ["triangle", "sine", "square", "sawtooth"];
+  const volume = layer === 0 ? 0.06 : layer === 1 ? 0.04 : 0.025;
+  playComputerTownTone(frequency, layer === 0 ? 0.22 : 0.14, voices[layer % voices.length], volume);
+}
+
+function performTownConcertSong(program, step) {
+  playComputerTownBeatLayer(program, step);
+  playComputerTownSongNote(program, step, 0);
+  if (step % 2 === 0) playComputerTownSongNote(program, step + 4, 1);
+  if (step % 4 === 0) playComputerTownSongNote(program, step, -1);
+}
+
+function getTownConcertProgram(elapsed) {
+  const index = Math.floor(elapsed / 24) % townConcertPrograms.length;
+  return townConcertPrograms[index];
+}
+
 function getTownSpeakerLabel(speaker) {
-  if (speaker === "太阳公公" || speaker === "月亮公公") return speaker;
+  if (speaker === "太阳公公") return speaker;
   return townSprunkiCharacters.find((item) => item.name === speaker || item.zh === speaker)?.zh || speaker;
 }
 
@@ -6264,7 +7003,6 @@ function playComputerTownVoice(name) {
   const rhythmOffset = Math.abs(String(character?.voice || name).split("").reduce((total, char) => total + char.charCodeAt(0), 0)) % 5;
   const tones = voiceProfile.base.map((tone) => tone + rhythmOffset * 11);
   if (name === "太阳公公") tones.splice(0, tones.length, 330, 440, 554);
-  if (name === "月亮公公") tones.splice(0, tones.length, 220, 277, 330);
   tones.forEach((tone, index) => window.setTimeout(
     () => playComputerTownTone(tone, 0.13, index % 2 ? voiceProfile.type : "sine", voiceProfile.volume),
     index * 120
@@ -6281,10 +7019,48 @@ function getComputerTownSpeakerObject(speaker) {
 function setComputerTownSpeakingMouth(speaker, speaking) {
   const speakerObject = getComputerTownSpeakerObject(speaker);
   if (!speakerObject) return;
+  if (speakerObject.userData.computerScreen) {
+    speakerObject.userData.talking = speaking;
+    return;
+  }
   speakerObject.userData.talking = speaking;
   if (!speaking && speakerObject.userData.mouth) {
     speakerObject.userData.mouth.scale.set(1, 1, 1);
   }
+}
+
+function typeComputerTownScreenText(speakerObject, text) {
+  const screen = speakerObject?.userData?.computerScreen;
+  if (!screen) return;
+  const canvas = screen.userData.canvas;
+  const context = screen.userData.context;
+  const texture = screen.userData.texture;
+  if (!canvas || !context || !texture) return;
+  window.clearInterval(screen.userData.typeTimer);
+  const words = Array.from(String(text || "")).slice(0, 34);
+  let count = 0;
+  const paint = () => {
+    context.fillStyle = "#050505";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "#ffffff";
+    context.font = "900 22px sans-serif";
+    context.textAlign = "left";
+    context.textBaseline = "top";
+    const visible = words.slice(0, count).join("");
+    const lines = [];
+    for (let index = 0; index < visible.length; index += 9) {
+      lines.push(visible.slice(index, index + 9));
+    }
+    lines.slice(0, 3).forEach((line, index) => context.fillText(line, 12, 10 + index * 26));
+    texture.needsUpdate = true;
+    count += 1;
+    if (count > words.length + 2) {
+      window.clearInterval(screen.userData.typeTimer);
+      speakerObject.userData.talking = false;
+    }
+  };
+  screen.userData.typeTimer = window.setInterval(paint, 95);
+  paint();
 }
 
 function setComputerTownLookTarget(speaker, targetSpeaker) {
@@ -6363,34 +7139,34 @@ function speakComputerTownText(speaker, text) {
   return Math.max(1200, text.length * 180);
 }
 
-function startComputerTownConcert() {
+function showTownConcertApplause(host, program) {
+  showComputerTownThought(host, "电脑先生", `${program?.name || "节目"}结束，台下鼓掌喝彩！`);
+  [180, 220, 260, 320].forEach((tone, index) => {
+    window.setTimeout(() => playComputerTownTone(tone, 0.05, "square", 0.035), index * 90);
+  });
+}
+
+function startComputerTownConcert(program) {
   const audio = ensureComputerTownAudio();
-  if (!audio || audio.concertOn) return;
+  if (!audio) return;
+  if (audio.concertOn && audio.programId === program?.id) return;
+  stopComputerTownConcert();
   audio.concertOn = true;
+  audio.programId = program?.id || "";
   let step = 0;
-  const pattern = [196, 247, 294, 330, 392, 330, 294, 247];
-  const singers = ["奥伦", "瑞迪", "平机", "维美利亚", "快乐机器人", "西蒙", "杰文", "布莱克"];
-  const lyricLines = ["咚，啪，滴答，节奏开始。", "啦，啦，今天晚上开演唱会。", "嘿，朋友们，一起合拍。", "低音进来，高音飞起来。"];
   const loop = () => {
     if (!computerTownAudio?.concertOn) return;
-    playComputerTownTone(pattern[step % pattern.length], 0.18, step % 2 ? "triangle" : "square", 0.045);
-    if (step % 4 === 0) playComputerTownTone(98, 0.12, "sine", 0.06);
+    performTownConcertSong(program, step);
     step += 1;
     computerTownAudio.concertTimer = window.setTimeout(loop, 280);
   };
-  const singLoop = () => {
-    if (!computerTownAudio?.concertOn) return;
-    const singer = singers[Math.floor(step / 4) % singers.length];
-    speakComputerTownText(singer, lyricLines[Math.floor(step / 8) % lyricLines.length]);
-    computerTownAudio.concertSpeechTimer = window.setTimeout(singLoop, 3400);
-  };
   loop();
-  singLoop();
 }
 
 function stopComputerTownConcert() {
   if (!computerTownAudio) return;
   computerTownAudio.concertOn = false;
+  computerTownAudio.programId = "";
   if (computerTownAudio.concertTimer) {
     window.clearTimeout(computerTownAudio.concertTimer);
     computerTownAudio.concertTimer = null;
@@ -6406,6 +7182,7 @@ function showComputerTownSpeech(host, speaker, text, targetSpeaker = "") {
   const bubble = host.closest(".computer-town-app")?.querySelector(".computer-town-speech");
   const speakerLabel = getTownSpeakerLabel(speaker);
   const spokenText = `${speakerLabel}说，${text}`;
+  const speakerObject = getComputerTownSpeakerObject(speaker);
   if (bubble) {
     bubble.textContent = `${speakerLabel}：${text}`;
     bubble.classList.add("active");
@@ -6413,25 +7190,252 @@ function showComputerTownSpeech(host, speaker, text, targetSpeaker = "") {
     bubble.hideTimer = window.setTimeout(() => bubble.classList.remove("active"), 2200);
   }
   setComputerTownLookTarget(speaker, targetSpeaker);
+  if (speakerObject?.userData?.computerScreen) {
+    speakerObject.userData.talking = true;
+    typeComputerTownScreenText(speakerObject, text);
+  }
   speakComputerTownText(speaker, spokenText);
 }
 
-function makeTownHouse(THREE, scene, color, x, z, scale = 1) {
+function showComputerTownThought(host, speaker, text) {
+  if (!host || !text) return;
+  const bubble = host.closest(".computer-town-app")?.querySelector(".computer-town-thought");
+  const speakerLabel = getTownSpeakerLabel(speaker);
+  if (!bubble) return;
+  bubble.textContent = `${speakerLabel}：${text}`;
+  bubble.classList.add("active");
+  window.clearTimeout(bubble.hideTimer);
+  bubble.hideTimer = window.setTimeout(() => bubble.classList.remove("active"), 2400);
+}
+
+function makeTownSquareHouse(THREE, scene, color, x, z, scale = 1) {
   const group = new THREE.Group();
+  const trimMaterial = new THREE.MeshStandardMaterial({ color: 0x1b1a20, roughness: 0.62 });
   const wall = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.78 * scale, 0.9 * scale, 1.45 * scale, 18),
+    new THREE.BoxGeometry(1.42 * scale, 1.24 * scale, 1.18 * scale),
     new THREE.MeshStandardMaterial({ color, roughness: 0.7 })
   );
-  wall.position.y = 0.72 * scale;
+  wall.position.y = 0.62 * scale;
   const roof = new THREE.Mesh(
-    new THREE.ConeGeometry(1.05 * scale, 0.78 * scale, 24),
+    new THREE.ConeGeometry(1.16 * scale, 0.78 * scale, 4),
     new THREE.MeshStandardMaterial({ color: 0xb85a3f, roughness: 0.68 })
   );
-  roof.position.y = 1.78 * scale;
-  group.add(wall, roof);
+  roof.position.y = 1.42 * scale;
+  roof.rotation.y = Math.PI / 4;
+  const door = new THREE.Mesh(
+    new THREE.BoxGeometry(0.32 * scale, 0.58 * scale, 0.05 * scale),
+    trimMaterial
+  );
+  door.position.set(0, 0.29 * scale, 0.615 * scale);
+  const leftWindow = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22 * scale, 0.22 * scale, 0.05 * scale),
+    new THREE.MeshBasicMaterial({ color: 0xcff6ff })
+  );
+  const rightWindow = leftWindow.clone();
+  leftWindow.position.set(-0.42 * scale, 0.78 * scale, 0.62 * scale);
+  rightWindow.position.set(0.42 * scale, 0.78 * scale, 0.62 * scale);
+  const roofLine = new THREE.Mesh(
+    new THREE.BoxGeometry(1.58 * scale, 0.08 * scale, 0.08 * scale),
+    trimMaterial
+  );
+  roofLine.position.set(0, 1.06 * scale, 0.64 * scale);
+  group.add(wall, roof, door, leftWindow, rightWindow, roofLine);
   group.position.set(x, 0, z);
   scene.add(group);
   return group;
+}
+
+function makeTownHouse(THREE, scene, color, x, z, scale = 1) {
+  return makeTownSquareHouse(THREE, scene, color, x, z, scale);
+}
+
+function makeTownHouseFeature(THREE, character, scale = 1) {
+  const group = new THREE.Group();
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1b1a20, roughness: 0.58 });
+  const accent = new THREE.MeshStandardMaterial({ color: character.color, roughness: 0.5 });
+  const metal = new THREE.MeshStandardMaterial({ color: 0xd5dde8, metalness: 0.2, roughness: 0.4 });
+  const addAntenna = (x) => {
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.018 * scale, 0.018 * scale, 0.58 * scale, 8), metal);
+    stem.position.set(x * scale, 0.28 * scale, 0);
+    stem.rotation.z = x < 0 ? 0.28 : -0.28;
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.055 * scale, 10, 8), accent);
+    tip.position.set(x * 1.1 * scale, 0.58 * scale, 0);
+    group.add(stem, tip);
+  };
+  if (character.feature === "headphones") {
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.38 * scale, 0.028 * scale, 8, 28, Math.PI), dark);
+    band.rotation.z = Math.PI;
+    band.position.y = 0.28 * scale;
+    const left = new THREE.Mesh(new THREE.TorusGeometry(0.12 * scale, 0.03 * scale, 8, 20), dark);
+    const right = left.clone();
+    left.position.set(-0.36 * scale, 0.04 * scale, 0);
+    right.position.set(0.36 * scale, 0.04 * scale, 0);
+    left.rotation.y = Math.PI / 2;
+    right.rotation.y = Math.PI / 2;
+    group.add(band, left, right);
+    addAntenna(-0.18);
+    addAntenna(0.18);
+  } else if (character.feature === "horns") {
+    [-0.22, 0.22].forEach((x) => {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.09 * scale, 0.45 * scale, 12), accent);
+      horn.position.set(x * scale, 0.28 * scale, 0);
+      horn.rotation.z = x < 0 ? 0.46 : -0.46;
+      group.add(horn);
+    });
+  } else if (character.feature === "antenna") {
+    addAntenna(-0.16);
+    addAntenna(0.16);
+    const dish = new THREE.Mesh(new THREE.TorusGeometry(0.22 * scale, 0.025 * scale, 8, 24), metal);
+    dish.position.y = 0.62 * scale;
+    dish.rotation.x = Math.PI / 2;
+    group.add(dish);
+  } else if (character.feature === "leaves" || character.feature === "treeTop") {
+    for (let index = 0; index < 5; index += 1) {
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.13 * scale, 12, 8), accent);
+      leaf.scale.set(1.35, 0.62, 0.36);
+      leaf.position.set((-0.28 + index * 0.14) * scale, (0.2 + Math.sin(index) * 0.08) * scale, 0);
+      leaf.rotation.z = index * 0.6;
+      group.add(leaf);
+    }
+  } else if (character.feature === "bow") {
+    [-1, 1].forEach((side) => {
+      const bow = new THREE.Mesh(new THREE.ConeGeometry(0.14 * scale, 0.34 * scale, 16), accent);
+      bow.position.set(side * 0.16 * scale, 0.22 * scale, 0);
+      bow.rotation.z = side * -Math.PI / 2;
+      group.add(bow);
+    });
+  } else if (character.feature === "visor" || character.feature === "screen") {
+    const screen = new THREE.Mesh(new THREE.BoxGeometry(0.62 * scale, 0.34 * scale, 0.08 * scale), new THREE.MeshBasicMaterial({ color: 0xa6f5ff }));
+    screen.position.y = 0.22 * scale;
+    group.add(screen);
+  } else if (character.feature === "hat" || character.feature === "bucket") {
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.36 * scale, 0.36 * scale, 0.05 * scale, 24), dark);
+    const top = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * scale, 0.28 * scale, 0.28 * scale, 20), accent);
+    top.position.y = 0.18 * scale;
+    group.add(brim, top);
+  } else {
+    const marker = new THREE.Mesh(new THREE.BoxGeometry(0.42 * scale, 0.42 * scale, 0.08 * scale), accent);
+    marker.position.y = 0.18 * scale;
+    group.add(marker);
+  }
+  return group;
+}
+
+function makeTownStageThreeHouse(THREE, scene, character, x, z, scale = 1) {
+  const house = makeTownHouse(THREE, scene, character.color, x, z, scale);
+  house.name = `${character.zh}的家`;
+  house.userData.townHomeFor = character.name;
+  house.userData.zh = `${character.zh}的家`;
+  const feature = makeTownHouseFeature(THREE, character, scale);
+  feature.position.set(0, 2.28 * scale, 0.03);
+  house.add(feature);
+  const sign = makeTownNameLabel(THREE, `${character.zh}家`);
+  sign.position.y = 2.95 * scale;
+  sign.scale.set(0.95 * scale, 0.32 * scale, 1);
+  house.add(sign);
+  return house;
+}
+
+function makeTownBusiness(THREE, scene, business) {
+  const group = makeTownHouse(THREE, scene, business.color, business.x, business.z, 1.25);
+  group.name = business.name;
+  group.userData.townBusiness = business;
+  group.userData.townMall = business.kind === "clothes";
+  const sign = makeTownNameLabel(THREE, business.name);
+  sign.position.y = 2.85;
+  group.add(sign);
+  const badge = new THREE.Mesh(
+    business.kind === "food" ? new THREE.SphereGeometry(0.22, 16, 12) : new THREE.BoxGeometry(0.44, 0.32, 0.08),
+    new THREE.MeshStandardMaterial({ color: business.kind === "food" ? 0x76d85c : 0xff8ec7, roughness: 0.48 })
+  );
+  badge.position.set(0, 2.28, 0.2);
+  const awningMaterial = new THREE.MeshStandardMaterial({
+    color: business.kind === "food" ? 0xffffff : 0xffe1ef,
+    roughness: 0.55
+  });
+  const awning = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.16, 0.18), awningMaterial);
+  awning.position.set(0, 1.36, 0.8);
+  const counter = new THREE.Mesh(
+    new THREE.BoxGeometry(0.92, 0.26, 0.18),
+    new THREE.MeshStandardMaterial({ color: business.kind === "food" ? 0x76d85c : 0xf38fca, roughness: 0.55 })
+  );
+  counter.position.set(0, 0.58, 0.8);
+  const storeMarker = new THREE.Mesh(
+    business.kind === "food" ? new THREE.SphereGeometry(0.14, 16, 12) : new THREE.CapsuleGeometry(0.11, 0.24, 8, 14),
+    new THREE.MeshStandardMaterial({ color: business.kind === "food" ? 0xff4f4f : 0x48a8ff, roughness: 0.48 })
+  );
+  storeMarker.position.set(0.42, 1.62, 0.86);
+  group.add(badge, awning, counter, storeMarker);
+  return group;
+}
+
+function makeTownStageLightRig(THREE, scene, stagePosition) {
+  const rig = new THREE.Group();
+  const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x25212f, metalness: 0.15, roughness: 0.45 });
+  [-1, 1].forEach((side) => {
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 10), poleMaterial);
+    pole.position.set(side * 2.15, 1.38, 0);
+    rig.add(pole);
+  });
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(4.55, 0.08, 0.08), poleMaterial);
+  bar.position.set(0, 2.6, 0);
+  rig.add(bar);
+  const light = new THREE.SpotLight(0xfff0a5, 1.5, 12, Math.PI / 6, 0.42, 1);
+  light.position.set(stagePosition.x, 4.9, stagePosition.z + 1.1);
+  light.target.position.set(stagePosition.x, townStageSurfaceY, stagePosition.z);
+  scene.add(light, light.target);
+  rig.position.set(stagePosition.x, 0, stagePosition.z + 0.2);
+  scene.add(rig);
+  return { rig, light };
+}
+
+function moveTownPerformerToStage(member, index, elapsed) {
+  const positions = [
+    { x: -1.05, z: -2.7 },
+    { x: -0.35, z: -2.96 },
+    { x: 0.35, z: -2.96 },
+    { x: 1.05, z: -2.7 }
+  ];
+  const target = positions[index % positions.length];
+  member.position.x += (target.x - member.position.x) * 0.1;
+  member.position.z += (target.z - member.position.z) * 0.1;
+  member.position.y = townStageSurfaceY + Math.abs(Math.sin(elapsed * 4 + index)) * 0.035;
+  member.rotation.z = 0;
+  member.rotation.y = Math.sin(elapsed * 2 + index) * 0.35;
+}
+
+function moveTownAudienceAroundStage(member, index, elapsed) {
+  const angle = elapsed * 0.28 + index * 0.62;
+  const ring = 3.35 + (index % 2) * 0.35;
+  const targetX = Math.cos(angle) * ring;
+  const targetZ = -2.7 + Math.sin(angle) * ring * 0.55;
+  member.position.x += (targetX - member.position.x) * 0.045;
+  member.position.z += (targetZ - member.position.z) * 0.045;
+  member.position.y = Math.abs(Math.sin(elapsed * 1.5 + index)) * 0.03;
+  member.rotation.z = 0;
+  member.rotation.y = angle + Math.PI;
+}
+
+function moveTownMemberIntoHome(member, elapsed, index = 0) {
+  const home = member?.userData?.homeTarget;
+  if (!member || !home) return false;
+  const delayDone = (elapsed + index * 0.7) % 6 > 0.8;
+  if (!delayDone && !member.userData.sleepingAtHome) return true;
+  const doorZ = home.z + 0.72;
+  member.position.x += (home.x - member.position.x) * 0.08;
+  member.position.z += (doorZ - member.position.z) * 0.08;
+  member.position.y = Math.abs(Math.sin(elapsed * 2.6 + index)) * 0.035;
+  member.rotation.z = 0;
+  member.rotation.y = 0;
+  if (Math.hypot(member.position.x - home.x, member.position.z - doorZ) < 0.18) {
+    member.userData.sleepingAtHome = true;
+    member.visible = false;
+  }
+  return true;
+}
+
+function sendTownMemberHomeToSleep(member, elapsed = 0, index = 0) {
+  return moveTownMemberIntoHome(member, elapsed, index);
 }
 
 function makeTownTent(THREE, scene, color, x, z) {
@@ -6458,11 +7462,27 @@ function makeTownComputerCharacter(THREE, scene, x, z) {
   const group = new THREE.Group();
   group.name = "Mr. Fun Computer";
   const dark = new THREE.MeshStandardMaterial({ color: 0x17314f, roughness: 0.45 });
-  const glow = new THREE.MeshBasicMaterial({ color: 0xa8f6ff });
+  const screenCanvas = document.createElement("canvas");
+  screenCanvas.width = 192;
+  screenCanvas.height = 96;
+  const screenContext = screenCanvas.getContext("2d");
+  screenContext.fillStyle = "#050505";
+  screenContext.fillRect(0, 0, screenCanvas.width, screenCanvas.height);
+  screenContext.fillStyle = "#ffffff";
+  screenContext.font = "900 24px sans-serif";
+  screenContext.fillText("电脑先生", 18, 35);
+  const screenTexture = new THREE.CanvasTexture(screenCanvas);
+  const glow = new THREE.MeshBasicMaterial({ map: screenTexture });
   const screenFrame = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.78, 0.16), dark);
   screenFrame.position.set(0, 1.22, 0);
   const screen = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.52, 0.03), glow);
   screen.position.set(0, 1.24, 0.095);
+  screen.userData = {
+    canvas: screenCanvas,
+    context: screenContext,
+    texture: screenTexture,
+    typeTimer: null
+  };
   const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.38, 14), dark);
   stand.position.set(0, 0.66, 0);
   const base = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.12, 0.34), dark);
@@ -6495,11 +7515,14 @@ function makeTownComputerCharacter(THREE, scene, x, z) {
     baseZ: z,
     backgroundCharacter: true,
     fixed: true,
+    computerScreen: screen,
     mouth,
     pupils: [leftEye, rightEye],
     pupilHomes: [leftEye.position.clone(), rightEye.position.clone()],
     speaker: "Mr. Fun Computer",
-    zh: character.zh
+    zh: character.zh,
+    color: character.color,
+    baseScale: 1
   };
   scene.add(group);
   return group;
@@ -6546,19 +7569,18 @@ function makeTownTreeCharacter(THREE, scene, x, z) {
     pupils: [leftEye, rightEye],
     pupilHomes: [leftEye.position.clone(), rightEye.position.clone()],
     speaker: "Mr. Tree",
-    zh: character.zh
+    zh: character.zh,
+    color: character.color,
+    baseScale: 1
   };
   scene.add(group);
   return group;
 }
 
 function makeTownMall(THREE, scene, x, z) {
-  const group = makeTownHouse(THREE, scene, 0xf7d65d, x, z, 1.35);
+  const group = makeTownBusiness(THREE, scene, { id: "mall", name: "小镇商城", kind: "clothes", color: 0xf7d65d, x, z });
   group.name = "小镇商城";
   group.userData.townMall = true;
-  const sign = makeTownNameLabel(THREE, "小镇商城");
-  sign.position.y = 2.85;
-  group.add(sign);
   return group;
 }
 
@@ -6581,7 +7603,7 @@ function keepTownWalkerOutOfObstacles(x, z, obstacles) {
 function getTownHitRoot(object) {
   let current = object;
   while (current) {
-    if (current.userData?.speaker || current.userData?.townMall) return current;
+    if (current.userData?.speaker || current.userData?.townMall || current.userData?.townBusiness || current.userData?.townHomeFor) return current;
     current = current.parent;
   }
   return null;
@@ -6603,6 +7625,16 @@ function applyTownClothing(THREE, member, item) {
   member.userData.outfitName = item.name;
 }
 
+function getTownMemberScale(member, focused = false) {
+  const baseScale = member?.userData?.baseScale || 1;
+  return focused ? Math.max(townResidentFocusScale, baseScale * 1.58) : baseScale;
+}
+
+function setTownMemberScale(member, focused = false) {
+  if (!member) return;
+  member.scale.setScalar(getTownMemberScale(member, focused));
+}
+
 function makeTownHeartSprite(THREE) {
   const canvas = document.createElement("canvas");
   canvas.width = 128;
@@ -6622,6 +7654,16 @@ function makeTownHeartSprite(THREE) {
   sprite.scale.set(1.1, 1.1, 1);
   sprite.visible = false;
   return sprite;
+}
+
+function makeTownRoundHand(THREE, color, side = 1) {
+  const hand = new THREE.Mesh(
+    new THREE.SphereGeometry(0.115, 16, 12),
+    new THREE.MeshStandardMaterial({ color, roughness: 0.58 })
+  );
+  hand.name = side < 0 ? "左圆手" : "右圆手";
+  hand.position.set(side * 0.44, 0.88, 0.03);
+  return hand;
 }
 
 function makeTownBaby(THREE, scene, x, z) {
@@ -6706,14 +7748,19 @@ function makeTownSprunki(THREE, scene, color, x, z, name) {
     new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: color, emissiveIntensity: 0.28 })
   );
   antenna.position.set(0, 2.02, 0);
-  group.add(body, head, leftEyeWhite, rightEyeWhite, leftEye, rightEye, mouth, antenna);
+  const leftHand = makeTownRoundHand(THREE, color, -1);
+  const rightHand = makeTownRoundHand(THREE, color, 1);
+  group.add(body, head, leftEyeWhite, rightEyeWhite, leftEye, rightEye, mouth, antenna, leftHand, rightHand);
   addTownSprunkiFeatures(THREE, group, name, color);
   group.add(makeTownNameLabel(THREE, townSprunkiCharacters.find((item) => item.name === name)?.zh || name));
   group.position.set(x, 0, z);
+  group.scale.setScalar(townResidentScale);
   group.userData.baseX = x;
   group.userData.baseZ = z;
+  group.userData.baseScale = townResidentScale;
   group.userData.speaker = name;
   group.userData.zh = townSprunkiCharacters.find((item) => item.name === name)?.zh || name;
+  group.userData.color = color;
   group.userData.mouth = mouth;
   group.userData.pupils = [leftEye, rightEye];
   group.userData.pupilHomes = [leftEye.position.clone(), rightEye.position.clone()];
@@ -6955,10 +8002,115 @@ function makeTownSkyFace(THREE, name, color, emissive) {
     mouth.position.z = 0.63;
   }
   group.userData.speaker = name;
+  group.userData.zh = name;
   group.userData.mouth = mouth;
   group.userData.pupils = [leftEye, rightEye];
   group.userData.pupilHomes = [leftEye.position.clone(), rightEye.position.clone()];
   return group;
+}
+
+function renderTownAvatarBar(townRoot, townAvatarTargets, onFocus) {
+  const avatarBar = townRoot?.querySelector(".computer-town-avatar-bar");
+  if (!avatarBar) return;
+  avatarBar.innerHTML = "";
+  townAvatarTargets
+    .filter((avatarTarget) => avatarTarget?.member?.userData?.speaker)
+    .forEach((member) => {
+      const avatarTarget = member;
+      member = avatarTarget.member;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "computer-town-avatar";
+      button.dataset.townAvatar = member.userData.speaker;
+      button.style.setProperty("--avatar-color", `#${(member.userData.color || 0x88c7ff).toString(16).padStart(6, "0")}`);
+      button.style.setProperty("--town-avatar-icon", `url("${townIconFile(member.userData.speaker)}")`);
+      button.innerHTML = `<span></span><strong>${member.userData.zh}</strong>`;
+      button.addEventListener("click", () => onFocus?.(avatarTarget));
+      avatarBar.appendChild(button);
+    });
+}
+
+function renderTownInteriorResident(townRoot, ownerName, mode = "day") {
+  const scene = townRoot?.querySelector("[data-town-resident-scene]");
+  if (!scene) return;
+  const character = townSprunkiCharacters.find((item) => item.name === ownerName);
+  const isSleeping = mode === "sleep";
+  scene.innerHTML = `
+    <div class="computer-town-resident-scene ${isSleeping ? "sleeping" : "awake"}">
+      <span class="computer-town-pixel-tv"></span>
+      <span class="computer-town-pixel-resident" style="--resident-color: #${(character?.color || 0x88c7ff).toString(16).padStart(6, "0")}">
+        <i></i><i></i>
+      </span>
+      <span class="computer-town-pixel-phone"></span>
+      <strong>${character?.zh || "居民"}${isSleeping ? "在床上睡觉" : "在家里休息"}</strong>
+    </div>
+  `;
+}
+
+function openTownHouseInterior(townRoot, ownerName, mode = "day") {
+  const panel = townRoot?.querySelector(".computer-town-house-interior-panel");
+  const title = townRoot?.querySelector("[data-town-house-title]");
+  if (!panel) return;
+  const character = townSprunkiCharacters.find((item) => item.name === ownerName);
+  if (title) title.textContent = `${character?.zh || "居民"}的家`;
+  renderTownInteriorResident(townRoot, ownerName, mode);
+  panel.hidden = false;
+  townRoot.querySelector(".computer-town-store-page")?.setAttribute("hidden", "");
+  townRoot.querySelector(".computer-town-market-panel")?.setAttribute("hidden", "");
+  townRoot.querySelector(".computer-town-shop-panel")?.setAttribute("hidden", "");
+  townRoot.querySelector(".computer-town-character-panel")?.setAttribute("hidden", "");
+}
+
+function closeTownHouseInterior(townRoot) {
+  const panel = townRoot?.querySelector(".computer-town-house-interior-panel");
+  if (panel) panel.hidden = true;
+}
+
+function renderTownStoreProducts(townRoot, storeId, onBuy) {
+  const grid = townRoot?.querySelector("[data-town-store-products]");
+  if (!grid) return;
+  grid.innerHTML = "";
+  townStageThreeProducts
+    .filter((product) => product.store === storeId)
+    .forEach((product) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "computer-town-product-card";
+      button.dataset.townProduct = product.id;
+      button.innerHTML = `
+        <span class="computer-town-product-icon" style="--product-color: #${(product.color || 0xffd35a).toString(16).padStart(6, "0")}">${product.icon}</span>
+        <strong>${product.name}</strong>
+        <small>${product.price}块</small>
+      `;
+      button.addEventListener("click", () => onBuy?.(product));
+      grid.appendChild(button);
+    });
+}
+
+function openTownStorePage(townRoot, storeId, onBuy) {
+  const panel = townRoot?.querySelector(".computer-town-store-page");
+  const title = townRoot?.querySelector("[data-town-store-title]");
+  if (!panel) return;
+  const business = townStageThreeBusinesses.find((item) => item.id === storeId);
+  if (title) title.textContent = business?.name || "小镇商店";
+  renderTownStoreProducts(townRoot, storeId, onBuy);
+  panel.hidden = false;
+  closeTownHouseInterior(townRoot);
+  townRoot.querySelector(".computer-town-market-panel")?.setAttribute("hidden", "");
+  townRoot.querySelector(".computer-town-shop-panel")?.setAttribute("hidden", "");
+  townRoot.querySelector(".computer-town-character-panel")?.setAttribute("hidden", "");
+}
+
+function closeTownStorePage(townRoot) {
+  const panel = townRoot?.querySelector(".computer-town-store-page");
+  if (panel) panel.hidden = true;
+}
+
+function autoDressTownResident(THREE, member, item) {
+  if (!member || !item || item.kind !== "clothes") return false;
+  applyTownClothing(THREE, member, item);
+  member.userData.justBoughtClothes = item.name;
+  return true;
 }
 
 function startComputerTown3D(host) {
@@ -6990,14 +8142,14 @@ function startComputerTown3D(host) {
       scene.add(sunLight);
 
       const ground = new THREE.Mesh(
-        new THREE.CircleGeometry(9.8, 64),
+        new THREE.CircleGeometry(13.2, 80),
         new THREE.MeshStandardMaterial({ color: 0x4ea35d, roughness: 0.85 })
       );
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
       const path = new THREE.Mesh(
-        new THREE.RingGeometry(2.2, 2.75, 64),
+        new THREE.RingGeometry(2.85, 3.25, 64),
         new THREE.MeshStandardMaterial({ color: 0xd9bd74, roughness: 0.88, side: THREE.DoubleSide })
       );
       path.rotation.x = -Math.PI / 2;
@@ -7005,20 +8157,28 @@ function startComputerTown3D(host) {
       scene.add(path);
 
       const horizon = new THREE.Mesh(
-        new THREE.TorusGeometry(8.8, 0.035, 8, 80),
+        new THREE.TorusGeometry(12.0, 0.035, 8, 96),
         new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x7fcaf2, emissiveIntensity: 0.2 })
       );
       horizon.position.y = 0.05;
       horizon.rotation.x = Math.PI / 2;
       scene.add(horizon);
 
-      const houses = [
-        makeTownHouse(THREE, scene, 0xe7bc55, -5.8, -1.8, 1.25),
-        makeTownHouse(THREE, scene, 0xde6a5a, 5.6, -1.5, 1.18),
-        makeTownHouse(THREE, scene, 0xf0f5ff, -3.1, 2.2, 0.86),
-        makeTownHouse(THREE, scene, 0xb85a3f, 3.0, 2.1, 0.78)
-      ];
-      const mall = makeTownMall(THREE, scene, 6.7, -3.8);
+      const groundCharacters = townSprunkiCharacters.filter((character) => !character.skyOnly);
+      const residentHomeMap = new Map();
+      const houses = groundCharacters.map((character, index) => {
+        const angle = (Math.PI * 2 * index) / groundCharacters.length - Math.PI / 2;
+        const radius = character.name === "Mr. Fun Computer" || character.name === "Mr. Tree" ? townOuterLayoutRadius : townLayoutRadius;
+        const override = residentHomeOverrides[character.name];
+        const x = override?.x ?? Math.cos(angle) * radius;
+        const z = override?.z ?? Math.sin(angle) * radius + 1.25;
+        const house = makeTownStageThreeHouse(THREE, scene, character, x, z, character.name === "Mr. Fun Computer" ? 0.95 : 0.78);
+        residentHomeMap.set(character.name, house);
+        return house;
+      });
+      const businesses = townStageThreeBusinesses.map((business) => makeTownBusiness(THREE, scene, business));
+      const mall = businesses.find((business) => business.userData.townBusiness?.kind === "clothes") || makeTownMall(THREE, scene, 6.7, -3.8);
+      const supermarket = businesses.find((business) => business.userData.townBusiness?.kind === "food") || mall;
       const tents = [
         makeTownTent(THREE, scene, 0xff9d4d, -5.0, 2.8),
         makeTownTent(THREE, scene, 0xe84848, -3.4, 3.3),
@@ -7027,30 +8187,29 @@ function startComputerTown3D(host) {
       ];
       const townObstacles = [
         ...houses.map((house) => ({ x: house.position.x, z: house.position.z, radius: 1.35 })),
-        { x: mall.position.x, z: mall.position.z, radius: 1.55 },
+        ...businesses.map((business) => ({ x: business.position.x, z: business.position.z, radius: 1.55 })),
         ...tents.map((tent) => ({ x: tent.position.x, z: tent.position.z, radius: 0.92 })),
-        { x: 0, z: -3.2, radius: 2.95 }
+        { x: 0, z: -2.7, radius: townStageRadius + 0.7 }
       ];
-      const familyHome = houses[2];
+      const familyHome = residentHomeMap.get("Oren") || houses[2];
       const stage = new THREE.Mesh(
-        new THREE.CylinderGeometry(2.6, 2.9, 0.35, 40),
+        new THREE.CylinderGeometry(townStageRadius, townStageRadius + 0.18, 0.42, 48),
         new THREE.MeshStandardMaterial({ color: 0x342f52, roughness: 0.72 })
       );
-      stage.position.set(0, 0.18, -3.2);
+      stage.position.set(0, 0.18, -2.7);
       scene.add(stage);
+      const stageLights = makeTownStageLightRig(THREE, scene, stage.position);
 
       const sun = makeTownSkyFace(THREE, "太阳公公", 0xffdd42, 0xffc400);
-      const moon = makeTownSkyFace(THREE, "月亮公公", 0xdfe8ff, 0x9eb5ff);
-      scene.add(sun, moon);
+      scene.add(sun);
 
-      const groundCharacters = townSprunkiCharacters.filter((character) => !character.skyOnly);
       const members = groundCharacters.map((character, index) => {
         const angle = (Math.PI * 2 * index) / groundCharacters.length - Math.PI / 2;
         const backgroundEdge = character.name === "Mr. Fun Computer" || character.name === "Mr. Tree";
-        const radius = backgroundEdge ? 8.0 : index < 10 ? 4.9 : 6.85;
-        const x = character.name === "Mr. Fun Computer" ? 0 : character.name === "Mr. Tree" ? 7.2 : Math.cos(angle) * radius;
-        const z = character.name === "Mr. Fun Computer" ? -7.25 : character.name === "Mr. Tree" ? -6.45 : Math.sin(angle) * radius - 0.15;
-        return makeTownSprunki(
+        const radius = backgroundEdge ? 8.9 : index < 10 ? 5.8 : 7.6;
+        const x = character.name === "Mr. Fun Computer" ? 0 : character.name === "Mr. Tree" ? 10.4 : Math.cos(angle) * radius;
+        const z = character.name === "Mr. Fun Computer" ? -8.35 : character.name === "Mr. Tree" ? -9.4 : Math.sin(angle) * radius + 0.35;
+        const member = makeTownSprunki(
           THREE,
           scene,
           character.color,
@@ -7058,19 +8217,61 @@ function startComputerTown3D(host) {
           z,
           character.name
         );
+        const home = residentHomeMap.get(character.name);
+        if (home) {
+          member.userData.homeTarget = { x: home.position.x, z: home.position.z };
+        }
+        return member;
       });
       const baby = makeTownBaby(THREE, scene, 0, 1.75);
       const heart = makeTownHeartSprite(THREE);
       scene.add(heart);
       const speakers = new Map();
-      [sun, moon, ...members, baby].forEach((item) => {
+      [sun, ...members, baby].forEach((item) => {
         speakers.set(item.userData.speaker, item);
         speakers.set(item.userData.zh || item.userData.speaker, item);
       });
       const townRoot = host.closest(".computer-town-app");
       const shopPanel = townRoot?.querySelector(".computer-town-shop-panel");
+      const marketPanel = townRoot?.querySelector(".computer-town-market-panel");
       const characterPanel = townRoot?.querySelector(".computer-town-character-panel");
       const selectedName = townRoot?.querySelector("[data-town-selected-name]");
+      const closePanels = () => {
+        closeTownHouseInterior(townRoot);
+        closeTownStorePage(townRoot);
+      };
+      let townOverviewZoom = "near";
+      let cameraFocusTarget = null;
+      const focusTownResident = (focusTarget, goHome = false) => {
+        const avatarTarget = focusTarget?.member ? focusTarget : { type: "member", member: focusTarget };
+        const member = avatarTarget.member;
+        if (avatarTarget.type === "sky") {
+          selectedTownMember = null;
+          cameraFocusTarget = null;
+          townOverviewZoom = "overview";
+          showComputerTownSpeech(host, member.userData.speaker, member.userData.speaker === "太阳公公" ? "我在天空上看着整个小镇。" : "晚上我也能照到每个房子。");
+          return;
+        }
+        if (!member?.userData?.speaker) return;
+        selectedTownMember = member;
+        const target = goHome && member.userData.homeTarget ? member.userData.homeTarget : member.position;
+        cameraFocusTarget = {
+          x: target.x,
+          z: target.z,
+          lookX: member.position.x,
+          lookZ: member.position.z
+        };
+        if (selectedName) selectedName.textContent = member.userData.zh;
+        if (characterPanel) characterPanel.hidden = false;
+        if (shopPanel) shopPanel.hidden = true;
+        if (marketPanel) marketPanel.hidden = true;
+        showComputerTownThought(host, member.userData.speaker, goHome ? "我回家休息一下。" : "我在小镇里走走。");
+      };
+      const townAvatarTargets = [
+        { type: "sky", member: sun },
+        ...members.map((member) => ({ type: member.userData.backgroundCharacter ? "background" : "member", member }))
+      ];
+      renderTownAvatarBar(townRoot, townAvatarTargets, focusTownResident);
       const clothingItems = {
         red: { id: "red", name: "红色演出服", color: 0xe84848, cost: 3 },
         blue: { id: "blue", name: "蓝色演出服", color: 0x48a8ff, cost: 3 },
@@ -7088,9 +8289,37 @@ function startComputerTown3D(host) {
       let babyNeedsComfort = false;
       let lastBabyCryAt = 0;
       const getTownCouple = (speaker) => townCouples.find((pair) => pair.includes(speaker)) || null;
+      const getActiveTownMembers = () => members.filter((member) => !member.userData.backgroundCharacter);
+      const buyTownStageThreeProduct = (product, shopper = selectedTownMember) => {
+        if (!product) return;
+        const buyer = shopper && !shopper.userData.backgroundCharacter ? shopper : getActiveTownMembers()[0];
+        if (money < product.price) {
+          showComputerTownSpeech(host, "电脑先生", `${product.name}要 ${product.price} 块钱，钱还不够。`);
+          return;
+        }
+        money = Math.max(0, money - product.price);
+        updateMoneyUI();
+        saveGameState();
+        if (product.kind === "clothes") {
+          autoDressTownResident(THREE, buyer, product);
+          showComputerTownThought(host, buyer.userData.speaker, `我买到${product.name}，自己换上啦。`);
+          return;
+        }
+        showComputerTownThought(host, buyer.userData.speaker, `买了${product.name}，放进小包里。`);
+      };
       const openTownShopPanel = () => {
         if (shopPanel) shopPanel.hidden = false;
+        if (marketPanel) marketPanel.hidden = true;
         if (characterPanel) characterPanel.hidden = true;
+      };
+      const openTownMarketPanel = (business) => {
+        if (marketPanel) {
+          marketPanel.hidden = false;
+          marketPanel.dataset.townBusiness = business?.id || "";
+        }
+        if (shopPanel) shopPanel.hidden = business?.kind !== "clothes";
+        if (characterPanel) characterPanel.hidden = true;
+        showComputerTownThought(host, "电脑先生", business?.kind === "food" ? "超市可以买吃的。" : "服装店可以挑衣服。");
       };
       const openTownCharacterPanel = (member) => {
         if (!member?.userData?.speaker || member.userData.backgroundCharacter) return;
@@ -7098,13 +8327,22 @@ function startComputerTown3D(host) {
         if (selectedName) selectedName.textContent = member.userData.zh;
         if (characterPanel) characterPanel.hidden = false;
         if (shopPanel) shopPanel.hidden = true;
+        if (marketPanel) marketPanel.hidden = true;
       };
       const enlargeTownMember = (member) => {
         if (enlargedTownMember && enlargedTownMember !== member) {
-          enlargedTownMember.scale.setScalar(1);
+          setTownMemberScale(enlargedTownMember, false);
         }
         enlargedTownMember = member;
-        member.scale.setScalar(member.scale.x > 1.25 ? 1 : 1.55);
+        const isFocused = member.scale.x <= (member.userData.baseScale || 1) + 0.04;
+        setTownMemberScale(member, isFocused);
+      };
+      const getTownInteriorMode = (ownerName) => {
+        const owner = speakers.get(ownerName);
+        if (townSleepingActive || owner?.userData.sleepingAtHome) return "sleep";
+        return Math.abs(String(ownerName || "").split("").reduce((total, char) => total + char.charCodeAt(0), 0)) % 3 === 0
+          ? "home"
+          : "day";
       };
       const startTownCoupleScene = () => {
         if (!selectedTownMember || coupleScene) return;
@@ -7125,7 +8363,7 @@ function startComputerTown3D(host) {
         };
         members.forEach((member) => {
           member.visible = member === first || member === second;
-          member.scale.setScalar(member === first || member === second ? 1.55 : 1);
+          setTownMemberScale(member, member === first || member === second);
         });
         baby.visible = false;
         heart.visible = true;
@@ -7165,6 +8403,18 @@ function startComputerTown3D(host) {
         showComputerTownSpeech(host, selectedTownMember.userData.speaker, `我换上${item.name}了。`);
       });
       characterPanel?.querySelector('[data-town-action="couple"]')?.addEventListener("click", startTownCoupleScene);
+      townRoot?.querySelector("[data-town-close-interior]")?.addEventListener("click", () => closeTownHouseInterior(townRoot));
+      townRoot?.querySelector("[data-town-close-store]")?.addEventListener("click", () => closeTownStorePage(townRoot));
+      marketPanel?.querySelectorAll("[data-town-market]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const kind = button.dataset.townMarket;
+          if (kind === "food") {
+            openTownStorePage(townRoot, "supermarket", buyTownStageThreeProduct);
+          } else {
+            openTownStorePage(townRoot, "clothing", buyTownStageThreeProduct);
+          }
+        });
+      });
 
       const dream = new THREE.Mesh(
         new THREE.TorusKnotGeometry(0.7, 0.18, 90, 10),
@@ -7179,24 +8429,33 @@ function startComputerTown3D(host) {
       let townSleepingActive = false;
       let lastTownTalkAt = 0;
       let lastTownShopAt = 0;
+      let lastTownApplauseProgram = "";
       const onPointerDown = (event) => {
         const rect = renderer.domElement.getBoundingClientRect();
         pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(pointer, camera);
-        const hits = raycaster.intersectObjects([...members, baby, sun, moon, mall], true);
+        const hits = raycaster.intersectObjects([...members, baby, sun, ...businesses, ...houses], true);
         if (hits.length) {
           const hitRoot = getTownHitRoot(hits[0].object);
+          if (hitRoot?.userData.townBusiness) {
+            openTownStorePage(townRoot, hitRoot.userData.townBusiness.id, buyTownStageThreeProduct);
+            return;
+          }
           if (hitRoot?.userData.townMall) {
-            openTownShopPanel();
+            openTownStorePage(townRoot, "clothing", buyTownStageThreeProduct);
             showComputerTownSpeech(host, "电脑先生", "小镇商城打开了，可以买衣服。");
+            return;
+          }
+          if (hitRoot?.userData.townHomeFor) {
+            const owner = speakers.get(hitRoot.userData.townHomeFor);
+            if (owner) focusTownResident(owner, true);
+            openTownHouseInterior(townRoot, hitRoot.userData.townHomeFor, getTownInteriorMode(hitRoot.userData.townHomeFor));
             return;
           }
           const speaker = hitRoot?.userData.speaker;
           if (speaker === "太阳公公") {
             showComputerTownSpeech(host, speaker, "我从东边升起来，照着大家练歌。");
-          } else if (speaker === "月亮公公") {
-            showComputerTownSpeech(host, speaker, "晚上到啦，演唱会开始。");
           } else if (speaker === "宝宝") {
             if (babyNeedsComfort) {
               babyNeedsComfort = false;
@@ -7206,12 +8465,12 @@ function startComputerTown3D(host) {
               showComputerTownSpeech(host, speaker, "咿呀，我在家里。");
             }
           } else if (speaker) {
-            openTownCharacterPanel(hitRoot);
+            focusTownResident(hitRoot);
             if (townSleepingActive) {
               dream.visible = !dream.visible;
               showComputerTownSpeech(host, speaker, dream.visible ? "我睡着了，你进到我的梦里了。" : "梦门关上了。");
             } else {
-              showComputerTownSpeech(host, speaker, "我在练自己的节奏音色。");
+              showComputerTownThought(host, speaker, "我在练自己的节奏音色。");
             }
           }
         }
@@ -7235,12 +8494,9 @@ function startComputerTown3D(host) {
         const x = -7 + arcPhase * 14;
         const y = 2.1 + Math.sin(angle) * 4.8;
         sun.visible = !isNight;
-        moon.visible = isNight;
         sun.position.set(x, y, -5.2);
-        moon.position.set(x, y, -5.2);
         sun.lookAt(camera.position);
-        moon.lookAt(camera.position);
-        [sun, moon].forEach((skyFace, skyIndex) => {
+        [sun].forEach((skyFace, skyIndex) => {
           if (skyFace.userData.mouth) {
             const talkScale = skyFace.userData.talking ? 1 + Math.abs(Math.sin(elapsed * 13 + skyIndex)) * 0.85 : 1;
             skyFace.userData.mouth.scale.set(1, talkScale, 1);
@@ -7252,24 +8508,32 @@ function startComputerTown3D(host) {
         const nightSeconds = (elapsed % 240) - 120;
         const concertActive = isNight && nightSeconds < TOWN_CONCERT_SECONDS;
         const sleepingActive = isNight && nightSeconds >= TOWN_CONCERT_SECONDS;
+        const concertProgram = concertActive ? getTownConcertProgram(nightSeconds) : null;
         townSleepingActive = sleepingActive;
         if (concertActive) {
-          startComputerTownConcert();
+          startComputerTownConcert(concertProgram);
+          if (concertProgram?.id && lastTownApplauseProgram !== concertProgram.id) {
+            if (lastTownApplauseProgram) showTownConcertApplause(host, concertProgram);
+            lastTownApplauseProgram = concertProgram.id;
+          }
         } else {
           stopComputerTownConcert();
+          if (!isNight) lastTownApplauseProgram = "";
         }
-        if (!sleepingActive && elapsed - lastTownTalkAt > 7) {
+        if (!concertActive && !sleepingActive && elapsed - lastTownTalkAt > 11) {
           lastTownTalkAt = elapsed;
           const activeMembers = members.filter((member) => !member.userData.backgroundCharacter);
           const first = activeMembers[Math.floor(elapsed) % activeMembers.length];
           const second = activeMembers[(Math.floor(elapsed) + 7) % activeMembers.length];
-          const skySpeaker = isNight ? "月亮公公" : "太阳公公";
-          if (Math.floor(elapsed / 7) % 3 === 0) {
-            showComputerTownSpeech(host, first.userData.speaker, `我跟${skySpeaker}说：今天的节奏准备好了。`, skySpeaker);
-            playComputerTownVoice(skySpeaker);
+          const skySpeaker = "太阳公公";
+          if (Math.floor(elapsed / 11) % 5 === 0) {
+            showComputerTownSpeech(host, "Mr. Fun Computer", "屏幕现在会一个字一个字说话。", first.userData.speaker);
+          } else if (Math.floor(elapsed / 13) % 5 === 0) {
+            showComputerTownSpeech(host, "Mr. Tree", "我在树下听大家练歌。", second.userData.speaker);
+          } else if (Math.floor(elapsed / 7) % 3 === 0) {
+            showComputerTownThought(host, first.userData.speaker, `今天想和${skySpeaker}打招呼。`);
           } else {
-            showComputerTownSpeech(host, first.userData.speaker, `我和${second.userData.zh}一起对拍。`, second.userData.speaker);
-            window.setTimeout(() => showComputerTownSpeech(host, second.userData.speaker, "我也听见你的拍子了。", first.userData.speaker), 1400);
+            showComputerTownThought(host, first.userData.speaker, `听见${second.userData.zh}的节奏了。`);
           }
         }
         if (babyJoinedTown && baby.visible && isNight && !coupleScene && !babyNeedsComfort && elapsed - lastBabyCryAt > 22) {
@@ -7279,12 +8543,14 @@ function startComputerTown3D(host) {
         }
         if (!isNight && elapsed - lastTownShopAt > TOWN_SHOP_SECONDS && money > 0) {
           lastTownShopAt = elapsed;
-          const shoppers = members.filter((member) => !member.userData.backgroundCharacter);
+          const shoppers = getActiveTownMembers();
           const shopper = shoppers[Math.floor(elapsed / TOWN_SHOP_SECONDS) % shoppers.length];
-          money = Math.max(0, money - 1);
-          updateMoneyUI();
-          saveGameState();
-          showComputerTownSpeech(host, shopper.userData.speaker, `我去商城买东西，花了 1 块钱。现在还剩 ${money} 块钱。`);
+          const storeId = Math.floor(elapsed / TOWN_SHOP_SECONDS) % 2 ? "clothing" : "supermarket";
+          const choices = townStageThreeProducts.filter((product) => product.store === storeId && product.price <= money);
+          const product = choices[Math.floor(elapsed) % Math.max(1, choices.length)];
+          if (product) {
+            buyTownStageThreeProduct(product, shopper);
+          }
         }
         members.forEach((member, index) => {
           updateTownEyeGaze(member, elapsed);
@@ -7297,6 +8563,13 @@ function startComputerTown3D(host) {
             member.position.set(member.userData.baseX, 0, member.userData.baseZ);
             member.rotation.z = 0;
             member.rotation.y = Math.sin(elapsed * 0.35 + index) * 0.08;
+            return;
+          }
+          if (!sleepingActive && member.userData.sleepingAtHome) {
+            member.userData.sleepingAtHome = false;
+            member.visible = true;
+          }
+          if (sleepingActive && sendTownMemberHomeToSleep(member, elapsed, index)) {
             return;
           }
           if (coupleScene) {
@@ -7313,7 +8586,7 @@ function startComputerTown3D(host) {
             member.position.y = Math.abs(Math.sin(elapsed * 2.4 + index)) * 0.07;
             member.rotation.z = 0;
             member.rotation.y = -side * 0.58;
-            member.scale.setScalar(1.55);
+            setTownMemberScale(member, true);
             heart.position.set(homeX, 2.65 + Math.sin(elapsed * 3) * 0.1, homeZ);
             heart.scale.setScalar(1 + Math.sin(elapsed * 5) * 0.08);
             if (coupleElapsed > 7 && !babyJoinedTown) {
@@ -7327,7 +8600,7 @@ function startComputerTown3D(host) {
               heart.visible = false;
               members.forEach((item) => {
                 item.visible = true;
-                if (item !== enlargedTownMember) item.scale.setScalar(1);
+                if (item !== enlargedTownMember) setTownMemberScale(item, false);
               });
               baby.visible = true;
               showComputerTownSpeech(host, "电脑先生", "大家回到小镇里了，宝宝也留下来了。");
@@ -7336,8 +8609,8 @@ function startComputerTown3D(host) {
           }
           if (member.userData.slowBackgroundWalker) {
             const slowArc = Math.sin((elapsed / 120) * Math.PI * 2 + index);
-            const targetX = concertActive ? 2.35 : member.userData.baseX;
-            const targetZ = concertActive ? -4.05 : member.userData.baseZ;
+            const targetX = concertActive && concertProgram?.performers.includes(member.userData.speaker) ? 2.35 : member.userData.baseX;
+            const targetZ = concertActive && concertProgram?.performers.includes(member.userData.speaker) ? -4.05 : member.userData.baseZ;
             const easing = concertActive ? 0.006 : isNight ? 0.004 : 1;
             member.position.x += (targetX - member.position.x) * easing;
             member.position.z += (targetZ - member.position.z) * easing;
@@ -7347,20 +8620,20 @@ function startComputerTown3D(host) {
             return;
           }
           const speed = concertActive ? 2.2 : 1.15;
-          if (sleepingActive) {
-            const tent = tents[index % tents.length];
-            member.position.x = tent.position.x + Math.sin(index) * 0.22;
-            member.position.z = tent.position.z + Math.cos(index) * 0.18;
-            member.position.y = 0.18;
-            member.rotation.z = Math.PI / 2;
-            member.rotation.y = 0;
+          if (concertActive && concertProgram?.performers.includes(member.userData.speaker)) {
+            const performerIndex = concertProgram.performers.indexOf(member.userData.speaker);
+            moveTownPerformerToStage(member, performerIndex, elapsed);
+            setTownMemberScale(member, member === enlargedTownMember);
+          } else if (concertActive) {
+            moveTownAudienceAroundStage(member, index, elapsed);
           } else {
             const shoppingNow = !isNight && Math.floor((elapsed + index * 1.7) / 8) % 5 === 0;
+            const shoppingPlace = Math.floor((elapsed + index) / 16) % 2 ? mall : supermarket;
             const targetX = shoppingNow
-              ? mall.position.x + Math.sin(index) * 0.85
+              ? shoppingPlace.position.x + Math.sin(index) * 0.85
               : member.userData.baseX + Math.sin(elapsed * speed + index) * (concertActive ? 0.45 : 1.45);
             const targetZ = shoppingNow
-              ? mall.position.z + 1.45 + Math.cos(index) * 0.62
+              ? shoppingPlace.position.z + 1.45 + Math.cos(index) * 0.62
               : member.userData.baseZ + Math.cos(elapsed * speed * 0.7 + index) * 0.72;
             const safeTarget = keepTownWalkerOutOfObstacles(targetX, targetZ, townObstacles);
             member.position.x += (safeTarget.x - member.position.x) * 0.055;
@@ -7371,7 +8644,6 @@ function startComputerTown3D(host) {
           }
         });
         updateTownEyeGaze(sun, elapsed);
-        updateTownEyeGaze(moon, elapsed);
         updateTownEyeGaze(baby, elapsed);
         if (baby.visible) {
           const mouthPart = baby.userData.mouth;
@@ -7383,6 +8655,19 @@ function startComputerTown3D(host) {
         }
         dream.rotation.x += 0.01;
         dream.rotation.y += 0.017;
+        if (cameraFocusTarget) {
+          camera.position.x += (cameraFocusTarget.x - camera.position.x) * 0.045;
+          camera.position.z += (cameraFocusTarget.z + 4.8 - camera.position.z) * 0.045;
+          camera.position.y += (3.6 - camera.position.y) * 0.045;
+          camera.lookAt(cameraFocusTarget.lookX, 1.0, cameraFocusTarget.lookZ);
+        } else {
+          const zoomTarget = townZoomLevels[townOverviewZoom] || townZoomLevels.near;
+          const targetCameraZ = camera.position.z + zoomTarget.distance - camera.position.z;
+          camera.position.x += (0 - camera.position.x) * 0.045;
+          camera.position.y += (zoomTarget.height - camera.position.y) * 0.045;
+          camera.position.z += (targetCameraZ - camera.position.z) * 0.045;
+          camera.lookAt(0, zoomTarget.lookY, 0);
+        }
         renderer.render(scene, camera);
         computerTown3D.frame = window.requestAnimationFrame(animate);
       };
@@ -7392,8 +8677,11 @@ function startComputerTown3D(host) {
         members,
         speakers,
         sun,
-        moon,
         resize,
+        setOverviewZoom: (nextZoom) => {
+          townOverviewZoom = townZoomLevels[nextZoom] ? nextZoom : "near";
+          cameraFocusTarget = null;
+        },
         disposeEvents: () => renderer.domElement.removeEventListener("pointerdown", onPointerDown)
       };
       computerTown3D.resize = resize;
@@ -7453,6 +8741,61 @@ function setComputerAppWindowContent(app) {
     town.innerHTML = `
       <div class="computer-town-3d-shell" aria-label="3D 小镇"></div>
       <div class="computer-town-speech" aria-live="polite"></div>
+      <div class="computer-town-thought" aria-live="polite"></div>
+      <div class="computer-town-avatar-bar" aria-label="小镇居民头像"></div>
+      <div class="computer-town-market-panel" aria-label="小镇生活店" hidden>
+        <strong>生活店</strong>
+        <button type="button" data-town-market="food">在超市买零食</button>
+        <button type="button" data-town-market="clothes">去服装店看看</button>
+      </div>
+      <div class="computer-town-house-interior-panel" aria-label="居民房子内部" hidden>
+        <button class="computer-town-store-close" type="button" data-town-close-interior>×</button>
+        <strong data-town-house-title>居民的家</strong>
+        <div data-town-resident-scene></div>
+        <div class="computer-town-room-grid">
+          <section class="computer-town-room living">
+            <b>客厅</b>
+            <div class="computer-town-room-art">
+              <i class="computer-town-pixel-painting"></i>
+              <i class="computer-town-pixel-couch"></i>
+              <i class="computer-town-pixel-table"></i>
+            </div>
+            <span>墙上有画，下面有沙发和小桌子。</span>
+          </section>
+          <section class="computer-town-room bedroom">
+            <b>卧室</b>
+            <div class="computer-town-room-art">
+              <i class="computer-town-pixel-bed"></i>
+              <i class="computer-town-pixel-wardrobe"></i>
+              <i class="computer-town-pixel-lamp"></i>
+            </div>
+            <span>床、衣柜和灯都在屋里，不睡地上。</span>
+          </section>
+          <section class="computer-town-room kitchen">
+            <b>厨房</b>
+            <div class="computer-town-room-art">
+              <i class="computer-town-pixel-stove"></i>
+              <i class="computer-town-pixel-fridge"></i>
+              <i class="computer-town-pixel-counter"></i>
+            </div>
+            <span>灶台、冰箱和料理台可以做饭。</span>
+          </section>
+          <section class="computer-town-room bathroom">
+            <b>洗手间</b>
+            <div class="computer-town-room-art">
+              <i class="computer-town-pixel-bath"></i>
+              <i class="computer-town-pixel-sink"></i>
+              <i class="computer-town-pixel-mirror"></i>
+            </div>
+            <span>浴缸、洗手池和镜子都配齐。</span>
+          </section>
+        </div>
+      </div>
+      <div class="computer-town-store-page" aria-label="商店商品页面" hidden>
+        <button class="computer-town-store-close" type="button" data-town-close-store>×</button>
+        <strong data-town-store-title>商店</strong>
+        <div class="computer-town-store-grid" data-town-store-products></div>
+      </div>
       <div class="computer-town-shop-panel" aria-label="小镇商城" hidden>
         <strong>小镇商城</strong>
         <button type="button" data-town-clothing="red">红色演出服 3块</button>
@@ -7586,6 +8929,35 @@ function toggleComputerTownMinimized() {
   if (currentComputerApp !== "town" || !computerAppWindow) return;
   computerAppWindow.classList.toggle("town-minimized");
   window.setTimeout(() => computerTown3D?.resize?.(), 80);
+}
+
+function handleTownStageThreeZoomShortcut(event) {
+  if (currentComputerApp !== "town") return;
+  if (event.type === "keyup") {
+    townStageThreeZoomKeys.delete(event.key);
+    return;
+  }
+  if (event.repeat) return;
+  if (event.key === "1" || event.key === "2") {
+    townStageThreeZoomKeys.add(event.key);
+  }
+  if (townStageThreeZoomKeys.has("1") && townStageThreeZoomKeys.has("2")) {
+    event.preventDefault();
+    townStageThreeZoomKeys.clear();
+    toggleComputerTownMinimized();
+  }
+}
+
+function handleTownOverviewZoomShortcut(event) {
+  if (currentComputerApp !== "town" || event.type !== "keydown" || event.repeat) return;
+  if (event.key === "2") {
+    event.preventDefault();
+    computerTown3D?.setOverviewZoom?.("overview");
+  }
+  if (event.key === "3") {
+    event.preventDefault();
+    computerTown3D?.setOverviewZoom?.("near");
+  }
 }
 
 function downloadComputerApp(app) {
@@ -9927,6 +11299,9 @@ desktopDownloadButtons.forEach((button) => {
 computerAppClose?.addEventListener("click", closeComputerApp);
 computerAppMinimize?.addEventListener("click", toggleComputerTownMinimized);
 computerFaceClose?.addEventListener("click", closeComputerApp);
+window.addEventListener("keydown", handleTownStageThreeZoomShortcut);
+window.addEventListener("keyup", handleTownStageThreeZoomShortcut);
+window.addEventListener("keydown", handleTownOverviewZoomShortcut);
 
 resetSaveToggle?.addEventListener("click", resetGameState);
 

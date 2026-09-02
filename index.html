@@ -439,9 +439,28 @@
           <button id="minecraft-close" class="minecraft-close" type="button" aria-label="退出我的世界">×</button>
           <strong>我的世界</strong>
         </div>
+        <audio id="minecraft-background-music" src="./assets/minecraft-audio/minecraft-background.mp3" preload="auto" loop></audio>
         <div id="minecraft-status" class="minecraft-status">先用镐子挖方块，背包有方块之后才能放。</div>
         <div id="minecraft-world" class="minecraft-world" aria-label="方块世界"></div>
         <div id="minecraft-map" class="minecraft-map" aria-label="彩色地图"></div>
+        <div id="minecraft-backpack-panel" class="minecraft-side-backpack-panel" hidden>
+          <div class="minecraft-side-backpack-head">
+            <strong>背包</strong>
+            <button id="minecraft-backpack-close" class="minecraft-side-backpack-close" type="button" aria-label="关闭背包">×</button>
+          </div>
+          <div class="minecraft-side-backpack-workspace">
+            <div class="minecraft-side-player-preview" aria-label="史蒂夫预览">
+              <span class="minecraft-side-player-preview-armor"></span>
+            </div>
+            <div class="minecraft-side-pocket-crafting" aria-label="随身合成">
+              <div id="minecraft-pocket-crafting-grid" class="minecraft-pocket-crafting-grid" aria-label="2x2 合成格"></div>
+              <span class="minecraft-pocket-crafting-arrow" aria-hidden="true"></span>
+              <button id="minecraft-pocket-crafting-output" class="minecraft-pocket-crafting-output" type="button" aria-label="随身合成输出"></button>
+            </div>
+          </div>
+          <div id="minecraft-backpack-grid" class="minecraft-side-backpack-grid" aria-label="背包物品"></div>
+          <div id="minecraft-backpack-hotbar" class="minecraft-side-backpack-hotbar" aria-label="快捷栏"></div>
+        </div>
         <div id="minecraft-crafting-panel" class="minecraft-crafting-panel" hidden>
           <div class="minecraft-crafting-head">
             <strong>工作台</strong>
@@ -491,6 +510,7 @@
           <button class="minecraft-tool" type="button" data-minecraft-tool="ender_eye">末眼<span>0</span></button>
           <button class="minecraft-tool" type="button" data-minecraft-tool="diamond_sword">剑<span>0</span></button>
           <button class="minecraft-tool active" type="button" data-minecraft-tool="pickaxe">镐</button>
+          <button id="minecraft-backpack-toggle" class="minecraft-side-backpack-toggle" type="button" aria-label="打开背包">•••</button>
         </div>
         <div class="minecraft-controls" aria-label="移动和视角">
           <div id="minecraft-joystick" class="minecraft-joystick" role="application" aria-label="移动摇杆">

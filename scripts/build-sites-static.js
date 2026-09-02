@@ -11,7 +11,10 @@ const includeFiles = [
   "app.js",
   "diary.html",
   "diary.css",
-  "diary.js"
+  "diary.js",
+  "rhythm-world.html",
+  "rhythm-world.css",
+  "rhythm-world.js"
 ];
 
 function walk(dir, prefix = "") {
@@ -30,6 +33,7 @@ function mimeType(file) {
   if (file.endsWith(".png")) return "image/png";
   if (file.endsWith(".jpg") || file.endsWith(".jpeg")) return "image/jpeg";
   if (file.endsWith(".svg")) return "image/svg+xml";
+  if (file.endsWith(".mp3")) return "audio/mpeg";
   return "application/octet-stream";
 }
 
@@ -38,7 +42,7 @@ fs.mkdirSync(serverDir, { recursive: true });
 
 const assetsDir = path.join(root, "assets");
 if (fs.existsSync(assetsDir)) {
-  includeFiles.push(...walk(assetsDir, "assets"));
+  includeFiles.push(...walk(assetsDir, "assets").filter((file) => file !== "assets\\minecraft-audio\\minecraft-background.mp3"));
 }
 
 const files = {};

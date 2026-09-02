@@ -1,0 +1,2 @@
+const fs=require('fs'),html=fs.readFileSync('rhythm-world.html','utf8'),js=fs.readFileSync('rhythm-world.js','utf8'),css=fs.readFileSync('rhythm-world.css','utf8'),all=html+js+css;
+for(const value of ['pausePanel','继续游戏','设置','保存并退出','exitScreen','EXIT_DURATION_MS','6000','正在保存世界','居民们正在回家','关闭音乐世界'])if(!all.includes(value))throw Error('Missing pause/exit feature: '+value);if(!js.includes("menu:()=>openPauseMenu()"))throw Error('Menu still exits directly instead of pausing');console.log('Pause and animated exit verification passed.');

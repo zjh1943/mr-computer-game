@@ -20,7 +20,7 @@ const app = fs.readFileSync('rhythm-world.js', 'utf8');
 const npc = fs.readFileSync('rhythm-world/npc-3d.js', 'utf8');
 assert.ok(page.includes('id="chorusInvite"') && page.includes('chorus-accept') && page.includes('chorus-decline'));
 assert.ok(app.includes('requestThirdSinger') && app.includes('acceptChorusInvite') && app.includes('declineChorusInvite'));
-assert.ok(app.includes("audio.startLoop('duet-third','whistle')"), 'accepted singer needs a third audible layer');
+assert.ok(app.includes("audio.startCharacterLoop('duet-third',thirdSinger)"), 'accepted singer needs a dedicated third audible layer');
 assert.ok(app.includes("engine.speakNpc(thirdSinger"), 'third singer needs mouth and speech animation');
 assert.ok(npc.includes("chorusRole === 'approaching'") && npc.includes("chorusRole === 'leaving'"), 'guest must approach or leave based on the answer');
 

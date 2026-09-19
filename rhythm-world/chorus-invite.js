@@ -15,3 +15,8 @@ export function applyJoinDecision(state, decision) {
   }
   return { state: { ...state, invited: null, declined: [...state.declined, id] }, joinId: null, leaveId: id };
 }
+
+export function chooseAutoJoinCandidate(nearbyIds, state, maximumNpcSingers = 5) {
+  if (!state || state.members.length >= maximumNpcSingers || state.invited) return null;
+  return nearbyIds.find(id => !state.members.includes(id) && !state.declined.includes(id)) || null;
+}

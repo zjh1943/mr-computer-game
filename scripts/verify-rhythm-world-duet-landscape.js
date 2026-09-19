@@ -17,7 +17,7 @@ const app = fs.readFileSync('rhythm-world.js', 'utf8');
 assert.ok(town.includes('createHills'), 'the world needs visible rolling hills');
 assert.ok(page.includes('id="singTogether"'), 'nearby characters need a sing-together button');
 assert.ok(app.includes('startDuet') && app.includes('stopDuet'), 'duet must have explicit start and stop behavior');
-assert.ok(app.includes("audio.startLoop('duet-voice','voice')"), 'duet must make an audible character sound');
+assert.ok(app.includes("audio.startCharacterLoop('duet-player',state.player.character)") && app.includes("audio.startCharacterLoop('duet-lead',target.id)"), 'duet must use audible character-specific sounds');
 assert.ok(app.includes("engine.speakPlayer('啦～')") && app.includes("engine.speakNpc(activeDuet"), 'both characters need singing mouth motion');
 assert.ok(app.includes("$('#interact').hidden=!play") && app.includes("$('#joystick').hidden=!play"), 'interaction and joystick controls must remain available');
 

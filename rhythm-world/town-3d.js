@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three.module.min.js';
 import { CHUNK_SIZE_3D, getDesiredChunkKeys, parseChunkKey, seededValue } from './world-stream.js';
 import { TOWN_HOUSEHOLDS } from './home-layout.js';
+import { MUSIC_PLAZA_POSITION } from './town-layout.js';
 
 const material = color => new THREE.MeshStandardMaterial({ color, roughness: .86 });
 const textureLoader = new THREE.TextureLoader();
@@ -46,10 +47,19 @@ function tree(x, z, scale = 1) {
   const shadow = new THREE.Mesh(new THREE.CircleGeometry(.7 * scale, 20), new THREE.MeshBasicMaterial({ color: 0x16351e, transparent: true, opacity: .22, depthWrite: false })); shadow.rotation.x = -Math.PI / 2; shadow.position.y = .02; group.add(shadow);
   group.position.set(x, 0, z); group.userData = { kind: 'decorativeTree', solidRadius: .72 * scale }; return group;
 }
+export function createHills(seed, cx, cz) {
+  const hills = new THREE.Group(); hills.name = 'rollingHills';
+  for (let i = 0; i < 4; i++) {
+    const random = seededValue(seed, cx * 29 + i, cz * 31 - i), hill = new THREE.Mesh(new THREE.SphereGeometry(4.5 + random * 3, 18, 10), material(random > .5 ? 0x5ca954 : 0x68b75d));
+    hill.scale.set(1.7, .42 + random * .12, 1); hill.position.set((i % 2 ? 1 : -1) * (10 + random * 5), -2.6, -14 + i * 9); hills.add(hill);
+  }
+  return hills;
+}
 function groundChunk(cx, cz, seed) {
   const group = new THREE.Group(), value = seededValue(seed, cx, cz);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE_3D, CHUNK_SIZE_3D), material(value > .66 ? 0x83c966 : value > .33 ? 0x78bd60 : 0x70ad68)); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; group.add(ground);
   const road = new THREE.Mesh(new THREE.PlaneGeometry(5.4, CHUNK_SIZE_3D), material(0xd8c28e)); road.rotation.x = -Math.PI / 2; road.position.y = .015; group.add(road);
+  group.add(createHills(seed,cx,cz));
   for (let i = 0; i < 4; i++) { const random = seededValue(seed, cx * 13 + i, cz * 17 - i); group.add(tree((random > .5 ? 1 : -1) * (6 + random * 9), -13 + i * 8.5, .78 + random * .28)); }
   group.position.set(cx * CHUNK_SIZE_3D, 0, cz * CHUNK_SIZE_3D); return group;
 }
@@ -57,7 +67,7 @@ function groundChunk(cx, cz, seed) {
 export function createTown3D({ scene, seed = 'world' }) {
   const root = new THREE.Group(); root.name = 'town3d'; scene.add(root); const chunks = new Map(), interactables = [];
   function add(object, x, z) { object.position.set(x, 0, z); root.add(object); interactables.push(object); return object; }
-  add(serviceBuilding('factory', '角色生产中心', 0xaeb6c4), 0, -8); add(serviceBuilding('shop', '节拍商店', 0xffbd59), 10, -8); add(musicPlaza(), -11, -8);
+  add(serviceBuilding('factory', '角色生产中心', 0xaeb6c4), 0, -8); add(serviceBuilding('shop', '节拍商店', 0xffbd59), 10, -8); add(musicPlaza(), MUSIC_PLAZA_POSITION.x, MUSIC_PLAZA_POSITION.z);
   const cave = add(serviceBuilding('cave', '山洞', 0x615969), 16, 10); cave.scale.set(1, .45, 1);
   for (const home of TOWN_HOUSEHOLDS) add(house(home), home.x, home.z);
   function update(position) { const wanted = new Set(getDesiredChunkKeys(position, 2)); for (const key of wanted) if (!chunks.has(key)) { const { x, z } = parseChunkKey(key), chunk = groundChunk(x, z, seed); chunks.set(key, chunk); root.add(chunk); } for (const [key, chunk] of chunks) if (!wanted.has(key)) { root.remove(chunk); chunks.delete(key); } }

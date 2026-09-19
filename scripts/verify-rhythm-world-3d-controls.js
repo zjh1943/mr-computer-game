@@ -1,6 +1,8 @@
 const fs=require('fs'),assert=require('assert'),read=p=>fs.readFileSync(p,'utf8');
 const camera=read('rhythm-world/camera-3d.js'),input=read('rhythm-world/input-3d.js'),interaction=read('rhythm-world/interaction-3d.js'),npc=read('rhythm-world/npc-3d.js'),engine=read('rhythm-world/engine.js');
 for(const t of['createThirdPersonCamera','pitchMin','pitchMax','collisionDistance'])assert.ok(camera.includes(t),`camera missing ${t}`);
+assert.ok(camera.includes('get pitch()'),'camera must expose its vertical look angle for behavior verification');
+assert.ok(camera.includes('pitchMin=-.45')&&camera.includes('pitchMax=1.4'),'camera must support looking well above and below the player');
 for(const t of['createInput3D','blockedSelectors','movement','consumeLook','closest'])assert.ok(input.includes(t),`input missing ${t}`);
 for(const t of['createInteraction3D','Raycaster','interactionPriority','currentTarget','pointerup'])assert.ok(interaction.includes(t),`interaction missing ${t}`);
 for(const t of['createNpcSystem','goingHome','speaking','residentHome'])assert.ok(npc.includes(t),`NPC system missing ${t}`);

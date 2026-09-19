@@ -7,5 +7,5 @@ export function selectCharacterView(direction, cameraYaw) {
   const facing = Math.cos(relative);
   if (facing > 0.55) return { view: 'front', flip: false };
   if (facing < -0.55) return { view: 'back', flip: false };
-  return { view: 'side', flip: Math.sin(relative) < 0 };
+  return { view: Math.sin(relative) < 0 ? 'left' : 'right', flip: false };
 }

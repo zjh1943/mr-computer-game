@@ -8,6 +8,7 @@ import { createInteraction3D } from './interaction-3d.js';
 import { createNpcSystem } from './npc-3d.js';
 import { getDayNightState, getWorldPhase } from './day-night.js';
 import { distanceBetween } from './interactions.js';
+import { resolveSolidCollisions } from './solid-collision.js';
 
 export const distanceTo = distanceBetween;
 
@@ -24,6 +25,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {} }
     cameraControl.rotate(look.x, look.y);
     let moving = false;
     if (mode === 'world') {
+      const previous = { x: player.position.x, z: player.position.z };
       const move = input.movement;
       const speed = 5.2;
       const angle = cameraControl.yaw;
@@ -31,6 +33,9 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {} }
       const dz = (-move.x * Math.sin(angle) - move.y * Math.cos(angle)) * speed * dt;
       player.position.x += dx;
       player.position.z += dz;
+      const resolved = resolveSolidCollisions({ x: player.position.x, z: player.position.z }, npcs.getSolidColliders(), previous);
+      player.position.x = resolved.x;
+      player.position.z = resolved.z;
       moving = Math.hypot(dx, dz) > 0.001;
       if (moving) player.rotation.y = Math.atan2(dx, dz);
       state.player.x = player.position.x;
@@ -39,7 +44,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {} }
     }
     setCharacterMotion(player, { moving, time: now, direction: player.rotation.y, cameraYaw: cameraControl.yaw });
     town.update(player.position);
-    sky.update(dayState);
+    sky.update(dayState, runtime.camera, now);
     npcs.update({ time: now, dayState, player, cameraYaw: cameraControl.yaw });
     cameraControl.update(dt);
     interaction.update();

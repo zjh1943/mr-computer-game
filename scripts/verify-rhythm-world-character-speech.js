@@ -12,8 +12,8 @@
   assert.equal(transitionReplyState('choice', 'ignore'), 'closed');
   assert.deepEqual(selectCharacterView(0, 0), { view: 'front', flip: false });
   assert.deepEqual(selectCharacterView(Math.PI, 0), { view: 'back', flip: false });
-  assert.equal(selectCharacterView(Math.PI / 2, 0).view, 'side');
-  assert.notEqual(selectCharacterView(Math.PI / 2, 0).flip, selectCharacterView(-Math.PI / 2, 0).flip);
+  assert.deepEqual(selectCharacterView(Math.PI / 2, 0), { view: 'right', flip: false });
+  assert.deepEqual(selectCharacterView(-Math.PI / 2, 0), { view: 'left', flip: false });
   assert.equal(engineModeForScreen('cover'), 'menu');
   assert.equal(engineModeForScreen('slots'), 'menu');
   assert.equal(engineModeForScreen('world'), 'world');

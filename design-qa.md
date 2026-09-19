@@ -54,6 +54,10 @@ Image generation produced matching side and back sprite sheets, then a determini
 
 NPC speech now uses a temporary head bubble and character-specific browser text-to-speech profile. The speaking face cycles through triangle, line, quadrilateral, and square mouth shapes, with animated gaze highlights. The world view offers `回答` and `不回答`; only `回答` opens the keyboard/voice response dialog. No `正在说话` heading remains.
 
+### P1 — Corrected four-direction cast and sky characters
+
+Characters now use normalized front, left, right, and back sprites. Garnold keeps the gold visor identity on both sides; Mr. Fun Computer uses white eyes, while Mr. Sun and Mr. Tree use solid black eyes. Mr. Tree remains a named resident with a home and solid collision instead of being confused with decorative trees. The day/night loop lasts 12 minutes, and camera-attached celestial staging keeps the gently swaying Mr. Sun visible in the sky. The music stage uses an original 108 BPM arrangement with beat, piano, vocal, electronic, and whistle parts.
+
 ## Responsive checks
 
 - Desktop controls: WASD/arrow keys, click-drag pointer-look in every direction, Space/direct click.

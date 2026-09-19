@@ -8,6 +8,10 @@ export function createNpcSpawnLayout(homes) {
   });
 }
 
+export function isStationaryResident(id) {
+  return id === 'mr-tree';
+}
+
 export function updateNpcConversationState(state, nearest, now, { range = 3.2, cooldown = 1800 } = {}) {
   if (!nearest || nearest.distance > range) {
     return { state: { ...state, nearbyId: null }, speakId: null };

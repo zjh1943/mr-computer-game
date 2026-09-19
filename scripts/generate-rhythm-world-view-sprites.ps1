@@ -1,6 +1,6 @@
 param(
-  [Parameter(Mandatory = $true)] [string]$FrontSheet,
-  [Parameter(Mandatory = $true)] [string]$SideSheet,
+  [Parameter(Mandatory = $true)] [string]$FrontDirectory,
+  [Parameter(Mandatory = $true)] [string]$RightSheet,
   [Parameter(Mandatory = $true)] [string]$BackSheet,
   [string]$OutputDirectory = "assets/sprunki-views"
 )
@@ -53,8 +53,19 @@ function Save-TrimmedCell([System.Drawing.Bitmap]$source, [System.Drawing.Rectan
   $x0=[Math]::Max(0,$minX-$pad); $y0=[Math]::Max(0,$minY-$pad)
   $x1=[Math]::Min($cell.Width-1,$maxX+$pad); $y1=[Math]::Min($cell.Height-1,$maxY+$pad)
   $trimmed = $cell.Clone([System.Drawing.Rectangle]::new($x0,$y0,$x1-$x0+1,$y1-$y0+1), [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
-  $trimmed.Save($path,[System.Drawing.Imaging.ImageFormat]::Png)
-  $trimmed.Dispose(); $cell.Dispose()
+  $normalized = New-Object System.Drawing.Bitmap 320, 400, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+  $graphics = [System.Drawing.Graphics]::FromImage($normalized)
+  $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+  $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+  $scale = [Math]::Min(290 / $trimmed.Width, 370 / $trimmed.Height)
+  $width = [Math]::Max(1, [Math]::Round($trimmed.Width * $scale))
+  $height = [Math]::Max(1, [Math]::Round($trimmed.Height * $scale))
+  $left = [Math]::Round((320 - $width) / 2)
+  $top = 390 - $height
+  $graphics.DrawImage($trimmed, $left, $top, $width, $height)
+  $graphics.Dispose()
+  $normalized.Save($path,[System.Drawing.Imaging.ImageFormat]::Png)
+  $normalized.Dispose(); $trimmed.Dispose(); $cell.Dispose()
 }
 
 function Split-RegularSheet([string]$sourcePath, [string]$view, [string[]]$order) {
@@ -66,27 +77,34 @@ function Split-RegularSheet([string]$sourcePath, [string]$view, [string[]]$order
       $column=$i%5; $row=[Math]::Floor($i/5)
       $x0=[Math]::Floor($column*$source.Width/5); $x1=[Math]::Floor(($column+1)*$source.Width/5)
       $y0=[Math]::Floor($row*$source.Height/4); $y1=[Math]::Floor(($row+1)*$source.Height/4)
+      $y0 += 10; $y1 -= 10
       Save-TrimmedCell $source ([System.Drawing.Rectangle]::new($x0,$y0,$x1-$x0,$y1-$y0)) (Join-Path $directory ($order[$i]+'.png')) $false
     }
   } finally { $source.Dispose() }
 }
 
-function Split-FrontSheet([string]$sourcePath) {
-  $source = [System.Drawing.Bitmap]::FromFile((Resolve-Path -LiteralPath $sourcePath))
+function Normalize-FrontDirectory([string]$sourceDirectory) {
   $directory = Join-Path $OutputDirectory 'front'
   [System.IO.Directory]::CreateDirectory((Join-Path (Get-Location) $directory)) | Out-Null
-  $rowBounds = @(0,250,520,755,$source.Height)
-  try {
-    for ($i=0; $i -lt 20; $i++) {
-      $column=$i%5; $row=[Math]::Floor($i/5)
-      $x0=[Math]::Floor($column*$source.Width/5); $x1=[Math]::Floor(($column+1)*$source.Width/5)
-      $y0=$rowBounds[$row]; $y1=$rowBounds[$row+1]
-      Save-TrimmedCell $source ([System.Drawing.Rectangle]::new($x0,$y0,$x1-$x0,$y1-$y0)) (Join-Path $directory ($frontOrder[$i]+'.png')) $true
-    }
-  } finally { $source.Dispose() }
+  foreach ($id in $frontOrder) {
+    $source = [System.Drawing.Bitmap]::FromFile((Resolve-Path -LiteralPath (Join-Path $sourceDirectory ($id + '.png'))))
+    try { Save-TrimmedCell $source ([System.Drawing.Rectangle]::new(0,0,$source.Width,$source.Height)) (Join-Path $directory ($id+'.png')) $true }
+    finally { $source.Dispose() }
+  }
 }
 
-Split-FrontSheet $FrontSheet
-Split-RegularSheet $SideSheet 'side' $sideOrder
+function Mirror-View([string]$sourceView, [string]$targetView) {
+  $targetDirectory = Join-Path $OutputDirectory $targetView
+  [System.IO.Directory]::CreateDirectory((Join-Path (Get-Location) $targetDirectory)) | Out-Null
+  foreach ($id in $frontOrder) {
+    $source = [System.Drawing.Bitmap]::FromFile((Resolve-Path -LiteralPath (Join-Path (Join-Path $OutputDirectory $sourceView) ($id+'.png'))))
+    try { $source.RotateFlip([System.Drawing.RotateFlipType]::RotateNoneFlipX); $source.Save((Join-Path $targetDirectory ($id+'.png')),[System.Drawing.Imaging.ImageFormat]::Png) }
+    finally { $source.Dispose() }
+  }
+}
+
+Normalize-FrontDirectory $FrontDirectory
+Split-RegularSheet $RightSheet 'right' $frontOrder
+Mirror-View 'right' 'left'
 Split-RegularSheet $BackSheet 'back' $frontOrder
-Write-Output "Generated 60 unique front/side/back character views in $OutputDirectory"
+Write-Output "Generated 80 normalized front/left/right/back character views in $OutputDirectory"

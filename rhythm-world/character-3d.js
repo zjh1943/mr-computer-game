@@ -2,6 +2,7 @@ import * as THREE from './vendor/three.module.min.js';
 import { getCharacter } from './character-catalog.js';
 import { getMouthShape } from './character-speech.js';
 import { selectCharacterView } from './character-view.js';
+import { eyeStyleFor, mouthAnchorFor, needsEyeCorrection } from './character-appearance.js';
 
 const loader = new THREE.TextureLoader();
 const textureCache = new Map();
@@ -32,10 +33,14 @@ function canvasSprite(name, width, height, scaleX, scaleY) {
   return sprite;
 }
 
-function drawMouth(sprite, shape) {
+function drawMouth(sprite, shape, coverColor) {
   const canvas = sprite.userData.canvas;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = coverColor || '#888888';
+  ctx.beginPath();
+  ctx.ellipse(64, 66, 54, 46, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = '#17131f';
   ctx.strokeStyle = '#17131f';
   ctx.lineWidth = 14;
@@ -45,6 +50,25 @@ function drawMouth(sprite, shape) {
   if (shape === 'line') { ctx.moveTo(20, 66); ctx.lineTo(108, 66); ctx.stroke(); }
   if (shape === 'quadrilateral') { ctx.moveTo(25, 36); ctx.lineTo(103, 30); ctx.lineTo(92, 103); ctx.lineTo(34, 108); ctx.closePath(); ctx.fill(); }
   if (shape === 'square') { ctx.fillRect(34, 36, 62, 62); }
+  sprite.userData.texture.needsUpdate = true;
+}
+
+function drawCorrectedEyes(sprite, id, view, offset = 0) {
+  const canvas = sprite.userData.canvas;
+  const ctx = canvas.getContext('2d');
+  const style = eyeStyleFor(id);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (id === 'mr-fun-computer') {
+    ctx.fillStyle = '#050505';
+    ctx.beginPath(); ctx.roundRect(10, 8, 180, 84, 22); ctx.fill();
+    ctx.fillStyle = style.iris;
+    const xs = view === 'front' ? [67, 133] : [view === 'right' ? 132 : 68];
+    for (const x of xs) { ctx.beginPath(); ctx.ellipse(x + offset, 50, 11, 25, 0, 0, Math.PI * 2); ctx.fill(); }
+  } else {
+    ctx.fillStyle = style.iris;
+    const xs = view === 'front' ? [68, 132] : [view === 'right' ? 132 : 68];
+    for (const x of xs) { ctx.beginPath(); ctx.arc(x + offset, 50, 18, 0, Math.PI * 2); ctx.fill(); }
+  }
   sprite.userData.texture.needsUpdate = true;
 }
 
@@ -91,9 +115,17 @@ export function createCharacter3D(id, { scale = 1 } = {}) {
   group.add(sprite);
 
   const mouth = canvasSprite('mouthSprite', 128, 128, 0.34, 0.34);
-  mouth.position.set(0, 1.46, 0.08);
+  const mouthAnchor = mouthAnchorFor(id);
+  mouth.position.set(mouthAnchor.x, mouthAnchor.y, 0.08);
+  mouth.scale.set(0.25, 0.25, 1);
+  mouth.userData.coverColor = mouthAnchor.color || character.color;
   mouth.visible = false;
   group.add(mouth);
+
+  const correctedEyes = canvasSprite('correctedEyes', 200, 100, 0.7, 0.35);
+  correctedEyes.position.set(0, id === 'mr-tree' ? 1.82 : 1.95, 0.095);
+  correctedEyes.visible = false;
+  group.add(correctedEyes);
 
   const gaze = canvasSprite('gazeSprite', 200, 100, 0.72, 0.36);
   gaze.position.set(0, 2.02, 0.09);
@@ -141,10 +173,13 @@ export function setCharacterMotion(group, { moving = false, speaking = false, ti
   group.scale.set(baseScale * pulse, baseScale * pulse, baseScale);
   const mouth = group.getObjectByName('mouthSprite');
   const gaze = group.getObjectByName('gazeSprite');
+  const correctedEyes = group.getObjectByName('correctedEyes');
   const bubble = group.getObjectByName('speechBubble');
   mouth.visible = isSpeaking && selected.view === 'front';
-  gaze.visible = isSpeaking && selected.view === 'front';
+  correctedEyes.visible = needsEyeCorrection(group.userData.id) && selected.view !== 'back';
+  gaze.visible = isSpeaking && selected.view === 'front' && !correctedEyes.visible;
   bubble.visible = isSpeaking;
-  if (mouth.visible) drawMouth(mouth, getMouthShape(Math.floor(time / 130)));
+  if (mouth.visible) drawMouth(mouth, getMouthShape(Math.floor(time / 130)), mouth.userData.coverColor);
+  if (correctedEyes.visible) drawCorrectedEyes(correctedEyes, group.userData.id, selected.view, isSpeaking ? Math.sin(time / 320 + gazeDirection) * 5 : 0);
   if (gaze.visible) drawGaze(gaze, Math.sin(time / 320 + gazeDirection) * 8);
 }

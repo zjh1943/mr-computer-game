@@ -1,0 +1,22 @@
+(async () => {
+  const assert = require('assert');
+  const { MOUTH_SHAPES, getMouthShape, getVoiceProfile, getDialogueChoices, transitionReplyState } = await import('../rhythm-world/character-speech.js');
+  const { selectCharacterView } = await import('../rhythm-world/character-view.js');
+  const { engineModeForScreen } = await import('../rhythm-world/screen-mode.js');
+  assert.deepEqual(MOUTH_SHAPES, ['triangle', 'line', 'quadrilateral', 'square']);
+  assert.equal(new Set([0, 1, 2, 3].map(i => getMouthShape(i))).size, 4, 'speech must cycle through four mouth shapes');
+  assert.notDeepEqual(getVoiceProfile('fun-bot'), getVoiceProfile('mr-tree'), 'characters need distinct speech profiles');
+  assert.equal(getVoiceProfile('gray').lang, 'zh-CN');
+  assert.deepEqual(getDialogueChoices(), ['answer', 'ignore']);
+  assert.equal(transitionReplyState('choice', 'answer'), 'input');
+  assert.equal(transitionReplyState('choice', 'ignore'), 'closed');
+  assert.deepEqual(selectCharacterView(0, 0), { view: 'front', flip: false });
+  assert.deepEqual(selectCharacterView(Math.PI, 0), { view: 'back', flip: false });
+  assert.equal(selectCharacterView(Math.PI / 2, 0).view, 'side');
+  assert.notEqual(selectCharacterView(Math.PI / 2, 0).flip, selectCharacterView(-Math.PI / 2, 0).flip);
+  assert.equal(engineModeForScreen('cover'), 'menu');
+  assert.equal(engineModeForScreen('slots'), 'menu');
+  assert.equal(engineModeForScreen('world'), 'world');
+  assert.equal(engineModeForScreen('factory'), 'factory');
+  console.log('Character speech, mouth animation, and reply choices verification passed.');
+})().catch(error => { console.error(error); process.exit(1); });

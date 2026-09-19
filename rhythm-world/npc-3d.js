@@ -1,4 +1,4 @@
-import { createCharacter3D, setCharacterMotion } from './character-3d.js';
+import { createCharacter3D, setCharacterMotion, setCharacterSpeech, stopCharacterSpeech } from './character-3d.js';
 import { CHARACTER_CATALOG } from './character-catalog.js';
 import { CENTER_TOWN } from './world-stream.js';
 import { createNpcSpawnLayout, updateNpcConversationState } from './npc-behavior.js';
@@ -19,16 +19,17 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
       residentHome: home
     };
     scene.add(object);
-    return { character, home, spawn, object, phase: index * 0.73, speaking: false, goingHome: false };
+    return { character, home, spawn, object, phase: index * 0.73, speaking: false, goingHome: false, direction: 0 };
   });
 
-  function update({ time, dayState, player }) {
+  function update({ time, dayState, player, cameraYaw = 0 }) {
     let nearest = null;
     for (const npc of entities) {
       npc.goingHome = dayState.isNight;
       const anchor = npc.goingHome ? npc.home : npc.spawn;
       const targetX = anchor.x + Math.sin(time * 0.00025 + npc.phase) * (npc.goingHome ? 0.5 : 1.8);
       const targetZ = anchor.z + (npc.goingHome ? 1.8 : Math.cos(time * 0.00021 + npc.phase) * 1.4);
+      npc.direction = Math.atan2(targetX - npc.object.position.x, targetZ - npc.object.position.z);
       npc.object.position.x += (targetX - npc.object.position.x) * 0.018;
       npc.object.position.z += (targetZ - npc.object.position.z) * 0.018;
       const distance = npc.object.position.distanceTo(player.position);
@@ -39,7 +40,9 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
     conversationState = conversation.state;
     for (const npc of entities) {
       npc.speaking = conversationState.nearbyId === npc.home.id && nearest?.distance <= 3.2;
-      setCharacterMotion(npc.object, { moving: true, speaking: npc.speaking, time });
+      const lookAtPlayer = nearest?.npc === npc && nearest.distance <= 3.2;
+      const direction = lookAtPlayer ? Math.atan2(player.position.x - npc.object.position.x, player.position.z - npc.object.position.z) : npc.direction;
+      setCharacterMotion(npc.object, { moving: true, speaking: npc.speaking, time, direction, cameraYaw, gazeDirection: direction });
     }
     if (conversation.speakId) {
       const npc = entities.find(item => item.home.id === conversation.speakId);
@@ -50,6 +53,8 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
   return {
     entities,
     getInteractables: () => entities.map(npc => npc.object),
+    speak(id, text, duration) { const npc = entities.find(item => item.home.id === id); if (npc) setCharacterSpeech(npc.object, text, duration); },
+    stopSpeaking(id) { const npc = entities.find(item => item.home.id === id); if (npc) stopCharacterSpeech(npc.object); },
     update,
     dispose() {
       for (const npc of entities) scene.remove(npc.object);

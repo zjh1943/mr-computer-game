@@ -1,0 +1,7 @@
+.reply-prompt{position:fixed;z-index:24;left:50%;bottom:26px;transform:translateX(-50%);width:min(560px,calc(100% - 34px));display:flex;gap:14px;align-items:center;padding:14px 16px;background:rgba(28,23,48,.95);border:2px solid rgba(255,255,255,.72);border-radius:24px;color:white;box-shadow:0 16px 48px #0008}
+.reply-prompt[hidden]{display:none}
+.reply-prompt img{width:72px;height:72px;object-fit:contain;background:#fff;border-radius:18px}
+.reply-prompt>div{flex:1}
+.reply-prompt p{margin:4px 0 10px}
+.reply-actions{display:flex;gap:10px}
+.reply-actions button{min-width:94px;padding:8px 14px}

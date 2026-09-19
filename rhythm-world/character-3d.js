@@ -156,7 +156,7 @@ export function stopCharacterSpeech(group) {
   group.userData.speakingUntil = 0;
 }
 
-export function setCharacterMotion(group, { moving = false, speaking = false, time = 0, direction = 0, cameraYaw = 0, gazeDirection = 0 } = {}) {
+export function setCharacterMotion(group, { moving = false, speaking = false, time = 0, direction = 0, cameraYaw = 0, gazeDirection = 0, motionMode = '' } = {}) {
   const baseScale = group.userData.baseScale || group.scale.x || 1;
   const isSpeaking = speaking || time < group.userData.speakingUntil;
   const selected = selectCharacterView(direction, cameraYaw);
@@ -167,8 +167,9 @@ export function setCharacterMotion(group, { moving = false, speaking = false, ti
     group.userData.view = selected.view;
   }
   sprite.scale.x = Math.abs(sprite.scale.x) * (selected.flip ? -1 : 1);
+  const isComputer = group.userData.id === 'mr-fun-computer';
   const bounce = Math.abs(Math.sin(time * 0.006)) * (moving ? 0.12 : 0.025);
-  group.position.y = bounce;
+  group.position.y = isComputer ? (motionMode === 'shutdown' ? 0 : motionMode === 'carried' ? 1.35 : 1.12 + Math.sin(time * .0022) * .12) : bounce;
   const pulse = isSpeaking ? 1 + Math.sin(time * 0.018) * 0.035 : 1;
   group.scale.set(baseScale * pulse, baseScale * pulse, baseScale);
   const mouth = group.getObjectByName('mouthSprite');

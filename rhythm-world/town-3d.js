@@ -1,8 +1,66 @@
-import*as THREE from'./vendor/three.module.min.js';import{CHUNK_SIZE_3D,CENTER_TOWN,getDesiredChunkKeys,parseChunkKey,seededValue}from'./world-stream.js';import{getCharacter}from'./character-catalog.js';
-const material=c=>new THREE.MeshStandardMaterial({color:c,roughness:.86});
-function cast(o){o.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true}});return o}
-function house(label,color=0xf3a875){const g=new THREE.Group(),base=new THREE.Mesh(new THREE.BoxGeometry(5,3.4,4.5),material(color));base.position.y=1.7;g.add(base);const roof=new THREE.Mesh(new THREE.ConeGeometry(4.2,2,4),material(0x7d4262));roof.position.y=4.35;roof.rotation.y=Math.PI/4;g.add(roof);const door=new THREE.Mesh(new THREE.BoxGeometry(1.1,2,.18),material(0x513044));door.position.set(0,1,2.34);g.add(door);g.userData.label=label;return cast(g)}
-function building(kind,label,color){const g=house(label,color);g.userData.kind=kind;g.userData.label=label;g.traverse(n=>n.userData.interactable=kind);return g}
-function tree(x,z,s=1){const g=new THREE.Group(),trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,2.4,8),material(0x76513b));trunk.position.y=1.2;g.add(trunk);const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25*s,1),material(0x3d9b55));crown.position.y=3;g.add(crown);g.position.set(x,0,z);return cast(g)}
-function groundChunk(cx,cz,seed){const g=new THREE.Group(),v=seededValue(seed,cx,cz),ground=new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE_3D,CHUNK_SIZE_3D),material(v>.66?0x83c966:v>.33?0x78bd60:0x70ad68));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;g.add(ground);const road=new THREE.Mesh(new THREE.PlaneGeometry(5.4,CHUNK_SIZE_3D),material(0xd8c28e));road.rotation.x=-Math.PI/2;road.position.y=.015;g.add(road);for(let i=0;i<7;i++){const r=seededValue(seed,cx*13+i,cz*17-i);g.add(tree((r>.5?1:-1)*(5+r*10),-14+i*4.5,.75+r*.35))}g.position.set(cx*CHUNK_SIZE_3D,0,cz*CHUNK_SIZE_3D);return g}
-export function createTown3D({scene,seed='world'}){const root=new THREE.Group();root.name='town3d';scene.add(root);const chunks=new Map(),interactables=[];function addBuilding(kind,label,x,z,color){const b=building(kind,label,color);b.position.set(x,0,z);root.add(b);interactables.push(b);return b}addBuilding('factory','角色生产中心',0,-8,0xaeb6c4);addBuilding('shop','节拍商店',10,-8,0xffbd59);addBuilding('music','音乐广场',-10,-8,0x7969dc);addBuilding('cave','山洞',16,10,0x615969).scale.set(1,.45,1);for(const h of CENTER_TOWN.homes){const c=getCharacter(h.id);const b=addBuilding('residentHome',`${c.name}的家`,h.x,h.z,0xf3a875);b.userData.id=h.id}function update(pos){const wanted=new Set(getDesiredChunkKeys(pos,2));for(const key of wanted)if(!chunks.has(key)){const{x,z}=parseChunkKey(key),chunk=groundChunk(x,z,seed);chunks.set(key,chunk);root.add(chunk)}for(const[key,chunk]of chunks)if(!wanted.has(key)){root.remove(chunk);chunks.delete(key)}}return{root,update,getInteractables:()=>interactables,getGroundHeight:()=>0,dispose(){scene.remove(root);root.traverse(o=>{o.geometry?.dispose();if(o.material)Array.isArray(o.material)?o.material.forEach(m=>m.dispose()):o.material.dispose()})},get loadedChunkCount(){return chunks.size}}}
+import * as THREE from './vendor/three.module.min.js';
+import { CHUNK_SIZE_3D, getDesiredChunkKeys, parseChunkKey, seededValue } from './world-stream.js';
+import { TOWN_HOUSEHOLDS } from './home-layout.js';
+
+const material = color => new THREE.MeshStandardMaterial({ color, roughness: .86 });
+const textureLoader = new THREE.TextureLoader();
+const mrTreeTexture = textureLoader.load('assets/sprunki-views/front/mr-tree.png');
+mrTreeTexture.colorSpace = THREE.SRGBColorSpace;
+function cast(object) { object.traverse(node => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } }); return object; }
+
+export function houseSign(text) {
+  const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+  const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff1a8'; ctx.strokeStyle = '#50324d'; ctx.lineWidth = 14;
+  ctx.beginPath(); ctx.roundRect(8, 8, 496, 112, 24); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#38233a'; ctx.font = 'bold 32px "Microsoft YaHei", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text.length > 15 ? `${text.slice(0, 15)}…` : text, 256, 64);
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+  const sign = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+  sign.name = 'houseSign'; sign.scale.set(4.5, 1.12, 1); sign.position.set(0, 4.05, 2.55); return sign;
+}
+
+function house(home, color = 0xf3a875) {
+  const group = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.BoxGeometry(5, 3.4, 4.5), material(color)); base.position.y = 1.7; group.add(base);
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(4.2, 2, 4), material(0x7d4262)); roof.position.y = 4.35; roof.rotation.y = Math.PI / 4; group.add(roof);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1.1, 2, .18), material(0x513044)); door.position.set(0, 1, 2.34); group.add(door);
+  group.add(houseSign(home.label)); group.userData = { kind: 'residentHome', id: home.id, label: home.label, residents: home.residents };
+  group.traverse(node => node.userData.interactable = 'residentHome'); return cast(group);
+}
+function serviceBuilding(kind, label, color) { const group = house({ id: kind, label, residents: [] }, color); group.userData.kind = kind; group.userData.label = label; group.traverse(node => node.userData.interactable = kind); return group; }
+
+export function musicPlaza() {
+  const group = new THREE.Group();
+  const platform = new THREE.Mesh(new THREE.CylinderGeometry(5.4, 5.8, .65, 32), material(0x7565dd)); platform.position.y = .32; group.add(platform);
+  const arch = new THREE.Mesh(new THREE.TorusGeometry(3.2, .23, 10, 30, Math.PI), material(0xffd85e)); arch.rotation.z = Math.PI; arch.position.set(0, 3.1, -1.8); group.add(arch);
+  for (const x of [-3.1, 3.1]) { const post = new THREE.Mesh(new THREE.CylinderGeometry(.2, .25, 3.1, 10), material(0xffd85e)); post.position.set(x, 1.7, -1.8); group.add(post); }
+  const sign = houseSign('♫ 节奏盒子音乐广场 ♫'); sign.position.set(0, 5, -1.7); group.add(sign);
+  const note = new THREE.Mesh(new THREE.TorusGeometry(.62, .2, 10, 24), material(0x66efff)); note.position.set(0, 1.6, -1.7); group.add(note);
+  group.userData = { kind: 'music', label: '节奏盒子音乐广场' }; group.traverse(node => node.userData.interactable = 'music'); return cast(group);
+}
+
+function tree(x, z, scale = 1) {
+  const group = new THREE.Group();
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: mrTreeTexture, transparent: true, alphaTest: .03, depthWrite: false }));
+  sprite.center.set(.5, .02); sprite.scale.set(2.8 * scale, 4.2 * scale, 1); group.add(sprite);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(.7 * scale, 20), new THREE.MeshBasicMaterial({ color: 0x16351e, transparent: true, opacity: .22, depthWrite: false })); shadow.rotation.x = -Math.PI / 2; shadow.position.y = .02; group.add(shadow);
+  group.position.set(x, 0, z); group.userData = { kind: 'decorativeTree', solidRadius: .72 * scale }; return group;
+}
+function groundChunk(cx, cz, seed) {
+  const group = new THREE.Group(), value = seededValue(seed, cx, cz);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE_3D, CHUNK_SIZE_3D), material(value > .66 ? 0x83c966 : value > .33 ? 0x78bd60 : 0x70ad68)); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; group.add(ground);
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(5.4, CHUNK_SIZE_3D), material(0xd8c28e)); road.rotation.x = -Math.PI / 2; road.position.y = .015; group.add(road);
+  for (let i = 0; i < 4; i++) { const random = seededValue(seed, cx * 13 + i, cz * 17 - i); group.add(tree((random > .5 ? 1 : -1) * (6 + random * 9), -13 + i * 8.5, .78 + random * .28)); }
+  group.position.set(cx * CHUNK_SIZE_3D, 0, cz * CHUNK_SIZE_3D); return group;
+}
+
+export function createTown3D({ scene, seed = 'world' }) {
+  const root = new THREE.Group(); root.name = 'town3d'; scene.add(root); const chunks = new Map(), interactables = [];
+  function add(object, x, z) { object.position.set(x, 0, z); root.add(object); interactables.push(object); return object; }
+  add(serviceBuilding('factory', '角色生产中心', 0xaeb6c4), 0, -8); add(serviceBuilding('shop', '节拍商店', 0xffbd59), 10, -8); add(musicPlaza(), -11, -8);
+  const cave = add(serviceBuilding('cave', '山洞', 0x615969), 16, 10); cave.scale.set(1, .45, 1);
+  for (const home of TOWN_HOUSEHOLDS) add(house(home), home.x, home.z);
+  function update(position) { const wanted = new Set(getDesiredChunkKeys(position, 2)); for (const key of wanted) if (!chunks.has(key)) { const { x, z } = parseChunkKey(key), chunk = groundChunk(x, z, seed); chunks.set(key, chunk); root.add(chunk); } for (const [key, chunk] of chunks) if (!wanted.has(key)) { root.remove(chunk); chunks.delete(key); } }
+  const temp = new THREE.Vector3();
+  return { root, update, getInteractables: () => interactables, getSolidColliders: () => [...chunks.values()].flatMap(chunk => chunk.children.filter(child => child.userData.kind === 'decorativeTree').map(child => { child.getWorldPosition(temp); return { x: temp.x, z: temp.z, radius: child.userData.solidRadius }; })), getGroundHeight: () => 0, dispose() { scene.remove(root); root.traverse(object => { object.geometry?.dispose(); if (object.material) Array.isArray(object.material) ? object.material.forEach(item => item.dispose()) : object.material.dispose(); }); }, get loadedChunkCount() { return chunks.size; } };
+}

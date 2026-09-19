@@ -20,5 +20,5 @@ export function mouthAnchorFor(id) {
 }
 
 export function needsEyeCorrection(id) {
-  return Object.hasOwn(SPECIAL_EYES, id);
+  return id !== 'mr-fun-computer' && Object.hasOwn(SPECIAL_EYES, id);
 }

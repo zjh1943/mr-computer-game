@@ -33,7 +33,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
       const dz = (-move.x * Math.sin(angle) - move.y * Math.cos(angle)) * speed * dt;
       player.position.x += dx;
       player.position.z += dz;
-      const resolved = resolveSolidCollisions({ x: player.position.x, z: player.position.z }, npcs.getSolidColliders(), previous);
+      const resolved = resolveSolidCollisions({ x: player.position.x, z: player.position.z }, [...npcs.getSolidColliders(), ...town.getSolidColliders()], previous);
       player.position.x = resolved.x;
       player.position.z = resolved.z;
       moving = Math.hypot(dx, dz) > 0.001;

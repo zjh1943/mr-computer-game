@@ -13,7 +13,7 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
     const character = catalog.find(item => item.id === home.id), spawn = spawns[index], object = createCharacter3D(home.id, { scale: .92 });
     object.position.set(spawn.x, 0, spawn.z); object.userData = { ...object.userData, kind: 'resident', id: home.id, label: character.name, residentHome: home };
     scene.add(object);
-    return { character, home, spawn, object, phase: index * .73, speaking: false, goingHome: false, direction: 0, power: home.id === 'mr-fun-computer' ? createComputerPowerState() : null, rescuing: false };
+    return { character, home, spawn, object, phase: index * .73, speaking: false, goingHome: false, direction: 0, power: home.id === 'mr-fun-computer' ? createComputerPowerState() : null, rescuing: false, chorusRole: '' };
   });
   const computer = entities.find(item => item.home.id === 'mr-fun-computer');
   const happyRobot = entities.find(item => item.home.id === 'fun-bot');
@@ -53,12 +53,13 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
     for (const npc of entities) {
       npc.goingHome = dayState.isNight; const isTree = isStationaryResident(npc.home.id), isComputer = npc === computer;
       if (!isComputer) {
-        const forcedHome = npc === happyRobot && computer?.rescuing;
-        const anchor = isTree ? npc.home : ((npc.goingHome || forcedHome) ? npc.home : npc.spawn);
-        const targetX = anchor.x + (isTree ? 0 : Math.sin(time * .00025 + npc.phase) * ((npc.goingHome || forcedHome) ? .5 : 1.8));
-        const targetZ = anchor.z + (isTree ? 2 : ((npc.goingHome || forcedHome) ? 1.8 : Math.cos(time * .00021 + npc.phase) * 1.4));
+        const forcedHome = npc === happyRobot && computer?.rescuing, approaching = npc.chorusRole === 'approaching' || npc.chorusRole === 'joining', leaving = npc.chorusRole === 'leaving';
+        const anchor = approaching ? player.position : leaving ? npc.spawn : isTree ? npc.home : ((npc.goingHome || forcedHome) ? npc.home : npc.spawn);
+        const targetX = anchor.x + (approaching ? Math.cos(npc.phase) * 1.45 : isTree ? 0 : Math.sin(time * .00025 + npc.phase) * ((npc.goingHome || forcedHome || leaving) ? .5 : 1.8));
+        const targetZ = anchor.z + (approaching ? Math.sin(npc.phase) * 1.45 : isTree ? 2 : ((npc.goingHome || forcedHome || leaving) ? 1.8 : Math.cos(time * .00021 + npc.phase) * 1.4));
         npc.direction = Math.atan2(targetX - npc.object.position.x, targetZ - npc.object.position.z);
-        npc.object.position.x = approach(npc.object.position.x, targetX, .018); npc.object.position.z = approach(npc.object.position.z, targetZ, .018);
+        const speed=(approaching||leaving)? .045 : .018;npc.object.position.x = approach(npc.object.position.x, targetX, speed); npc.object.position.z = approach(npc.object.position.z, targetZ, speed);
+        if(leaving&&Math.hypot(npc.object.position.x-npc.spawn.x,npc.object.position.z-npc.spawn.z)<1.2)npc.chorusRole='';
       } else if (computer.power.status === 'flying') {
         const targetX = computer.spawn.x + Math.sin(time * .00034 + computer.phase) * 3.1, targetZ = computer.spawn.z + Math.cos(time * .00029 + computer.phase) * 2.4;
         npc.direction = Math.atan2(targetX - npc.object.position.x, targetZ - npc.object.position.z);
@@ -77,5 +78,5 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
     }
     if (conversation.speakId) { const npc = entities.find(item => item.home.id === conversation.speakId); onSpeech({ kind: 'resident', id: npc.home.id, label: npc.character.name, x: npc.object.position.x, y: npc.object.position.z, object3d: npc.object }); }
   }
-  return { entities, getInteractables: () => entities.map(npc => npc.object), getSolidColliders: () => entities.filter(npc => npc.home.id === 'mr-tree').map(npc => ({ x: npc.object.position.x, z: npc.object.position.z, radius: 1.2 })), speak(id, text, duration) { const npc = entities.find(item => item.home.id === id); if (npc) setCharacterSpeech(npc.object, text, duration); }, stopSpeaking(id) { const npc = entities.find(item => item.home.id === id); if (npc) stopCharacterSpeech(npc.object); }, update, rescueComputer, dispose() { for (const npc of entities) scene.remove(npc.object); } };
+  return { entities, getInteractables: () => entities.map(npc => npc.object), getNearbyResidents(player,range=16){return entities.map(npc=>({id:npc.home.id,label:npc.character.name,distance:npc.object.position.distanceTo(player.position)})).filter(item=>item.distance<=range).sort((a,b)=>a.distance-b.distance)},setChorusRole(id,role){const npc=entities.find(item=>item.home.id===id);if(npc)npc.chorusRole=role}, getSolidColliders: () => entities.filter(npc => npc.home.id === 'mr-tree').map(npc => ({ x: npc.object.position.x, z: npc.object.position.z, radius: 1.2 })), speak(id, text, duration) { const npc = entities.find(item => item.home.id === id); if (npc) setCharacterSpeech(npc.object, text, duration); }, stopSpeaking(id) { const npc = entities.find(item => item.home.id === id); if (npc) stopCharacterSpeech(npc.object); }, update, rescueComputer, dispose() { for (const npc of entities) scene.remove(npc.object); } };
 }

@@ -4,9 +4,9 @@ export const CHARACTER_FEATURES={
   garnold:['goldSuit','visor'],owakcx:['messyTufts'],pinki:['bunnyEars','bow'],
   simon:['antennae','horns','tuft','slimBody'],sky:['bearEars'],durple:['dragonHorns','fins'],
   'mr-sun':['sunRays','celestialOnly'],'mr-tree':['treeCrown'],wenda:['catEars','cheekFur'],jevin:['hood'],
-  black:['topHat','tie'],'mr-fun-computer':['computerScreen','plugHands']
+  black:['topHat','tie'],'mr-fun-computer':['computerScreen','plugHands'],tunner:['cowboyHat']
 };
-export const CHARACTERS=[['oren','奥伦','#f58236'],['raddy','拉迪','#db3340'],['clukr','克鲁克','#c6cbd3'],['fun-bot','快乐机器人','#bfc5ce'],['vineria','维内利亚','#59a85d'],['gray','小灰人','#8b8f99'],['brud','布鲁德','#9b6a45'],['garnold','加诺德','#d9b433'],['owakcx','欧瓦克斯','#8ecb55'],['pinki','平琪','#f58db4'],['simon','西蒙','#f4df49'],['sky','小天','#71bfea'],['durple','德普','#7452a4'],['mr-sun','太阳公公','#ffc83d'],['mr-tree','树先生','#6e9b42'],['wenda','温达','#eee'],['jevin','杰文','#406aa8'],['black','布莱克','#202128'],['mr-fun-computer','电脑先生','#9ec8c7']].map(([id,name,color])=>({id,name,color,features:CHARACTER_FEATURES[id]||[]}));
+export const CHARACTERS=[['oren','奥伦','#f58236'],['raddy','拉迪','#db3340'],['clukr','克鲁克','#c6cbd3'],['fun-bot','快乐机器人','#bfc5ce'],['vineria','维内利亚','#59a85d'],['gray','小灰人','#8b8f99'],['brud','布鲁德','#9b6a45'],['garnold','加诺德','#d9b433'],['owakcx','欧瓦克斯','#8ecb55'],['pinki','平琪','#f58db4'],['simon','西蒙','#f4df49'],['sky','小天','#71bfea'],['durple','德普','#7452a4'],['mr-sun','太阳公公','#ffc83d'],['mr-tree','树先生','#6e9b42'],['tunner','塔纳','#b88b61'],['wenda','温达','#eee'],['jevin','杰文','#406aa8'],['black','布莱克','#202128'],['mr-fun-computer','电脑先生','#9ec8c7']].map(([id,name,color])=>({id,name,color,features:CHARACTER_FEATURES[id]||[]}));
 export const characterById=id=>CHARACTERS.find(c=>c.id===id)||CHARACTERS[5];
 const line=(ctx,x1,y1,x2,y2,w=5)=>{ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()};
 const poly=(ctx,pts,fill=true)=>{ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();fill&&ctx.fill();ctx.stroke()};

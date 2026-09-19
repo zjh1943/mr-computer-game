@@ -1,0 +1,1 @@
+export function getWebGLSupport(canvas=document.createElement('canvas')){try{const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');return{supported:!!gl,reason:gl?'':'这个设备无法启动 3D 世界，请开启浏览器硬件加速。'}}catch{return{supported:false,reason:'浏览器阻止了 3D 图形功能。'}}}

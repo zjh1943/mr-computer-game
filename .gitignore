@@ -1,4 +1,5 @@
 .codex/
+.superpowers/
 .DS_Store
 dist/
 assets/minecraft-audio/minecraft-background.mp3

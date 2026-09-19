@@ -6,4 +6,5 @@ for(const t of['createInteraction3D','Raycaster','interactionPriority','currentT
 for(const t of['createNpcSystem','goingHome','speaking','residentHome'])assert.ok(npc.includes(t),`NPC system missing ${t}`);
 for(const t of['createScene3D','createTown3D','createThirdPersonCamera','createInteraction3D','createNpcSystem'])assert.ok(engine.includes(t),`engine not wired to ${t}`);
 assert.ok(engine.includes('getNearbyInteractable'));
+assert.ok(engine.includes('-move.y*Math.cos(angle)'),'forward movement must travel away from the behind-player camera');
 console.log('Third-person controls and interaction verification passed.');

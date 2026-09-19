@@ -1,7 +1,8 @@
 param(
-  [Parameter(Mandatory = $true)] [string]$FrontDirectory,
-  [Parameter(Mandatory = $true)] [string]$RightSheet,
-  [Parameter(Mandatory = $true)] [string]$BackSheet,
+  [string]$FrontDirectory,
+  [string]$FrontSheet,
+  [string]$RightSheet,
+  [string]$BackSheet,
   [string]$OutputDirectory = "assets/sprunki-views"
 )
 
@@ -103,8 +104,9 @@ function Mirror-View([string]$sourceView, [string]$targetView) {
   }
 }
 
-Normalize-FrontDirectory $FrontDirectory
-Split-RegularSheet $RightSheet 'right' $frontOrder
-Mirror-View 'right' 'left'
-Split-RegularSheet $BackSheet 'back' $frontOrder
+if ($FrontSheet) { Split-RegularSheet $FrontSheet 'front' $frontOrder }
+elseif ($FrontDirectory) { Normalize-FrontDirectory $FrontDirectory }
+else { throw 'Provide either -FrontSheet or -FrontDirectory.' }
+if ($RightSheet) { Split-RegularSheet $RightSheet 'right' $frontOrder; Mirror-View 'right' 'left' }
+if ($BackSheet) { Split-RegularSheet $BackSheet 'back' $frontOrder }
 Write-Output "Generated 80 normalized front/left/right/back character views in $OutputDirectory"

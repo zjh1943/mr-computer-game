@@ -1,5 +1,6 @@
 import * as THREE from './vendor/three.module.min.js';
-import { createCharacter3D } from './character-3d.js';
+import { createCharacter3D, setCharacterSpeech } from './character-3d.js';
+import { SUN_FAREWELL } from './concert-rules.js';
 
 export function createSky3D(scene,{onFarewell=()=>{}}={}) {
   const hemi=new THREE.HemisphereLight(0xbfe9ff,0x4f743d,2.2); scene.add(hemi);
@@ -10,7 +11,7 @@ export function createSky3D(scene,{onFarewell=()=>{}}={}) {
   function update(day,camera,time=0){
     const a=day.travel*Math.PI,side=(day.travel-.5)*24,lift=5+Math.sin(a)*4;
     if(camera){if(sun.parent!==camera){camera.add(sun,moon);scene.add(camera)}sun.position.set(side,lift,-35);moon.position.set(side,lift,-35)}
-    if(day.celestial==='sun'){sun.visible=true;moon.visible=false;sun.rotation.z=Math.sin(time*.0012)*.09;const sway=3.1+Math.sin(time*.0018)*.08;sun.scale.setScalar(sway);sun.getWorldPosition(worldPosition);sunLight.position.copy(worldPosition);sunLight.intensity=3.4;hemi.intensity=2.1;if(day.farewell&&!farewell){farewell=true;onFarewell('再见，我明天再来！')}}else{sun.visible=false;moon.visible=true;moon.getWorldPosition(worldPosition);sunLight.position.copy(worldPosition);sunLight.intensity=.55;hemi.intensity=.7;farewell=false}
+    if(day.celestial==='sun'){sun.visible=true;moon.visible=false;sun.rotation.z=Math.sin(time*.0012)*.09;const sway=3.1+Math.sin(time*.0018)*.08;sun.scale.setScalar(sway);sun.getWorldPosition(worldPosition);sunLight.position.copy(worldPosition);sunLight.intensity=3.4;hemi.intensity=2.1;if(day.farewell&&!farewell){farewell=true;setCharacterSpeech(sun,SUN_FAREWELL,5200);onFarewell(SUN_FAREWELL)}}else{sun.visible=false;moon.visible=true;moon.getWorldPosition(worldPosition);sunLight.position.copy(worldPosition);sunLight.intensity=.55;hemi.intensity=.7;farewell=false}
     scene.background.set(day.isNight?0x111b42:0x91d7f2);scene.fog.color.copy(scene.background)
   }
   return{sun,moon,update,dispose(){scene.remove(hemi,sunLight,sun,moon);moon.geometry.dispose();moon.material.dispose()}}

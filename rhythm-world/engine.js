@@ -12,7 +12,7 @@ import { resolveSolidCollisions } from './solid-collision.js';
 
 export const distanceTo = distanceBetween;
 
-export function createEngine({ canvas, state, onInteract, onMessage = () => {} }) {
+export function createEngine({ canvas, state, onInteract, onMessage = () => {}, onSunFarewell = onMessage }) {
   let mode = 'factory';
   let player = createCharacter3D(state.player.character || 'gray');
   let cameraControl, input, town, sky, npcs, interaction;
@@ -53,7 +53,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {} }
   const runtime = createScene3D({ canvas, onFrame: frame, onError: onMessage });
   runtime.scene.add(player);
   town = createTown3D({ scene: runtime.scene, seed: state.seed });
-  sky = createSky3D(runtime.scene, { onFarewell: onMessage });
+  sky = createSky3D(runtime.scene, { onFarewell: onSunFarewell });
   npcs = createNpcSystem({ scene: runtime.scene, onSpeech: target => { if (mode === 'world') onInteract?.(target); } });
   input = createInput3D({ canvas });
   cameraControl = createThirdPersonCamera({ camera: runtime.camera, canvas, target: player });

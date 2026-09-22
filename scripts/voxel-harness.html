@@ -1,0 +1,5 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>方块世界验证预览</title>
+<link rel="stylesheet" href="../computer-apps.css"><style>html,body{margin:0;height:100%;overflow:hidden}.computer-app-window{position:fixed;inset:0}#game{height:100%;box-sizing:border-box}</style>
+<main class="computer-app-window software-fullscreen"><div id="game" class="extra-app"></div></main>
+<script src="/voxel-rules.js"></script>
+<script src="../voxel-terrain.js"></script><script src="../voxel-workstations.js"></script><script src="../voxel-audio.js"></script><script src="../voxel-survival.js"></script><script src="../voxel-shell.js"></script><script src="../voxel-world.js"></script><script>const cleanup=VoxelWorld.mount(document.getElementById('game'));addEventListener('pagehide',cleanup,{once:true});</script></html>

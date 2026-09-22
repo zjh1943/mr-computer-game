@@ -6434,6 +6434,8 @@ function setWeather(weather, announce = true) {
     setMood(0);
     updateComputerWeatherMarks();
     computerShell.classList.toggle("rain-squint", currentWeather === "rain" && !isAtHome && !isHappyRobotRainGuardActive());
+  }, weatherSpeechDuration);
+  // Damage must not be cancelled when chat replaces the subtitle timer.
     if (currentWeather === "rain" && !isAtHome) {
       if (cleanRainFromComputerByHappyRobot(true)) return;
       rainErrorTimer = window.setTimeout(() => {
@@ -6445,9 +6447,8 @@ function setWeather(weather, announce = true) {
           rainCodeTimer = null;
           enterRainCodeMode();
         }, 900);
-      }, 850);
+      }, weatherSpeechDuration + 850);
     }
-  }, weatherSpeechDuration);
 }
 
 function resetOpeningWeatherState() {
@@ -6782,13 +6783,14 @@ const computerAppLabels = {
 const computerAppNames = {
   chat: "聊天",
   store: "应用商店",
-  minecraft: "我的世界",
+  minecraft: "我的世界 2D",
   town: "小镇",
   paint: "画画",
   music: "音乐",
   clock: "时钟"
 };
 
+Object.entries(window.ComputerApps?.catalog || {}).forEach(([id, [label, name]]) => { computerAppLabels[id] = label; computerAppNames[id] = name; });
 const townSprunkiCharacters = [
   { name: "Oren", zh: "奥伦", color: 0xff8c3a, gender: "boy", voice: "bass", feature: "headphones" },
   { name: "Raddy", zh: "瑞迪", color: 0xe84848, gender: "boy", voice: "drum", feature: "horns" },
@@ -8715,13 +8717,14 @@ function renderComputerDesktop() {
 
 function setComputerAppWindowContent(app) {
   if (!computerAppTitle || !computerAppContent) return;
+  window.ComputerExperience?.stopSoftware();
   stopComputerTown3D();
   computerAppTitle.textContent = computerAppNames[app] || "软件";
   computerAppContent.innerHTML = "";
   if (app === "store") {
     const storeList = document.createElement("div");
     storeList.className = "computer-store-list";
-    ["paint", "music", "clock"].forEach((downloadApp) => {
+    ["paint", "music", "clock", ...Object.keys(window.ComputerApps?.catalog || {})].forEach((downloadApp) => {
       const button = document.createElement("button");
       button.type = "button";
       button.dataset.downloadApp = downloadApp;
@@ -8829,6 +8832,7 @@ function setComputerAppWindowContent(app) {
     window.setTimeout(() => startComputerTown3D(town.querySelector(".computer-town-3d-shell")), 0);
     return;
   }
+  if (window.ComputerExperience?.mountSoftware(app, computerAppContent)) return;
   const message = document.createElement("p");
   message.className = "computer-app-message";
   message.textContent = app === "paint"
@@ -8853,6 +8857,7 @@ function setComputerAppWindowLayer(app) {
 }
 
 function showComputerAppWindow(app) {
+  if (window.ComputerExperience?.isDamaged()) return;
   computerScreenMode = "app";
   currentComputerApp = app;
   setComputerAppWindowLayer(app);
@@ -8863,13 +8868,15 @@ function showComputerAppWindow(app) {
   computerAppWindow?.classList.toggle("town-fullscreen", app === "town");
   computerAppWindow?.classList.remove("town-minimized");
   document.body.classList.toggle("town-app-open", app === "town");
-  if (computerAppMinimize) computerAppMinimize.hidden = app !== "town";
+  if (computerAppMinimize) computerAppMinimize.hidden = false;
   if (computerFaceClose) computerFaceClose.hidden = true;
   if (screenSubtitle) screenSubtitle.style.display = "none";
   setComputerAppWindowContent(app);
 }
 
 function showComputerDesktop() {
+  window.ComputerExperience?.leaveFullscreen();
+  window.ComputerExperience?.stopSoftware();
   computerScreenMode = "desktop";
   currentComputerApp = "";
   setComputerAppWindowLayer("");
@@ -8889,6 +8896,9 @@ function showComputerDesktop() {
 }
 
 function openComputerChatApp() {
+  if (window.ComputerExperience?.isDamaged()) return;
+  window.ComputerExperience?.leaveFullscreen();
+  window.ComputerExperience?.stopSoftware();
   computerScreenMode = "face";
   currentComputerApp = "chat";
   moodPanel.classList.remove("desktop-mode");
@@ -8902,30 +8912,36 @@ function openComputerChatApp() {
 }
 
 function openComputerApp(app) {
+  if (window.ComputerExperience?.isDamaged()) return;
+  window.ComputerExperience?.leaveFullscreen();
   if (app === "chat") {
     openComputerChatApp();
     return;
   }
   if (app === "minecraft") {
+    window.ComputerExperience?.stopSoftware();
     computerScreenMode = "app";
     currentComputerApp = "minecraft";
     if (computerFaceClose) computerFaceClose.hidden = true;
     if (computerAppWindow) computerAppWindow.hidden = true;
     setMinecraftPanelOpen(true);
-    speakAsComputer("我的世界打开了。现在可以前后左右走，也可以进村民家。", { forceSubtitle: true, colorful: false });
     return;
   }
   showComputerAppWindow(app);
+  if (app === "music" || app === "blocks3d") window.ComputerExperience?.fullscreen();
   saveGameState();
 }
 
 function closeComputerApp() {
+  window.ComputerExperience?.leaveFullscreen();
+  window.ComputerExperience?.stopSoftware();
   if (minecraftPanelOpen) setMinecraftPanelOpen(false);
   showComputerDesktop();
   saveGameState();
 }
 
 function toggleComputerTownMinimized() {
+  if (window.ComputerExperience) { window.ComputerExperience.minimize(); return; }
   if (currentComputerApp !== "town" || !computerAppWindow) return;
   computerAppWindow.classList.toggle("town-minimized");
   window.setTimeout(() => computerTown3D?.resize?.(), 80);
@@ -8961,7 +8977,7 @@ function handleTownOverviewZoomShortcut(event) {
 }
 
 function downloadComputerApp(app) {
-  if (!app || installedComputerApps.includes(app)) return;
+  if (!["paint", "music", "clock", ...Object.keys(window.ComputerApps?.catalog || {})].includes(app) || installedComputerApps.includes(app)) return;
   installedComputerApps.push(app);
   renderComputerDesktop();
   setComputerAppWindowContent("store");
@@ -9564,11 +9580,17 @@ function setupDragInteractions() {
 }
 
 function showSubtitle(text, colorful = false) {
+  if (currentComputerApp !== "chat") {
+    screenSubtitle.style.display = "none";
+    moodPanel.classList.remove("text-mode", "colorful");
+    return;
+  }
   screenSubtitle.textContent = text;
   screenSubtitle.style.display = "block";
   moodPanel.classList.remove("face-mode");
   moodPanel.classList.add("text-mode");
   moodPanel.classList.toggle("colorful", colorful);
+  window.ComputerExperience?.subtitle(text, colorful);
 }
 
 function getMiniComputerReply(text) {
@@ -9642,9 +9664,9 @@ function shouldUseColorfulSubtitle(text) {
 }
 
 function speakAsComputer(text, options = {}) {
-  const duration = Math.min(3200, 900 + text.length * 90);
+  const duration = Math.min(15000, 900 + text.length * 90);
   const colorful = options.colorful ?? shouldUseColorfulSubtitle(text);
-  const useSubtitle = options.forceSubtitle ?? Math.random() < 0.82;
+  const useSubtitle = window.ComputerExperience?.isFullChat() || (options.forceSubtitle ?? Math.random() < 0.82);
 
   if (useSubtitle) {
     showSubtitle(text, colorful);
@@ -9694,6 +9716,14 @@ function startMouthTalking(duration = 1800) {
 }
 
 function generateReply(text) {
+  if (window.ComputerKnowledge) {
+    let memory = {};
+    try { memory = JSON.parse(localStorage.getItem("computer-chat-memory") || "{}") || {}; } catch {}
+    if (typeof memory !== "object" || Array.isArray(memory)) memory = {};
+    const answer = window.ComputerKnowledge.reply(text, memory, townSprunkiCharacters);
+    try { localStorage.setItem("computer-chat-memory", JSON.stringify(memory)); } catch {}
+    if (answer) return answer;
+  }
   const pattern = replyPatterns.find((item) => item.match.test(text));
   if (pattern) {
     return randomFrom(pattern.replies);
@@ -9702,6 +9732,7 @@ function generateReply(text) {
 }
 
 function answerUser(text) {
+  if (window.ComputerExperience?.isDamaged()) return;
   const cleaned = text.trim();
   if (!cleaned) return;
 

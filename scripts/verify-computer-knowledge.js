@@ -1,0 +1,12 @@
+const assert = require('node:assert/strict');
+const { reply } = require('../computer-knowledge.js');
+const memory = {};
+assert.match(reply('我叫小明', memory), /小明/);
+assert.match(reply('我叫什么名字', memory), /小明/);
+assert.match(reply('12乘以3等于多少', memory), /36/);
+assert.match(reply('5除以0', memory), /不能/);
+assert.match(reply('怎么编曲', memory), /鼓/);
+assert.match(reply('不知道的外星秘密', memory), /还不知道|不明白/);
+assert.match(reply('快乐机器人是谁', memory, [{ zh: '快乐机器人', name: 'Fun Bot', voice: 'robot' }]), /快乐机器人/);
+assert.equal(reply('打开恐怖之夜', memory), null);
+console.log('Computer knowledge and memory verification passed');

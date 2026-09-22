@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),rules=require('../voxel-rules.js'),terrain=require('../voxel-terrain.js');
+assert.equal(rules.mining('wood',null,false).seconds,1.6);
+assert(rules.mining('stone',null,false).seconds>rules.mining('stone','pickaxe',false).seconds);
+assert.equal(rules.mining('stone',null,false).drop,false);
+assert.equal(rules.mining('water','diamondpickaxe',true).seconds,Infinity);
+assert.equal(rules.mining('diamondore','pickaxe',false,{diamond:true}).drop,true);
+assert.equal(rules.mining('bedrock','bedrockpickaxe',false,{bedrock:true}).drop,true);
+assert.equal(rules.mining('bedrock','diamondpickaxe',false).seconds,Infinity);
+assert.equal(rules.copyKey(-1,-5,17),'15,-5,1');
+const diamond=terrain.generateChunk(0,0,{diamond:true});assert([...diamond.values()].includes('diamondore'));assert([...diamond.values()].includes('wood'));assert(![...diamond.values()].includes('grass'));
+const world=new Map(),edits=new Map(),copyEdits=new Map([['2,10,3','glass']]),stream=terrain.createStream(world,edits,{copyEdits});stream.move(0,0);assert.equal(world.get('2,10,3'),'glass');assert.equal(world.get('18,10,3'),'glass');stream.move(400,400);assert.equal(world.get('402,10,403'),'glass');stream.dispose();
+console.log('Mod terrain, future copied chunks, tool-dependent time/drops and fluid protection passed.');

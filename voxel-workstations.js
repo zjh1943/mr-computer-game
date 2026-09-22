@@ -1,0 +1,18 @@
+/* Offline block interactions. Redstone uses bounded breadth-first propagation. */
+(() => {
+  const types={bed_head:['床头','#ece6d7'],farmland:['耕地','#6d4930'],crop:['幼苗','#65a23b'],ripe:['成熟小麦','#cfb04c'],chest:['箱子','#b07b3e'],furnace:['熔炉','#5a6169'],workbench:['工作台','#9e7649'],lever:['拉杆（关）','#797776'],lever_on:['拉杆（开）','#cc6b50'],wire:['红石线','#932f2c'],lamp:['红石灯','#674c30'],lamp_on:['红石灯（亮）','#ffd37b'],torch:['火把','#ffc45b'],bed:['床','#b4413d']};
+  const items={seed:'种子',wheat:'小麦',bread:'面包',redstone:'红石粉',emerald:'绿宝石',hoe:'锄头'};
+  Object.assign(types,{obsidian:['黑曜石','#342d4b'],portal:['传送门','#9666d2'],netherrack:['下界岩','#85473e'],endstone:['末地石','#d4d19d'],lava:['熔岩','#ec6c24']});
+  const recipes={hoe:{name:'锄头',cost:{planks:2,stone:2},output:'hoe',amount:1},bread:{name:'面包',cost:{wheat:3},output:'bread',amount:1},chest:{name:'箱子',cost:{planks:8},output:'chest',amount:1},workbench:{name:'工作台',cost:{planks:4},output:'workbench',amount:1},lever:{name:'拉杆',cost:{stone:1,planks:1},output:'lever',amount:1},wire:{name:'红石线 ×4',cost:{redstone:1},output:'wire',amount:4},lamp:{name:'红石灯',cost:{glass:4,redstone:2},output:'lamp',amount:1},torch:{name:'火把 ×4',cost:{coal:1,planks:1},output:'torch',amount:4}};
+  const nonSolid=new Set(['door_open','water','crop','ripe','wire','lever','lever_on','torch']);
+  for(const type of ['lava','sulphurwater','coral','kelp'])nonSolid.add(type);
+  Object.assign(recipes,{obsidian:{name:'黑曜石 ×2',cost:{stone:4,coal:2},output:'obsidian',amount:2},portal:{name:'离线传送门',cost:{obsidian:10,diamond:2,iron:2},output:'portal',amount:1}});
+  const baseType=t=>({bed_head:'bed',ripe:'crop',lever_on:'lever',lamp_on:'lamp'}[t]||t);
+  const neighbors=k=>{const [x,y,z]=k.split(',').map(Number);return [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].map(([a,b,c])=>`${x+a},${y+b},${z+c}`);};
+  function signal(world){const powers=new Map(),queue=[];for(const [k,t] of world)if(t==='lever_on'){powers.set(k,15);queue.push(k);}for(let i=0;i<queue.length;i++){const k=queue[i],strength=powers.get(k);if(strength<=1)continue;for(const n of neighbors(k)){const t=world.get(n);if(!['wire','lamp','lamp_on'].includes(t)||(powers.get(n)||0)>=strength-1)continue;powers.set(n,strength-1);if(t==='wire')queue.push(n);}}return powers;}
+  function transfer(from,to,type,count){const available=Math.max(0,Math.floor(Number(from[type])||0));const moved=Math.min(available,Math.max(0,Math.floor(count)),9999-(Number(to[type])||0));if(moved<=0)return 0;from[type]=available-moved;to[type]=(Number(to[type])||0)+moved;return moved;}
+  const trades=[{name:'卖小麦：6 小麦 → 1 绿宝石',cost:{wheat:6},gain:{emerald:1}},{name:'买面包：1 绿宝石 → 3 面包',cost:{emerald:1},gain:{bread:3}},{name:'卖煤炭：4 煤炭 → 1 绿宝石',cost:{coal:4},gain:{emerald:1}},{name:'买铁锭：2 绿宝石 → 1 铁锭',cost:{emerald:2},gain:{iron:1}}];
+  function trade(inventory,id){const t=trades[id];if(!t||!Object.entries(t.cost).every(([k,n])=>(inventory[k]||0)>=n))return false;for(const [k,n] of Object.entries(t.gain))if((inventory[k]||0)+n>9999)return false;for(const [k,n] of Object.entries(t.cost))inventory[k]-=n;for(const [k,n] of Object.entries(t.gain))inventory[k]=(inventory[k]||0)+n;return true;}
+  function grow(world,ages,seconds,edits){let changed=false;for(const k of Object.keys(ages).slice(0,256)){const [x,,z]=k.split(',').map(Number);if(world.isLoaded&&!world.isLoaded(x,z))continue;if(world.get(k)!=='crop'){delete ages[k];continue;}ages[k]+=seconds;if(ages[k]>=60){world.set(k,'ripe');edits.set(k,'ripe');delete ages[k];changed=true;}}return changed;}
+  const api={types,items,recipes,nonSolid,baseType,signal,transfer,trades,trade,grow};if(typeof module!=='undefined')module.exports=api;else window.VoxelWorkstations=api;
+})();

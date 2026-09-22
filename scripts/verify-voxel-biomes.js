@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict');
+const terrain=require('../voxel-terrain.js');
+assert.equal(terrain.biomeAt(0,0).id,'forest');
+assert.equal(terrain.biomeAt(111,111).id,'forest');
+assert.equal(terrain.biomeAt(112,0).id,'maple');
+assert.equal(terrain.biomeAt(147,17).id,'maple');
+assert.equal(terrain.biomeAt(148,0).id,'sulphur');
+assert.equal(terrain.biomeAt(275,63).id,'sulphur');
+assert.equal(terrain.biomeAt(276,0).id,'ocean');
+assert.equal(terrain.biomeAt(595,127).id,'ocean');
+assert.equal(terrain.biomeAt(-180,0).id,'jungle');
+assert.equal(terrain.biomeAt(0,180).id,'desert');
+const edits=new Map(),world=new Map(),stream=terrain.createStream(world,edits);
+stream.move(0,0);assert.equal(stream.count(),25);const initialSize=world.size;
+assert(initialSize<150000);assert(world.has('-1,0,-1'),'Negative chunk coordinates must load');
+edits.set('1,4,1','glass');world.set('1,4,1','glass');
+edits.set('2,20,2','brick');world.set('2,20,2','brick');
+edits.set('0,0,0',null);world.delete('0,0,0');
+for(let i=1;i<=18;i++){stream.move(i*160,i*-64);assert.equal(stream.count(),25);assert(world.size<150000);}
+assert(!world.has('1,4,1'),'Far chunks must be evicted');stream.move(0,0);assert.equal(world.get('1,4,1'),'glass');
+assert.equal(world.get('2,20,2'),'brick');assert(!world.has('0,0,0'));
+stream.move(-5000,-8000);assert(world.has('-5000,0,-8000'));assert(!world.has('2,20,2'));
+stream.move(128,0);assert([...world.values()].includes('redgrass'));assert([...world.values()].includes('redleaves'));
+stream.move(210,0);assert([...world.values()].includes('sulphurwater'));
+stream.move(360,0);assert([...world.values()].includes('chest'));assert([...world.values()].includes('coral'));
+assert.equal(terrain.lootAt(361,-4,2).iron,3);assert.deepEqual(terrain.lootAt(361,-3,2),{});
+const a=terrain.generateChunk(-1,0),b=terrain.generateChunk(-1,0);assert.deepEqual([...a],[...b]);
+for(const k of a.keys()){const [x,,z]=k.split(',').map(Number);assert(x>=-16&&x<0&&z>=0&&z<16);}
+stream.dispose();assert.equal(world.size,0);
+console.log('Biome extents, deterministic seams, negative chunks, long travel, eviction and edit restoration pass.');

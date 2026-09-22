@@ -5,7 +5,7 @@ const path = require("node:path");
 const host = process.env.HOST || "127.0.0.1";
 const port = Number(process.env.PORT || 8000);
 const root = __dirname;
-const watchedFiles = ["index.html", "app.js", "styles.css"];
+const watchedFiles = ["index.html", "app.js", "styles.css", "computer-knowledge.js", "computer-experience.js", "computer-experience.css"];
 const liveReloadClients = new Set();
 
 const liveReloadScript = `
@@ -42,8 +42,8 @@ function send(res, statusCode, body, headers = {}) {
 
 function sendLiveReloadEvent() {
   for (const client of liveReloadClients) {
-    client.write("event: reload\\n");
-    client.write(`data: ${Date.now()}\\n\\n`);
+    client.write("event: reload\n");
+    client.write(`data: ${Date.now()}\n\n`);
   }
 }
 
@@ -71,7 +71,7 @@ const server = http.createServer((req, res) => {
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive"
     });
-    res.write("\\n");
+    res.write("\n");
     liveReloadClients.add(res);
     req.on("close", () => {
       liveReloadClients.delete(res);

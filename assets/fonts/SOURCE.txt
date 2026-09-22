@@ -1,0 +1,1 @@
+Fusion Pixel Font, TakWolf, release v2026.09.01. https://github.com/TakWolf/fusion-pixel-font ; original 12px proportional Simplified Chinese WOFF2, unmodified. Distributed under SIL OFL 1.1. See OFL.txt and LICENSES/.

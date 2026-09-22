@@ -1,0 +1,88 @@
+.computer-app-titlebar { display:flex; min-height:26px; }
+.mood-panel.desktop-mode { box-sizing:border-box; height:178px; min-height:178px; max-height:178px; padding:8px; }
+.mood-panel.desktop-mode #screen-subtitle { display:none!important; }
+.computer-desktop { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-auto-rows:min-content; align-content:start; gap:4px; min-height:0; height:100%; }
+.desktop-titlebar { grid-column:1/-1; height:18px; padding:0 4px; font-size:9px; }
+.desktop-apps, .desktop-installed-apps { display:contents; }
+.desktop-app { width:100%; min-height:38px; padding:0; gap:2px; font-size:7px; line-height:1.2; align-content:start; }
+.desktop-app span { box-sizing:border-box; width:22px; height:22px; border-width:1px; box-shadow:1px 1px 0 #0006; }
+.computer-app-titlebar strong { order:-1; flex:1; }
+.computer-app-titlebar .computer-app-minimize { order:1; }
+.computer-app-titlebar .computer-app-maximize { order:2; }
+.computer-app-titlebar .computer-app-close { order:3; }
+.computer-app-maximize { border:1px solid #16364a; background:#e0ecff; color:#17314f; width:23px; height:23px; padding:0; cursor:pointer; }
+.computer-app-window.software-fullscreen { position:fixed; inset:0; z-index:300; grid-template-rows:38px minmax(0,1fr); }
+.computer-app-window.software-fullscreen .computer-app-titlebar { position:relative; inset:auto; background:#174f96; color:white; padding:4px 10px; font-size:15px; }
+.computer-app-window.software-fullscreen .computer-app-titlebar strong { display:block; }
+.computer-app-window.software-fullscreen .computer-app-content { grid-row:2; overflow:auto; }
+.computer-app-content { min-height:0; overflow:auto; }
+.computer-app-window.software-fullscreen{box-sizing:border-box;width:100%;height:100vh;height:100dvh;max-width:100vw;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);grid-template-rows:auto minmax(0,1fr)}
+.software-fullscreen .computer-app-titlebar{flex-shrink:0;min-width:0;flex-wrap:nowrap}
+.software-fullscreen .computer-app-titlebar strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.software-fullscreen .computer-app-titlebar button{flex-shrink:0;min-width:40px;min-height:40px}
+.software-fullscreen .computer-app-content{min-width:0;overscroll-behavior:contain}
+.computer-desktop:has(.computer-app-window:not([hidden])) { overflow:hidden!important; }
+.computer-app-window:not(.software-fullscreen):not(.town-fullscreen) { inset:0; grid-template-rows:25px minmax(0,1fr); }
+.computer-app-content:has(.extra-app) { padding:2px; align-content:stretch; overflow:hidden; }
+.computer-app-window:not(.software-fullscreen) .extra-app { zoom:.65; height:100%; padding:2px; overflow:auto; }
+.computer-app-window:not(.software-fullscreen) .extra-app p { font-size:9px; }
+.computer-app-window:not(.software-fullscreen) .dance-toolbar select { max-width:83px; }
+.computer-app-window:not(.software-fullscreen) .dance-stage,.computer-app-window:not(.software-fullscreen) .dance-stage canvas { min-height:100px; }
+.computer-app-window:not(.software-fullscreen) .block-viewport { min-height:100px; }
+.chat-window-tools { position:absolute; top:4px; right:4px; z-index:30; display:flex; gap:3px; }
+.hat-assembly{pointer-events:none}.hat-assembly .head-hat,.hat-assembly .bamboo-copter{pointer-events:auto}
+.chat-window-tools[hidden], .full-chat[hidden], .computer-damage-screen[hidden] { display:none!important; }
+.chat-window-tools button, .full-chat nav button, .minecraft-window-tools button { width:30px; height:28px; border:1px solid #7295a2; border-radius:3px; background:#ebf5ff; color:#16354b; cursor:pointer; font-size:20px; }
+.full-chat { position:fixed; inset:0; z-index:320; display:grid; place-items:center; background:#050505; color:#fff; overflow:hidden; box-sizing:border-box; }
+.full-chat .enlarged-original-face { display:block; width:160px; height:160px; padding:0; margin:0; border:0; border-radius:0; background:transparent; color:white; box-shadow:none; transform:scale(var(--face-scale,3)); cursor:pointer; }
+.enlarged-original-face .face-display { display:grid!important; width:160px; margin:0; opacity:1; }
+.enlarged-original-face .fullscreen-blinking .eye { transform:scaleY(.08); }
+.full-chat .fullscreen-exit { position:absolute; top:max(12px,env(safe-area-inset-top)); right:max(12px,env(safe-area-inset-right)); width:44px; height:44px; padding:0; color:white; background:#222; border:1px solid #888; border-radius:4px; font-size:30px; cursor:pointer; z-index:2; }
+.full-chat .fullscreen-exit[hidden], .full-chat-subtitle[hidden] { display:none!important; }
+.full-chat-subtitle { position:absolute; top:50%; transform:translateY(-50%); left:7%; right:7%; margin:0; font-size:clamp(24px,5vw,64px); line-height:1.65; text-align:center; pointer-events:none; }
+.full-chat .enlarged-original-face[hidden] { display:none!important; }
+.typed-character { color:#fff; }
+.sprunki-game { height:100%; padding:0!important; display:grid; grid-template-rows:minmax(0,1fr) auto; max-width:none!important; }
+.sprunki-game iframe { width:100%; height:100%; min-height:140px; border:0; background:#050505; }
+.software-fullscreen .computer-app-content:has(.sprunki-game) { display:block; padding:0; }
+.sprunki-source { font-size:12px; padding:6px 12px; margin:0!important; background:#eef7ff; }
+.sprunki-source a { color:#174f96; margin-left:12px; }
+.sprunki-launch { padding:8px 12px; background:#174f96; color:white; border:1px solid #79bde0; border-radius:8px; cursor:pointer; }
+.reference-rhythm > :not(.sprunki-launch) { display:none!important; }
+.reference-rhythm .sprunki-launch { width:100%; min-height:64px; }
+.real-software { width:100%; box-sizing:border-box; padding:8px; color:#17314f; font-size:12px; text-shadow:none; }
+.real-software p { margin:4px 0 8px; }
+.software-toolbar { display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin:5px 0; }
+.software-toolbar button { padding:5px 9px; border:1px solid #8da9bd; background:#fff; color:#17314f; font:inherit; border-radius:4px; cursor:pointer; }
+.software-toolbar label { display:flex; align-items:center; gap:4px; }
+.software-toolbar input[type=range] { width:65px; }
+.software-paint canvas { display:block; width:100%; background:white; touch-action:none; border:1px solid #ccd7dd; cursor:crosshair; }
+.software-fullscreen .real-software { max-width:1200px; margin:auto; font-size:16px; padding:20px; }
+.software-fullscreen .software-paint canvas { max-height:70vh; object-fit:fill; }
+.beat-grid { display:grid; grid-template-columns:32px repeat(8,1fr); gap:3px; align-items:center; }
+.beat-grid button { aspect-ratio:1; min-width:0; padding:0; background:#d5dfed; border:1px solid #98abc1; border-radius:4px; cursor:pointer; }
+.beat-grid button[aria-pressed=true] { background:#42b99e; }
+.beat-grid button.beat-now { box-shadow:inset 0 0 0 3px #ffc85d; }
+.software-fullscreen .beat-grid { gap:12px; grid-template-columns:60px repeat(8,1fr); }
+.live-clock, .stopwatch { display:block; text-align:center; font-size:clamp(20px,4vw,72px); font-variant-numeric:tabular-nums; }
+.color-character { display:inline-block; color:var(--char-color,#ffe253); position:relative; }
+.radical-character::after { content:attr(data-char); position:absolute; inset:0; color:var(--radical-color,#bb78ff); clip-path:var(--part-clip); }
+.entry-slide { animation:entry-slide .6s both; }.entry-jump { animation:entry-jump .6s both; }.entry-zoom { animation:entry-zoom .6s both; }.entry-spin { animation:entry-spin .65s both; }
+.computer-is-damaged .computer-desktop, .computer-is-damaged .computer-app-window, .computer-is-damaged .chat-window-tools, .computer-is-damaged #face-display, .computer-is-damaged #screen-subtitle { visibility:hidden!important; pointer-events:none!important; }
+.computer-damage-screen { position:fixed; right:16px; bottom:16px; z-index:340; background:#061722; color:#a6efeb; border:2px solid #51958d; padding:22px; max-width:360px; font-family:monospace; }
+.computer-damage-screen.damage-full { inset:0; max-width:none; display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:24px; background:repeating-linear-gradient(#061722 0 3px,#0c2633 3px 5px); }
+.damage-static { font-size:36px; color:#e875ac; animation:damage-noise .14s infinite alternate; }
+.computer-damage-screen button { padding:8px; margin-top:12px; }
+.computer-damage-screen .damage-close { display:none; }
+.computer-damage-screen.damage-full .damage-close { display:block; position:absolute; top:12px; right:12px; width:44px; height:44px; padding:0; margin:0; font-size:30px; background:#fff; color:#122735; border:1px solid #789; cursor:pointer; }
+.minecraft-window-tools { position:absolute; top:12px; right:62px; z-index:20; display:flex; gap:4px; }
+#minecraft-panel.software-minimized { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; transform:none!important; z-index:28; }
+@keyframes face-float { 50% { transform:translateY(-7px); } }
+@keyframes face-blink { 0%,44%,48%,100% { transform:scaleY(1); } 46% { transform:scaleY(.07); } }
+@keyframes mouth-chat { to { transform:scaleY(.55); } }
+@keyframes entry-slide { from { opacity:0; transform:translateX(-70px); } }
+@keyframes entry-jump { 0% { opacity:0; transform:translateY(30px); } 65% { transform:translateY(-12px); } }
+@keyframes entry-zoom { from { opacity:0; transform:scale(.3); } }
+@keyframes entry-spin { from { opacity:0; transform:rotate(-360deg) scale(.4); } }
+@keyframes damage-noise { to { transform:translateX(4px); opacity:.5; } }
+@media(prefers-reduced-motion:reduce) { .giant-face,.giant-eyes i,.talking .giant-mouth,.entry-slide,.entry-jump,.entry-zoom,.entry-spin,.damage-static { animation:none; } }

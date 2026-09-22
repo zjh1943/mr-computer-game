@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>电脑先生</title>
-    <link rel="stylesheet" href="./styles.css?v=sprunki-town-cp-baby-v1" />
+    <link rel="stylesheet" href="./styles.css?v=20260922-release1" />
   </head>
   <body>
     <div class="sky-scene" aria-hidden="true">
@@ -162,7 +162,7 @@
                   </button>
                   <button class="desktop-app desktop-app-minecraft" type="button" data-computer-app="minecraft">
                     <span>方</span>
-                    我的世界
+                    我的世界<br>2D
                   </button>
                   <button class="desktop-app desktop-app-town" type="button" data-computer-app="town">
                     <span>镇</span>
@@ -434,10 +434,10 @@
         </label>
         <div id="shop-grid" class="shop-grid" aria-label="商城商品"></div>
       </section>
-      <section id="minecraft-panel" class="minecraft-panel" aria-label="我的世界" hidden>
+      <section id="minecraft-panel" class="minecraft-panel" aria-label="我的世界 2D" hidden>
         <div class="minecraft-toolbar">
           <button id="minecraft-close" class="minecraft-close" type="button" aria-label="退出我的世界">×</button>
-          <strong>我的世界</strong>
+          <strong>我的世界 2D</strong>
         </div>
         <audio id="minecraft-background-music" src="./assets/minecraft-audio/minecraft-background.mp3" preload="auto" loop></audio>
         <div id="minecraft-status" class="minecraft-status">先用镐子挖方块，背包有方块之后才能放。</div>
@@ -523,6 +523,19 @@
       </section>
     </main>
 
-    <script src="./app.js?v=sprunki-town-cp-baby-v1"></script>
+    <link rel="stylesheet" href="./computer-apps.css?v=20260922-release1">
+    <script src="./voxel-rules.js?v=20260922-release1"></script>
+<script src="./voxel-terrain.js?v=20260922-release1"></script>
+    <script src="./voxel-workstations.js?v=20260922-release1"></script>
+    <script src="./voxel-audio.js?v=20260922-release1"></script>
+    <script src="./voxel-survival.js?v=20260922-release1"></script>
+    <script src="./voxel-shell.js?v=20260922-release1"></script>
+    <script src="./voxel-world.js?v=20260922-release1"></script>
+    <script src="./dance-music.js?v=20260922-release1"></script>
+    <script src="./computer-apps.js?v=20260922-release1"></script>
+    <script src="./computer-knowledge.js?v=20260922-release1"></script>
+    <script src="./app.js?v=20260922-release1"></script>
+    <script src="./computer-voice.js?v=20260922-release1"></script>
+    <script src="./computer-experience.js?v=20260922-release1"></script>
   </body>
 </html>

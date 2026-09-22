@@ -1,0 +1,7 @@
+const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
+let created=0,started=0,closed=0;const listeners={};
+const param={setValueAtTime(){},exponentialRampToValueAtTime(){}};
+class AudioContext {constructor(){created++;this.currentTime=0;this.state='suspended';}async resume(){this.state='running';}async close(){closed++;}createOscillator(){return {frequency:param,connect(node){return node;},disconnect(node){return node;},start(){started++;},stop(){}};}createGain(){return {gain:param,connect(node){return node;},disconnect(node){return node;}};}}
+const label={remove(){}};const host={querySelector(){return {append(){}};},addEventListener(k,fn){listeners[k]=fn;},removeEventListener(k){delete listeners[k];}};
+const sandbox={window:{AudioContext},document:{hidden:false,createElement(){return label;}}};vm.runInNewContext(fs.readFileSync('voxel-audio.js','utf8'),sandbox);
+(async()=>{const audio=sandbox.window.VoxelAudio.create(host);assert.equal(created,0);await label.onclick();assert.equal(created,1);assert.equal(label.textContent,'声音：开');for(let i=0;i<30;i++)audio.play('dig');assert.equal(started,6,'Concurrent voices are bounded');await label.onclick();audio.play('place');assert.equal(started,6);audio.dispose();assert.equal(closed,1);assert.equal(Object.keys(listeners).length,0);console.log('Audio unlock, mute, six-voice limit and close cleanup pass');})().catch(e=>{console.error(e);process.exitCode=1;});

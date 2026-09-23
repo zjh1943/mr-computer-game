@@ -1,6 +1,6 @@
 /* Runnable, local applications. Every mount returns a cleanup function. */
 (() => {
-  const catalog = {calculator:['算','计算器'],notes:['记','便签本'],tasks:['单','待办清单'],memory:['牌','记忆翻牌'],piano:['琴','小钢琴'],dance:['舞','Sprunki FNF Mod'],blocks3d:['立','我的世界 3D']};
+  const catalog = {calculator:['算','计算器'],notes:['记','便签本'],tasks:['单','待办清单'],memory:['牌','记忆翻牌'],piano:['琴','小钢琴'],dance:['舞','节奏音乐跳舞游戏'],blocks3d:['立','我的世界 3D']};
   Object.assign(catalog,typeof module!=="undefined"?require("./arcade-games.js").catalog:window.ArcadeGames?.catalog);
   const songs = [{name:'芯片起舞',bpm:96,scale:[0,4,7,12,7,4,2,7]},{name:'霓虹对决',bpm:120,scale:[0,3,7,10,12,10,7,3]},{name:'月光律动',bpm:84,scale:[0,5,9,12,9,7,5,2]},{name:'像素冲刺',bpm:140,scale:[0,7,12,7,3,10,15,10]},{name:'彩虹派对',bpm:110,scale:[0,2,4,7,9,7,4,2]}];
   const chart = song => {const bpm=Math.max(40,Math.min(240,Number(song.bpm)||120)),length=song.duration?Math.max(0,Math.floor((Math.min(900,song.duration)-3)*bpm/60)+1):64;return Array.from({length},(_,i)=>({time:2+i*60/bpm,lane:(i*3+Math.floor(i/4))%4,done:false})).filter(n=>!song.vocalWindows||song.vocalWindows.some(([from,to])=>n.time>=from+1.8&&n.time<=to));};

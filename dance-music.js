@@ -47,8 +47,9 @@
 
   // Fixed beat boundaries keep every voice and the arrow chart on one audio clock.
   const sections=[{from:0,to:16,voices:[0,3],name:'开场'},{from:16,to:48,voices:[0,1,2,3,4,5],name:'合奏'},{from:48,to:64,voices:[2,4],name:'间奏'},{from:64,to:112,voices:[0,1,2,3,4,5],name:'合唱'},{from:112,to:128,voices:[0,3,4],name:'尾声'}];
+  const decodedSounds=new Map();
   async function prepareMix(ctx,track){
-    const buffers=await Promise.all(track.mix.map(async stem=>{const response=await fetch(stem.audio);if(!response.ok)throw Error('合奏声音读取失败');return ctx.decodeAudioData(await response.arrayBuffer());}));
+    const buffers=await Promise.all(track.mix.map(async stem=>{let pending=decodedSounds.get(stem.audio);if(!pending){pending=(async()=>{const response=await fetch(stem.audio);if(!response.ok)throw Error('合奏声音读取失败');return ctx.decodeAudioData(await response.arrayBuffer());})();decodedSounds.set(stem.audio,pending);pending.catch(()=>decodedSounds.delete(stem.audio));}return pending;}));
     return start=>{const beat=60/track.bpm;for(const part of sections)for(const i of part.voices){const stem=track.mix[i],source=ctx.createBufferSource(),gain=ctx.createGain(),at=start+2+part.from*beat,end=start+2+part.to*beat;source.buffer=buffers[i];source.loop=true;source.playbackRate.value=buffers[i].duration/(stem.beats*beat);source.connect(gain).connect(ctx.destination);gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(stem.gain,at+.025);gain.gain.setValueAtTime(stem.gain,end-.06);gain.gain.linearRampToValueAtTime(0,end);source.start(at);source.stop(end);source.onended=()=>{source.disconnect();gain.disconnect();};}};
   }
   if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix};

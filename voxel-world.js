@@ -63,8 +63,9 @@
     host.innerHTML='<div class="voxel-top"><strong>方块原野</strong><span>创造模式 · 网页版</span><button type="button" data-action="day">切换昼夜</button><button type="button" data-action="home">回到出生点</button><button type="button" data-action="craft">原木 → 4 木板</button></div><div class="voxel-view" tabindex="0" aria-label="第一人称方块世界"><div class="voxel-cross">+</div><div class="voxel-hand" aria-hidden="true"><i></i></div><div class="voxel-help">电脑：点击锁定鼠标 · WASD移动 · Esc释放<br>手机：摇杆移动 · 拖动转头 · 长按挖掘 / 轻点放置</div><div class="voxel-coords"></div></div><div class="voxel-hotbar" aria-label="材料栏"></div><div class="voxel-bottom"><div class="voxel-move"><button data-key="KeyW" aria-label="向前走">↑</button><button data-key="KeyA" aria-label="向左走">←</button><button data-key="KeyS" aria-label="向后走">↓</button><button data-key="KeyD" aria-label="向右走">→</button></div><button data-action="jump">跳跃</button><button data-action="dig">挖掘</button><button data-action="place">放置</button><span role="status">正在生成草地、树林和湖泊…</span></div>';
     const view=host.querySelector('.voxel-view'),status=host.querySelector('[role=status]'),bar=host.querySelector('.voxel-hotbar');
     let disposed=false,cleanup=()=>{};
-    import('./rhythm-world/vendor/three.module.min.js').then(T=>{
-      if(disposed)return;
+    const waiting=window.GameRuntime?.loading(view,'正在铺好方块世界…');
+    (window.GameRuntime?.three()||import('./rhythm-world/vendor/three.module.min.js')).then(T=>{
+      if(disposed){waiting?.close();return;}waiting?.close();
       const dimension=options.dimension||'overworld';
       const legacyWorld=generateWorld(dimension==='overworld'?options.terrain:dimension),world=dimension==='overworld'?new Map():legacyWorld,edits=new Map(),inventory={};
       const survival=options.mode==='survival',storageKey=options.storageKey||'computer-voxel-v2';
@@ -245,7 +246,7 @@
         clouds.position.set(p.x+Math.sin(now*.000015)*2,0,p.z);renderer.render(scene,camera);
       }raf=requestAnimationFrame(frame);status.textContent=survival?'生存世界已就绪 · 先采木头，再合成木镐':'创造世界已就绪 · 材料不限';
       cleanup=()=>{drops.forEach(d=>scene.remove(d.mesh));crackTexture.dispose();crackMaterial.dispose();clearTimeout(holdTimer);releaseStick();if(document.pointerLockElement===canvas)document.exitPointerLock();document.removeEventListener('mousemove',mouseLook);persist();audio.dispose();mobs?.dispose();stream?.dispose();delete host.saveWorld;cancelAnimationFrame(raf);resize.disconnect();keys.clear();document.removeEventListener('keydown',onKey);document.removeEventListener('keyup',onUp);window.removeEventListener('blur',clear);document.removeEventListener('visibilitychange',clear);for(const mesh of meshes)mesh.dispose();geometry.dispose();outlineGeo.dispose();outlineMat.dispose();cloudMaterial.dispose();bubbleMesh.dispose();bubbleMaterial.dispose();avatarMaterials.forEach(m=>m.dispose());new Set(Object.values(materials).flat()).forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();canvas.remove();};
-    }).catch(error=>{cleanup();if(!disposed)status.textContent='3D 世界未能启动：'+error.message;});
+    }).catch(error=>{cleanup();if(!disposed){status.textContent='3D 世界未能启动：'+error.message;waiting?.error('世界没有准备好，请退出后重新打开');}});
     return()=>{disposed=true;cleanup();};
   }
   window.VoxelWorld={mount:host=>window.VoxelShell.mount(host,mount)};

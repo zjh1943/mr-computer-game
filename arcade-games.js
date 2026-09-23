@@ -10,6 +10,7 @@
     const board=document.createElement('div');board.className='arcade-board';host.append(board);
     const controls=document.createElement('div');controls.className='arcade-controls';host.append(controls);
     const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;controls.append(b);return b;};
+    const expand=button('全屏游戏',()=>window.ComputerExperience?.fullscreen());expand.className='arcade-expand';
     let timer=0,dead=false,key=()=>{};
     if(id==='tictactoe'){
       let cells,turn,ended;board.classList.add('tic-board');

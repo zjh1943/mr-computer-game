@@ -1,7 +1,7 @@
 /* Browser applications share the game's screen, damage state and voice. */
 (() => {
   const style = document.createElement('link');
-  style.rel = 'stylesheet'; style.href = './computer-experience.css'; document.head.append(style);
+  style.rel = 'stylesheet'; style.href = './computer-experience.css?v=20260923-fullscreen1'; document.head.append(style);
   let cleanup = () => {}, full = false, damaged = false, voice = null;
   let voiceEnabled = false, voiceTimer = null, replyingUntil = 0;
   const minecraftDock = { parent: minecraftPanel.parentElement, next: minecraftPanel.nextSibling };
@@ -55,6 +55,7 @@
   function stopSoftware() { cleanup(); cleanup = () => {}; }
   function leaveFullscreen() {
     full = false; fullChat.hidden = true; document.body.classList.remove('computer-chat-full'); stopVoice();
+    maximize.setAttribute('aria-label', '全屏软件'); maximize.title = '全屏软件'; maximize.textContent = '□';
     computerAppWindow.classList.remove('software-fullscreen');
     if (currentComputerApp !== 'town') setComputerAppWindowLayer('');
     minecraftPanel.classList.remove('software-minimized');
@@ -70,6 +71,7 @@
   function fullscreen() {
     if (isDamagedNow()) return;
     full = true;
+    maximize.setAttribute('aria-label', '退出软件全屏'); maximize.title = '退出软件全屏'; maximize.textContent = '▣';
     if (currentComputerApp === 'chat') {
       if (screenTimer) clearTimeout(screenTimer);
       showFaceOnly();

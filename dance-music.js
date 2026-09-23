@@ -7,6 +7,9 @@
     {id:'sprunki-friend',vocalWindows:[[34,41]],name:'SPRUNKI · Friend Like You',artist:'Horror Skunx',video:'Lz66RAjtCgw',bpm:120,duration:900,cast:['oren','pinki','gray','wenda'],castLabel:'舞台搭档'},
     {id:'sprunki-song',name:'SPRUNKI Song',artist:'BENJIxScarlett',video:'e6um0c7gP6s',bpm:120,duration:900,cast:['simon','oren','pinki','wenda','brud'],castLabel:'舞台搭档'}
   ];
+  for(const track of tracks)if(track.mix)track.audioFile='./assets/dance-audio/'+track.id+'.wav';
+  function parseLyrics(text){const cues=[];for(const line of text.split(/\r?\n/)){const words=line.replace(/\[\d+:\d+(?:\.\d+)?\]/g,'').trim();for(const match of line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g))cues.push({time:Number(match[1])*60+Number(match[2]),text:words.slice(0,160)});}return cues.sort((a,b)=>a.time-b.time);}
+  function captionAt(cues,time){let result='';for(const cue of cues||[]){if(cue.time>time)break;result=time-cue.time<6?cue.text:'';}return result;}
   let api;
   function loadAPI(){
     if(window.YT?.Player)return Promise.resolve(window.YT);
@@ -52,6 +55,6 @@
     const buffers=await Promise.all(track.mix.map(async stem=>{let pending=decodedSounds.get(stem.audio);if(!pending){pending=(async()=>{const response=await fetch(stem.audio);if(!response.ok)throw Error('合奏声音读取失败');return ctx.decodeAudioData(await response.arrayBuffer());})();decodedSounds.set(stem.audio,pending);pending.catch(()=>decodedSounds.delete(stem.audio));}return pending;}));
     return start=>{const beat=60/track.bpm;for(const part of sections)for(const i of part.voices){const stem=track.mix[i],source=ctx.createBufferSource(),gain=ctx.createGain(),at=start+2+part.from*beat,end=start+2+part.to*beat;source.buffer=buffers[i];source.loop=true;source.playbackRate.value=buffers[i].duration/(stem.beats*beat);source.connect(gain).connect(ctx.destination);gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(stem.gain,at+.025);gain.gain.setValueAtTime(stem.gain,end-.06);gain.gain.linearRampToValueAtTime(0,end);source.start(at);source.stop(end);source.onended=()=>{source.disconnect();gain.disconnect();};}};
   }
-  if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix};
-  else window.DanceMusic={tracks,open,sections,prepareMix};
+  if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix,parseLyrics,captionAt};
+  else window.DanceMusic={tracks,open,sections,prepareMix,parseLyrics,captionAt};
 })();

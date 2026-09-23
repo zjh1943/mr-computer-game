@@ -73,3 +73,18 @@
 .dance-face{background:#080b10;color:#fff}.dance-eyes i{background:#fff}.dance-mouth{border-top-color:#fff}.dance-lead-character{display:block;max-width:90%;height:clamp(90px,24vh,240px);object-fit:contain;margin:auto}.dance-player.singing .dance-mouth{animation:computer-white-mouth .25s infinite alternate}@keyframes computer-white-mouth{to{border-radius:50%;border:0;width:18px;height:22px;background:#fff}}
 
 .game-loading{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#172737;color:white}.game-is-loading .dance-status:before{content:'';display:inline-block;width:16px;height:16px;margin-right:8px;border:3px solid #89a7bc;border-top-color:#3459dc;border-radius:50%;animation:game-spin .8s linear infinite}@keyframes game-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.game-is-loading .dance-status:before{animation:none}}
+
+/* Generated directional art: each input selects a distinct drawing. */
+.dance-pose{background-repeat:no-repeat;background-position-x:var(--pose-x,33.333333%);width:100%;flex:none}
+.computer-pose{position:relative;aspect-ratio:543 / 724;background-image:url('./assets/dance-poses/computer-directions.png');background-size:400% 100%;max-width:240px;margin:auto}
+.cast-pose{aspect-ratio:1;background-image:url('./assets/dance-poses/cast-directions.png');background-size:400% 400%;background-position-y:calc(var(--pose-row) * 100% / 3)}
+.dance-rival>div:has(.cast-pose){display:flex;flex-direction:column;align-items:center;min-width:0}
+.dance-player:has(.dance-pose){min-width:0;align-self:end;transform:none!important}
+.dance-player .cast-pose{max-width:210px;margin:auto}
+.dance-screen-caption{position:absolute;inset:33% 21% 38% 18%;display:flex;align-items:center;justify-content:center;text-align:center;background:#050709;color:white;border-radius:12%;font:bold clamp(9px,1.2vw,17px)/1.15 monospace;overflow-wrap:anywhere;padding:3px}
+.dance-screen-caption[hidden]{display:none}
+.dance-player[data-pose="0"] .dance-screen-caption{transform:rotate(12deg)}
+.dance-player[data-pose="3"] .dance-screen-caption{transform:rotate(-12deg)}
+.dance-player[data-pose="1"] .dance-screen-caption{inset:43% 24% 36% 24%}
+.dance-player[data-pose="2"] .dance-screen-caption{inset:27% 24% 42% 22%}
+.dance-player.singing .dance-pose,.dance-rival .dance-pose{animation:none}

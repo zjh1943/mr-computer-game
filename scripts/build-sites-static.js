@@ -16,6 +16,7 @@ const includeFiles = [
   "computer-voice.js",
   "computer-experience.css",
   "computer-apps.js",
+  "arcade-games.js",
   "dance-music.js",
   "voxel-rules.js",
   "voxel-world.js",

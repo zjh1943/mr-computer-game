@@ -8731,7 +8731,7 @@ function setComputerAppWindowContent(app) {
       button.disabled = installedComputerApps.includes(downloadApp);
       button.textContent = installedComputerApps.includes(downloadApp)
         ? `${computerAppNames[downloadApp]}已安装`
-        : `下载${computerAppNames[downloadApp]}`;
+        : `安装${computerAppNames[downloadApp]}`;
       button.addEventListener("click", () => downloadComputerApp(downloadApp));
       storeList.appendChild(button);
     });

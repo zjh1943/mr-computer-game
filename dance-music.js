@@ -8,12 +8,13 @@
   ];
   const cast=typeof module!=='undefined'?require('./dance-cast.js'):window.DanceCast;
   const reference=typeof module!=='undefined'?require('./dance-reference-data.js'):window.DanceReferenceData;
-  const custom={...previousMixes[0],id:'mix-sunny',name:'自由合奏 · 自己编曲',artist:'正常模式完整音色',cast:['oren','raddy'],duration:78.8};
+  const custom={...previousMixes[0],id:'mix-sunny',name:'原版 SPRUNKI 合奏',artist:'拖入角色 · 原版正常音色',cast:['oren','raddy'],duration:78.8,originalMix:true,captionLoop:9.6,captions:[{time:0,text:'HELLO!'},{time:.9,text:'WOULD YOU LIKE'},{time:2.2,text:'TO HAVE SOME FUN'},{time:3.2,text:'WITH US RIGHT NOW?'},{time:7.7,text:'COME AND SING!'}]};
   const order=[...previousMixes[0].mix.map(s=>s.id),...Object.keys(cast).filter(id=>!previousMixes[0].mix.some(s=>s.id===id)&&!cast[id].silent)];
   custom.mix=order.map(id=>({id,audio:cast[id].audio,beats:cast[id].beats,gain:cast[id].gain}));
   const tracks=[...reference.tracks,custom];
   function parseLyrics(text){const cues=[];for(const line of text.split(/\r?\n/)){const words=line.replace(/\[\d+:\d+(?:\.\d+)?\]/g,'').trim();for(const match of line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g))cues.push({time:Number(match[1])*60+Number(match[2]),text:words.slice(0,160)});}return cues.sort((a,b)=>a.time-b.time);}
   function captionAt(cues,time){let result='';for(const cue of cues||[]){if(cue.time>time)break;result=time-cue.time<6?cue.text:'';}return result;}
+  function captionForTrack(track,time){const at=track?.captionLoop?Math.max(0,time-2)%track.captionLoop:time;return captionAt(track?.captions,at);}
   let api;
   function loadAPI(){
     if(window.YT?.Player)return Promise.resolve(window.YT);
@@ -65,16 +66,16 @@
     return start=>{
       const beat=60/track.bpm,origin=start+2,end=origin+128*beat,overrides=new Map();const master=ctx.createDynamicsCompressor?ctx.createDynamicsCompressor():null;if(master){master.threshold.value=-8;master.knee.value=12;master.ratio.value=6;master.attack.value=.003;master.release.value=.15;master.connect(ctx.destination);}
       const channels=track.mix.map((stem,i)=>{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffers[i];source.loop=true;source.playbackRate.value=buffers[i].duration/(stem.beats*beat);source.connect(gain).connect(master||ctx.destination);gain.gain.setValueAtTime(0,start);
-        for(const part of sections){const at=origin+part.from*beat;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(part.voices.includes(i)?stem.gain:0,at+.025);gain.gain.setValueAtTime(part.voices.includes(i)?stem.gain:0,origin+part.to*beat-.04);gain.gain.linearRampToValueAtTime(0,origin+part.to*beat);}
+        for(const part of sections){const enabled=!track.originalMix&&part.voices.includes(i),at=origin+part.from*beat;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(enabled?stem.gain:0,at+.025);gain.gain.setValueAtTime(enabled?stem.gain:0,origin+part.to*beat-.04);gain.gain.linearRampToValueAtTime(0,origin+part.to*beat);}
         source.start(origin);source.stop(end);source.onended=()=>{source.disconnect();gain.disconnect();};return {source,gain};});
       return {setVoice(i,enabled){if(!channels[i])return null;const stem=track.mix[i],phrase=stem.beats*beat,at=origin+Math.max(0,Math.ceil((ctx.currentTime+.05-origin)/phrase))*phrase;if(at>=end)return null;
         const old=overrides.get(i)||[];overrides.set(i,[...old.filter(change=>change.at<at),{at,enabled}]);
         const param=channels[i].gain.gain;param.cancelScheduledValues(at);param.setValueAtTime(0,at);param.linearRampToValueAtTime(enabled?stem.gain:0,at+.025);param.setValueAtTime(enabled?stem.gain:0,end-.04);param.linearRampToValueAtTime(0,end);return at-start;},
-        voicesAt(time){const absolute=start+time,b=(absolute-origin)/beat,part=sections.find(s=>b>=s.from&&b<s.to);if(!part)return [];return track.mix.flatMap((_,i)=>{const changes=overrides.get(i)||[],change=changes.filter(c=>c.at<=absolute).at(-1);return (change?change.enabled:part.voices.includes(i))?[i]:[];});},
+        voicesAt(time){const absolute=start+time,b=(absolute-origin)/beat,part=sections.find(s=>b>=s.from&&b<s.to);if(!part)return [];return track.mix.flatMap((_,i)=>{const changes=overrides.get(i)||[],change=changes.filter(c=>c.at<=absolute).at(-1),enabled=change?change.enabled:(!track.originalMix&&part.voices.includes(i));return enabled?[i]:[];});},
         stop(){channels.forEach(({source,gain})=>{try{source.stop();}catch{}source.disconnect();gain.disconnect();});master?.disconnect();}
       };
     };
   }
-  if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt};
-  else window.DanceMusic={tracks,open,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt};
+  if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt,captionForTrack};
+  else window.DanceMusic={tracks,open,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt,captionForTrack};
 })();

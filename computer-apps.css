@@ -144,3 +144,17 @@
 .dance-stage .dance-rival>div{min-width:0}
 @media(max-width:600px){.dance-rack{grid-template-columns:repeat(5,minmax(0,1fr))}.dance-rack img{height:28px;width:28px}.dance-stage canvas.dance-original{height:170px!important}}
 .dance-stage{background-image:url('./assets/dance-reference/background-4.png'),url('./assets/dance-reference/background-3.png'),url('./assets/dance-reference/background-2.png'),linear-gradient(transparent 64%,#08cf04 64%),url('./assets/dance-reference/background-1.png');background-size:120% 42%,115% 43%,110% 44%,100% 100%,cover;background-position:center bottom,center 72%,center 48%,center,center}
+
+/* Independent opponent and player arrow banks. */
+.dance-stage .dance-lanes{grid-column:1/-1;position:absolute;inset:0 2% 35%;height:auto;z-index:2;overflow:visible}
+.dance-player-targets{left:50%;right:0}.dance-opponent-targets{left:0;right:50%;pointer-events:none}
+.dance-bank-labels{position:absolute;inset:5px 0 auto;display:grid;grid-template-columns:1fr 1fr;text-align:center;font-size:12px;font-weight:bold;color:#163b49;text-shadow:0 1px white}
+.dance-opponent-targets span{display:block;filter:drop-shadow(0 3px 0 #111b)}
+.dance-opponent-targets svg{display:block;width:100%;height:clamp(44px,6vw,78px);overflow:visible}
+.dance-opponent-targets path{fill:var(--arrow-color);stroke:#161221;stroke-width:9;stroke-linejoin:round;paint-order:stroke fill}
+.dance-opponent-targets span:nth-child(1){--arrow-color:#c66bea}.dance-opponent-targets span:nth-child(2){--arrow-color:#43dced}.dance-opponent-targets span:nth-child(3){--arrow-color:#78e65a}.dance-opponent-targets span:nth-child(4){--arrow-color:#ff626e}
+.dance-opponent-targets [data-feedback="hit"]{filter:drop-shadow(0 0 12px var(--arrow-color)) brightness(1.4);transform:scale(1.12)}
+.dance-sky-sun{position:absolute;top:24px;left:calc(50% - 38px);width:76px;height:76px;object-fit:contain;z-index:0;pointer-events:none;animation:dance-sun-bob 3s ease-in-out infinite}
+@keyframes dance-sun-bob{50%{transform:translateY(5px) rotate(5deg)}}
+@media(prefers-reduced-motion:reduce){.dance-sky-sun{animation:none}}
+@media(max-width:600px){.dance-targets button svg,.dance-opponent-targets svg{height:38px}.dance-bank-labels{font-size:10px}.dance-sky-sun{width:56px;height:56px;left:calc(50% - 28px)}}

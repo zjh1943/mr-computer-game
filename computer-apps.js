@@ -10,13 +10,14 @@
     return {player:all.filter(n=>Math.floor((n.time-2)/beat/4)%2===1),opponent:all.filter(n=>Math.floor((n.time-2)/beat/4)%2===0)};
   };
   const orientedLane=(side,lane)=>side==='player'&&lane%3===0?3-lane:lane;
+  const stageSunVisible=ids=>!ids.includes('mr_sun');
   const audioFileAllowed=file=>/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i.test(file.name)&&file.size>0&&file.size<=25*1024*1024;
   const matchesSong=(song,query,sprunkiOnly=false)=>(!sprunkiOnly||/sprunki/i.test(song.name))&&song.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
   const leadCharacter=song=>song?.lead||(song?.mix?.some(stem=>stem.id==='computer')||song?.vocalWindows?.length?'computer':song?.cast?.[0]||null);
   const grade = delta => Math.abs(delta)<=.1 ? 100 : Math.abs(delta)<=.28 ? 60 : 0;
   const songSources=[{name:'Colorful Bunch · 原作者模组与曲目',artist:'Just_Camilo',url:'https://gamebanana.com/mods/585004'}
   ];
-  if(typeof module!=='undefined') { module.exports={catalog,songs,chart,battleChart,orientedLane,grade,audioFileAllowed,matchesSong,songSources,leadCharacter}; return; }
+  if(typeof module!=='undefined') { module.exports={catalog,songs,chart,battleChart,orientedLane,stageSunVisible,grade,audioFileAllowed,matchesSong,songSources,leadCharacter}; return; }
   const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('apps-'+key))??fallback;}catch{return fallback;}};
   const save=(key,value)=>{try{localStorage.setItem('apps-'+key,JSON.stringify(value));return true;}catch{return false;}};
   const el=(tag,text,parent)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(parent)parent.append(n);return n;};
@@ -73,7 +74,7 @@
       const animation=sprite.animate([{transform:'translate(0,0) scale(1)',offset:0},{transform:'translate(0,3px) scale(1.025,.965)',offset:.14},{transform:peak,offset:.38},{transform:settle,offset:.73},{transform:'translate(0,0) scale(1)',offset:1}],{duration:poseDuration(),easing:'cubic-bezier(.22,.65,.35,1)',fill:'forwards'});poseAnimations.set(figure,animation);
     }
     function updateScreen(t){const screen=player.querySelector('.dance-screen-caption');if(!screen)return;const words=player.classList.contains('singing')?window.DanceMusic.captionAt(selected.captions,t):'';screen.hidden=!words;if(screen.textContent!==words)screen.textContent=words;}
-    const picture=()=>{const lead=castOverride.player||referenceRoles.player||leadCharacter(selected);player.replaceChildren();player.classList.remove('singing');player.dataset.side='player';useOriginal(player,lead);setPose(player,-1);player.dataset.character=lead||'partner';rival.replaceChildren();const ids=selected?.reference?[referenceRoles.dad,referenceRoles.gf]:(castOverride.rivals||selected?.cast||[]).filter(id=>id!==lead).slice(0,opponentCount);ids.forEach((id,i)=>{if(!id)return;const figure=el('div',undefined,rival);figure.dataset.role=i===0?'dad':'gf';figure.dataset.side='opponent';useOriginal(figure,id);setPose(figure,-1);});};
+    const picture=()=>{const lead=castOverride.player||referenceRoles.player||leadCharacter(selected);player.replaceChildren();player.classList.remove('singing');player.dataset.side='player';useOriginal(player,lead);setPose(player,-1);player.dataset.character=lead||'partner';rival.replaceChildren();const ids=selected?.reference?[referenceRoles.dad,referenceRoles.gf]:(castOverride.rivals||selected?.cast||[]).filter(id=>id!==lead).slice(0,opponentCount);sun.hidden=!stageSunVisible([lead,...ids].filter(Boolean));ids.forEach((id,i)=>{if(!id)return;const figure=el('div',undefined,rival);figure.dataset.role=i===0?'dad':'gf';figure.dataset.side='opponent';useOriginal(figure,id);setPose(figure,-1);});};
     let demoTimer=0;
     let ctx,raf=0,active=true,running=false,notes=[],opponentNotes=[],startTime=0,score=0,combo=0,rivalScore=0,nextSound=0,moveUntil=0,rivalBeat=-1,selected=library[0],media=null,mediaURL=null,db=null,starting=false,importing=false,video=null,playSession=0;const arrows=['←','↓','↑','→'];
     const libraryBox=el('details',undefined);libraryBox.className='dance-library';host.prepend(libraryBox);el('summary','更多歌曲 / 本机音频',libraryBox);
@@ -124,8 +125,8 @@
       animateOriginal(player,t,player.classList.contains('singing'));rival.querySelectorAll(':scope > div').forEach(f=>animateOriginal(f,t,f.classList.contains('singing')));
       if(selected.vocalWindows)player.classList.toggle('singing',selected.vocalWindows.some(([from,to])=>t>=from&&t<to));
       const beat=Math.floor(Math.max(0,t-2)/(60/selected.bpm));if(!selected.reference&&beat!==rivalBeat){rivalBeat=beat;rival.querySelectorAll(':scope > div').forEach((f,i)=>{if(f.classList.contains('singing')||!selected.mix){setPose(f,(beat+i)%4,true);f.dataset.poseUntil=String(now+poseDuration());}else setPose(f,-1);});}updateScreen(t);updateBattle(t);
-      opponentNotes.forEach(n=>{if(!n.done&&t>=n.time){n.done=true;rivalScore+=60;const target=host.querySelectorAll('.dance-opponent-targets span')[n.lane];target.dataset.feedback='hit';target.dataset.until=String(now+180);}if(!n.done){const y=opponentBox.line-(n.time-t)*(opponentBox.line/1.8);if(y>-25&&y<opponentBox.h)drawArrow(opponentG,n.lane,(n.lane+.5)*opponentBox.w/4,y,Math.min(64,opponentBox.w/4*.7),colors[n.lane]);}});
-      notes.forEach(n=>{if(!n.done&&t>n.time+.28){n.done=true;combo=0;}if(!n.done){const y=playerBox.line-(n.time-t)*(playerBox.line/1.8);if(y>-25&&y<playerBox.h){drawArrow(playerG,n.lane,(n.lane+.5)*playerBox.w/4,y,Math.min(64,playerBox.w/4*.7),colors[n.lane]);}}});
+      opponentNotes.forEach(n=>{if(!n.done&&t>=n.time){n.done=true;rivalScore+=60;const target=host.querySelectorAll('.dance-opponent-targets span')[n.lane];target.dataset.feedback='hit';target.dataset.until=String(now+180);}if(!n.done){const y=opponentBox.line-(n.time-t)*(opponentBox.line/1.8);if(y>-25&&y<opponentBox.h)drawArrow(opponentG,n.lane,(n.lane+.5)*opponentBox.w/4,y,Math.min(48,opponentBox.w/4*.62),colors[n.lane]);}});
+      notes.forEach(n=>{if(!n.done&&t>n.time+.28){n.done=true;combo=0;}if(!n.done){const y=playerBox.line-(n.time-t)*(playerBox.line/1.8);if(y>-25&&y<playerBox.h){drawArrow(playerG,n.lane,(n.lane+.5)*playerBox.w/4,y,Math.min(48,playerBox.w/4*.62),colors[n.lane]);}}});
       if(!selected.video&&!selected.imported&&!media&&t>(selected.mix?selected.duration:Math.max(notes.at(-1)?.time||0,opponentNotes.at(-1)?.time||0)+1))finish();
     }frame();return()=>{active=false;stopAudio();cancelAnimationFrame(raf);document.removeEventListener('keydown',key);db?.close();};
   }

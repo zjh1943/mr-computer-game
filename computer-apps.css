@@ -133,3 +133,14 @@
 .dance-custom-motion .dance-player[data-pose="-1"] .dance-original{animation:fnf-idle var(--dance-beat,.6s) infinite ease-in-out}
 .dance-rival:has(>div:only-child){grid-template-columns:1fr}
 @media(prefers-reduced-motion:reduce){.dance-custom-motion .dance-original{animation:none!important}}
+/* Original normal-mode reference scenery, layered from sky to foreground. */
+.dance-stage{background-color:#43c5eb;background-image:url('./assets/dance-reference/background-4.png'),url('./assets/dance-reference/background-3.png'),url('./assets/dance-reference/background-2.png'),url('./assets/dance-reference/background-1.png');background-size:120% 42%,115% 43%,110% 44%,cover;background-position:center bottom,center 72%,center 48%,center;background-repeat:no-repeat}
+.dance-rack{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;width:100%;max-width:850px;align-self:center}
+.dance-rack button{min-width:0;width:100%;font-size:10px;padding:2px;overflow:hidden}
+.dance-rack img{height:34px;width:34px}
+.dance-rack-help{font-size:11px}
+.dance-stage canvas.dance-original{height:clamp(145px,31vh,310px)!important;min-height:0;max-width:100%;position:static;aspect-ratio:256/360;object-fit:contain}
+.dance-stage .dance-rival{gap:0;align-items:end}
+.dance-stage .dance-rival>div{min-width:0}
+@media(max-width:600px){.dance-rack{grid-template-columns:repeat(5,minmax(0,1fr))}.dance-rack img{height:28px;width:28px}.dance-stage canvas.dance-original{height:170px!important}}
+.dance-stage{background-image:url('./assets/dance-reference/background-4.png'),url('./assets/dance-reference/background-3.png'),url('./assets/dance-reference/background-2.png'),linear-gradient(transparent 64%,#08cf04 64%),url('./assets/dance-reference/background-1.png');background-size:120% 42%,115% 43%,110% 44%,100% 100%,cover;background-position:center bottom,center 72%,center 48%,center,center}

@@ -19,6 +19,8 @@ const includeFiles = [
   "arcade-games.js",
   "dance-music.js",
   "dance-cast.js",
+  "dance-reference.js",
+  "dance-reference-data.js",
   "voxel-rules.js",
   "voxel-world.js",
   "voxel-terrain.js",

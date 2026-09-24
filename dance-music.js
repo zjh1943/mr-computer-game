@@ -1,13 +1,17 @@
 /* Official hosted songs stay in their visible, credited original player. */
 (() => {
-  const tracks = [
+  const previousMixes = [
 {"id":"mix-sunny","name":"SPRUNKI · 草地派对","artist":"电脑先生编曲 · 多角色混音","bpm":100,"duration":78.8,"cast":["oren","raddy","clukr","simon","pinki"],"mix":[{"id":"oren","audio":"./assets/sprunki-kiss-local/assets/2ff9e556ae0b3cb4f9e4750dbe9b17d4.wav","beats":8,"gain":0.19},{"id":"raddy","audio":"./assets/sprunki-kiss-local/assets/ae111f7b2abb4ffe113d49e85cadcf7c.wav","beats":8,"gain":0.19},{"id":"clukr","audio":"./assets/sprunki-kiss-local/assets/70a511bac6487b9dfb4b9420ad7e86f6.wav","beats":8,"gain":0.19},{"id":"simon","audio":"./assets/sprunki-kiss-local/assets/5a09fb11b6441a49fc732a93b3b86b00.wav","beats":8,"gain":0.19},{"id":"pinki","audio":"./assets/sprunki-kiss-local/assets/be1cb011ce50969caf9511048105f167.wav","beats":16,"gain":0.19},{"id":"computer","audio":"./assets/sprunki-kiss-local/assets/cc85f2be1b1764358cd1ab84455d00a0.wav","beats":8,"gain":0.23}]},
 {"id":"mix-forest","name":"SPRUNKI · 森林回声","artist":"电脑先生编曲 · 多角色混音","bpm":100,"duration":78.8,"cast":["oren","vineria","brud","durple","wenda"],"mix":[{"id":"oren","audio":"./assets/sprunki-kiss-local/assets/2ff9e556ae0b3cb4f9e4750dbe9b17d4.wav","beats":8,"gain":0.19},{"id":"vineria","audio":"./assets/sprunki-kiss-local/assets/7f08e76918d14fdfa46c4c61728808fc.wav","beats":8,"gain":0.19},{"id":"brud","audio":"./assets/sprunki-kiss-local/assets/ef3c0e50f5c2ac26bfc5700fce42db63.wav","beats":8,"gain":0.19},{"id":"durple","audio":"./assets/sprunki-kiss-local/assets/a61d4acb6949d64706ec7246eefc7e96.wav","beats":8,"gain":0.19},{"id":"wenda","audio":"./assets/sprunki-kiss-local/assets/d3412e9a60ca1e4fb3db49587687ec28.wav","beats":8,"gain":0.19},{"id":"computer","audio":"./assets/sprunki-kiss-local/assets/cc85f2be1b1764358cd1ab84455d00a0.wav","beats":8,"gain":0.23}]},
 {"id":"mix-rainbow","name":"SPRUNKI · 彩虹合唱","artist":"电脑先生编曲 · 多角色混音","bpm":100,"duration":78.8,"cast":["oren","raddy","garnold","wenda","pinki"],"mix":[{"id":"oren","audio":"./assets/sprunki-kiss-local/assets/2ff9e556ae0b3cb4f9e4750dbe9b17d4.wav","beats":8,"gain":0.19},{"id":"raddy","audio":"./assets/sprunki-kiss-local/assets/ae111f7b2abb4ffe113d49e85cadcf7c.wav","beats":8,"gain":0.19},{"id":"garnold","audio":"./assets/sprunki-kiss-local/assets/20dd7bff5b7f33e61e878d6e7b03e48c.wav","beats":8,"gain":0.19},{"id":"wenda","audio":"./assets/sprunki-kiss-local/assets/d3412e9a60ca1e4fb3db49587687ec28.wav","beats":8,"gain":0.19},{"id":"pinki","audio":"./assets/sprunki-kiss-local/assets/be1cb011ce50969caf9511048105f167.wav","beats":16,"gain":0.19},{"id":"computer","audio":"./assets/sprunki-kiss-local/assets/cc85f2be1b1764358cd1ab84455d00a0.wav","beats":8,"gain":0.23}]},
-    {id:'sprunki-friend',vocalWindows:[[34,41]],name:'SPRUNKI · Friend Like You',artist:'Horror Skunx',video:'Lz66RAjtCgw',bpm:120,duration:900,cast:['oren','pinki','gray','wenda'],castLabel:'舞台搭档'},
-    {id:'sprunki-song',name:'SPRUNKI Song',artist:'BENJIxScarlett',video:'e6um0c7gP6s',bpm:120,duration:900,cast:['simon','oren','pinki','wenda','brud'],castLabel:'舞台搭档'}
+
   ];
-  for(const track of tracks)if(track.mix)track.audioFile='./assets/dance-audio/'+track.id+'.wav';
+  const cast=typeof module!=='undefined'?require('./dance-cast.js'):window.DanceCast;
+  const reference=typeof module!=='undefined'?require('./dance-reference-data.js'):window.DanceReferenceData;
+  const custom={...previousMixes[0],id:'mix-sunny',name:'自由合奏 · 自己编曲',artist:'正常模式完整音色',cast:['oren','raddy'],duration:78.8};
+  const order=[...previousMixes[0].mix.map(s=>s.id),...Object.keys(cast).filter(id=>!previousMixes[0].mix.some(s=>s.id===id)&&!cast[id].silent)];
+  custom.mix=order.map(id=>({id,audio:cast[id].audio,beats:cast[id].beats,gain:cast[id].gain}));
+  const tracks=[...reference.tracks,custom];
   function parseLyrics(text){const cues=[];for(const line of text.split(/\r?\n/)){const words=line.replace(/\[\d+:\d+(?:\.\d+)?\]/g,'').trim();for(const match of line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g))cues.push({time:Number(match[1])*60+Number(match[2]),text:words.slice(0,160)});}return cues.sort((a,b)=>a.time-b.time);}
   function captionAt(cues,time){let result='';for(const cue of cues||[]){if(cue.time>time)break;result=time-cue.time<6?cue.text:'';}return result;}
   let api;
@@ -59,15 +63,15 @@
   async function prepareLiveMix(ctx,track){
     const buffers=await Promise.all(track.mix.map(async stem=>{const response=await fetch(stem.audio);if(!response.ok)throw Error('角色声音读取失败');return ctx.decodeAudioData(await response.arrayBuffer());}));
     return start=>{
-      const beat=60/track.bpm,origin=start+2,end=origin+128*beat,overrides=new Map();
-      const channels=track.mix.map((stem,i)=>{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffers[i];source.loop=true;source.playbackRate.value=buffers[i].duration/(stem.beats*beat);source.connect(gain).connect(ctx.destination);gain.gain.setValueAtTime(0,start);
+      const beat=60/track.bpm,origin=start+2,end=origin+128*beat,overrides=new Map();const master=ctx.createDynamicsCompressor?ctx.createDynamicsCompressor():null;if(master){master.threshold.value=-8;master.knee.value=12;master.ratio.value=6;master.attack.value=.003;master.release.value=.15;master.connect(ctx.destination);}
+      const channels=track.mix.map((stem,i)=>{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffers[i];source.loop=true;source.playbackRate.value=buffers[i].duration/(stem.beats*beat);source.connect(gain).connect(master||ctx.destination);gain.gain.setValueAtTime(0,start);
         for(const part of sections){const at=origin+part.from*beat;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(part.voices.includes(i)?stem.gain:0,at+.025);gain.gain.setValueAtTime(part.voices.includes(i)?stem.gain:0,origin+part.to*beat-.04);gain.gain.linearRampToValueAtTime(0,origin+part.to*beat);}
         source.start(origin);source.stop(end);source.onended=()=>{source.disconnect();gain.disconnect();};return {source,gain};});
       return {setVoice(i,enabled){if(!channels[i])return null;const stem=track.mix[i],phrase=stem.beats*beat,at=origin+Math.max(0,Math.ceil((ctx.currentTime+.05-origin)/phrase))*phrase;if(at>=end)return null;
         const old=overrides.get(i)||[];overrides.set(i,[...old.filter(change=>change.at<at),{at,enabled}]);
         const param=channels[i].gain.gain;param.cancelScheduledValues(at);param.setValueAtTime(0,at);param.linearRampToValueAtTime(enabled?stem.gain:0,at+.025);param.setValueAtTime(enabled?stem.gain:0,end-.04);param.linearRampToValueAtTime(0,end);return at-start;},
         voicesAt(time){const absolute=start+time,b=(absolute-origin)/beat,part=sections.find(s=>b>=s.from&&b<s.to);if(!part)return [];return track.mix.flatMap((_,i)=>{const changes=overrides.get(i)||[],change=changes.filter(c=>c.at<=absolute).at(-1);return (change?change.enabled:part.voices.includes(i))?[i]:[];});},
-        stop(){channels.forEach(({source,gain})=>{try{source.stop();}catch{}source.disconnect();gain.disconnect();});}
+        stop(){channels.forEach(({source,gain})=>{try{source.stop();}catch{}source.disconnect();gain.disconnect();});master?.disconnect();}
       };
     };
   }

@@ -21,7 +21,7 @@ const npc = fs.readFileSync('rhythm-world/npc-3d.js', 'utf8');
 assert.ok(page.includes('id="chorusInvite"') && page.includes('chorus-accept') && page.includes('chorus-decline'));
 assert.ok(app.includes('requestThirdSinger') && app.includes('acceptChorusInvite') && app.includes('declineChorusInvite'));
 assert.ok(app.includes("audio.startCharacterLoop('duet-third',thirdSinger)"), 'accepted singer needs a dedicated third audible layer');
-assert.ok(app.includes("engine.speakNpc(thirdSinger"), 'third singer needs mouth and speech animation');
+assert.ok(app.includes("engine.setNpcPerforming(thirdSinger,true"), 'third singer needs beat-driven mouth and body animation');
 assert.ok(npc.includes("chorusRole === 'approaching'") && npc.includes("chorusRole === 'leaving'"), 'guest must approach or leave based on the answer');
 
 console.log('Third-singer invitation, accept/decline, departure, and three-layer chorus verified.');

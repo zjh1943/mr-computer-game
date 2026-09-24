@@ -3,8 +3,9 @@ const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orien
 const {tracks}=require('../dance-reference-data.js');
 for(const song of tracks){const b=battleChart(song);assert.equal(b.player.length+b.opponent.length,song.notes.length);assert(b.player.length>100&&b.opponent.length>100);assert(b.player.every(n=>n.hit??n.side==='player'));assert(b.opponent.every(n=>!(n.hit??n.side==='player')));assert(b.opponent.every(n=>n.done===false));}
 assert(soloChart(tracks[0]).length>100);
-assert(soloChart(tracks[0]).every(n=>n.hit??n.side==='player'));
-assert.equal(soloChart(tracks[1]).length,0);
+assert(soloChart(tracks[0]).every(n=>n.hit===false));
+assert(soloChart(tracks[1]).length>100);
+assert(soloChart(tracks[1]).every(n=>n.hit===false));
 assert(notesForMode(tracks[0],'play').length>100);
 assert.equal(notesForMode(tracks[0],'watch').length,0);
 assert.equal(singAnimationFor(['idle','singLEFT'],2),'singLEFT');

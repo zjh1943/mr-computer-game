@@ -507,7 +507,7 @@ body.sky-moon-away .sky-moon {
   box-shadow:
     0 0 0 10px rgba(255, 199, 61, 0.28),
     0 0 42px rgba(255, 211, 77, 0.5);
-  animation: sun-bob 4.4s ease-in-out infinite;
+  animation: sun-bob 4.4s ease-in-out infinite, sun-glow-pulse 2.6s ease-in-out infinite;
 }
 
 .sun-eye,
@@ -534,6 +534,7 @@ body.sky-moon-away .sky-moon {
 
 .sun-eye {
   top: 38px;
+  animation: sun-blink 5.2s ease-in-out infinite;
 }
 
 .sun-eye-left {
@@ -569,7 +570,10 @@ body.sky-moon-away .sky-moon {
   background: linear-gradient(180deg, #ff7f00, #ff9f00);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   transform-origin: center 72px;
+  animation: sun-ray-pulse 1.8s ease-in-out infinite alternate;
 }
+
+.sun-ray:nth-of-type(even) { animation-delay: -0.9s; }
 
 .sun-ray-1 { transform: rotate(0deg); }
 .sun-ray-2 { transform: rotate(45deg); }
@@ -591,6 +595,66 @@ body.sky-moon-away .sky-moon {
 
 .sky-sun.sun-swaying .sun-core {
   animation: sun-sway 2.8s ease-in-out;
+}
+
+.computer-shell.computer-speaking .screen-bezel {
+  animation: computer-talk-screen 360ms ease-in-out infinite alternate;
+}
+
+.computer-shell.computer-speaking .face-display {
+  animation: computer-talk-face 180ms ease-in-out infinite alternate;
+}
+
+.computer-shell.computer-speaking .head-hat,
+.computer-shell.computer-speaking .bamboo-copter {
+  animation: computer-talk-hat 720ms ease-in-out infinite;
+}
+
+.computer-shell.computer-speaking + .desk-wrap .desk {
+  animation: computer-talk-desk 360ms ease-in-out infinite alternate;
+}
+
+@keyframes computer-talk-screen {
+  from { transform: translate(-2px, 1px) rotate(-1deg); }
+  to { transform: translate(3px, -3px) rotate(1.2deg); }
+}
+
+@keyframes computer-talk-face {
+  from { transform: translateY(2px) scaleY(.98); }
+  to { transform: translateY(-3px) scaleY(1.02); }
+}
+
+@keyframes computer-talk-hat {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-3px) rotate(2deg); }
+}
+
+@keyframes computer-talk-desk {
+  from { transform: translateY(0); }
+  to { transform: translateY(2px); }
+}
+
+@keyframes sun-glow-pulse {
+  50% { box-shadow: 0 0 0 15px rgba(255,199,61,.18), 0 0 58px rgba(255,211,77,.7); }
+}
+
+@keyframes sun-blink {
+  0%, 91%, 96%, 100% { height: 10px; top: 38px; }
+  93%, 94% { height: 2px; top: 42px; }
+}
+
+@keyframes sun-ray-pulse {
+  from { opacity: .72; filter: brightness(.94); }
+  to { opacity: 1; filter: brightness(1.18); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sun-core,.sun-eye,.sun-ray,
+  .computer-shell.computer-speaking .screen-bezel,
+  .computer-shell.computer-speaking .face-display,
+  .computer-shell.computer-speaking .head-hat,
+  .computer-shell.computer-speaking .bamboo-copter,
+  .computer-shell.computer-speaking + .desk-wrap .desk { animation:none!important; }
 }
 
 .moon-face {

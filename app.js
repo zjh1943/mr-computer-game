@@ -259,6 +259,7 @@ let moodIndex = 0;
 let recognition;
 let isRecording = false;
 let speakingTimer = null;
+let speakingStopTimer = null;
 let screenTimer = null;
 let availableVoices = [];
 let speechUnlocked = false;
@@ -9696,10 +9697,12 @@ function startMouthTalking(duration = 1800) {
   if (speakingTimer) {
     window.clearInterval(speakingTimer);
   }
+  if (speakingStopTimer) window.clearTimeout(speakingStopTimer);
 
   let open = false;
   mouth.classList.remove("mouth-triangle", "mouth-open");
   mouth.classList.add("mouth-open");
+  computerShell?.classList.add("computer-speaking");
 
   speakingTimer = window.setInterval(() => {
     open = !open;
@@ -9707,11 +9710,13 @@ function startMouthTalking(duration = 1800) {
     mouth.classList.toggle("mouth-triangle", !open);
   }, 180);
 
-  window.setTimeout(() => {
+  speakingStopTimer = window.setTimeout(() => {
     window.clearInterval(speakingTimer);
     speakingTimer = null;
+    speakingStopTimer = null;
     mouth.classList.remove("mouth-open");
     mouth.classList.add("mouth-triangle");
+    computerShell?.classList.remove("computer-speaking");
   }, duration);
 }
 

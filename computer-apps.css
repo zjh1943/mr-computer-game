@@ -189,3 +189,16 @@
 .dance-solo-score{grid-template-columns:auto minmax(120px,1fr)}
 .dance-watch-mode .dance-lanes{display:none!important}
 @media(max-width:600px){.dance-stage .dance-lanes{inset:64% 12% 3%}.dance-player-targets button svg{height:30px}}
+
+/* Exact normal FNF receptors cropped from the reference mod's NOTE_assets atlas. */
+.dance-player-targets button img{
+  display:block;
+  width:100%;
+  height:clamp(38px,5vw,62px);
+  object-fit:contain;
+  image-rendering:auto;
+  pointer-events:none;
+}
+.dance-player-targets button[data-feedback="hit"] img{filter:brightness(1.75) drop-shadow(0 0 8px #fff)}
+.dance-player-targets button[data-feedback="miss"] img{filter:brightness(.55)}
+@media(max-width:600px){.dance-player-targets button img{height:34px}}

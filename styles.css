@@ -6196,6 +6196,36 @@ body.computer-away .call-back-toggle {
   animation: home-runner-cheer 420ms ease-in-out 3;
 }
 
+.beat-runner.home-chasing-a {
+  z-index: 3;
+  animation: home-chase-a 540ms ease-in-out 5 alternate;
+}
+
+.beat-runner.home-chasing-b {
+  z-index: 4;
+  animation: home-chase-b 540ms ease-in-out 5 alternate;
+}
+
+.beat-runner.home-concert {
+  animation: home-concert 340ms steps(2, jump-none) infinite;
+}
+
+.beat-runner.home-running-out.home-running-right {
+  animation: home-run-out-right 1.05s cubic-bezier(.45,.02,.8,.42) forwards;
+}
+
+.beat-runner.home-running-out.home-running-left {
+  animation: home-run-out-left 1.05s cubic-bezier(.45,.02,.8,.42) forwards;
+}
+
+.beat-runner.home-running-in.home-running-in-left {
+  animation: home-run-in-left 1.2s cubic-bezier(.12,.65,.35,1) forwards;
+}
+
+.beat-runner.home-running-in.home-running-in-right {
+  animation: home-run-in-right 1.2s cubic-bezier(.12,.65,.35,1) forwards;
+}
+
 .runner-one { --runner-x: 2vw; --runner-delay: -.3s; }
 .runner-two { --runner-x: 12vw; --runner-delay: -.7s; }
 .runner-three { --runner-x: 22vw; --runner-delay: -.1s; }
@@ -6249,6 +6279,46 @@ body.computer-away .call-back-toggle {
   50% { transform: translateY(-22px) scale(1.08); }
 }
 
+@keyframes home-chase-a {
+  from { transform: translateX(-4vw) translateY(0) rotate(-7deg); }
+  to { transform: translateX(22vw) translateY(-9px) rotate(7deg); }
+}
+
+@keyframes home-chase-b {
+  from { transform: translateX(5vw) translateY(-8px) rotate(8deg); }
+  to { transform: translateX(30vw) translateY(0) rotate(-5deg); }
+}
+
+@keyframes home-concert {
+  0% { transform: translateY(0) rotate(-6deg) scale(1,.96); }
+  50% { transform: translateY(-18px) rotate(6deg) scale(.96,1.05); }
+  100% { transform: translateY(-4px) rotate(-2deg); }
+}
+
+@keyframes home-run-out-right {
+  0% { transform: translateX(0) rotate(0); }
+  45% { transform: translateX(34vw) translateY(-10px) rotate(7deg); }
+  100% { transform: translateX(112vw) translateY(7px) rotate(12deg); opacity:.15; }
+}
+
+@keyframes home-run-out-left {
+  0% { transform: translateX(0) rotate(0); }
+  45% { transform: translateX(-34vw) translateY(-10px) rotate(-7deg); }
+  100% { transform: translateX(-112vw) translateY(7px) rotate(-12deg); opacity:.15; }
+}
+
+@keyframes home-run-in-left {
+  0% { transform: translateX(-112vw) translateY(5px) rotate(-10deg); opacity:.2; }
+  65% { transform: translateX(8vw) translateY(-14px) rotate(5deg); opacity:1; }
+  100% { transform: translateX(0) translateY(0) rotate(0); opacity:1; }
+}
+
+@keyframes home-run-in-right {
+  0% { transform: translateX(112vw) translateY(5px) rotate(10deg); opacity:.2; }
+  65% { transform: translateX(-8vw) translateY(-14px) rotate(-5deg); opacity:1; }
+  100% { transform: translateX(0) translateY(0) rotate(0); opacity:1; }
+}
+
 @keyframes computer-help-left {
   0%, 100% { translate: 0 0; }
   38%, 68% { translate: min(-25vw, -180px) -14px; }
@@ -6281,6 +6351,11 @@ body.terror-night .beatbox-runners {
   .beat-runner,
   .beat-runner.home-playing,
   .beat-runner.home-turning,
+  .beat-runner.home-chasing-a,
+  .beat-runner.home-chasing-b,
+  .beat-runner.home-running-out,
+  .beat-runner.home-running-in,
+  .beat-runner.home-concert,
   .beat-runner.home-help-needed,
   .beat-runner.home-helped,
   .computer-shell.home-helping-left,

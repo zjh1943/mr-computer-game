@@ -431,6 +431,7 @@ let homeSongActive = false;
 let homeLawnActionTimer = null;
 let homeLawnHelpTimer = null;
 let homeHelpActive = false;
+let homeLawnGroupActive = false;
 const skyBodyAway = {
   sun: false,
   moon: false
@@ -9786,8 +9787,93 @@ function setHomeRunnerView(runner, view = "front") {
   runner.style.setProperty("--runner-sprite", `url("./assets/sprunki-views/${view}/${id}.png")`);
 }
 
+const HOME_LAWN_CAST = [
+  ["oren", "Oren"], ["raddy", "Raddy"], ["clukr", "Clukr"], ["fun-bot", "Fun Bot"],
+  ["vineria", "Vineria"], ["gray", "Gray"], ["brud", "Brud"], ["garnold", "Garnold"],
+  ["owakcx", "OWAKCX"], ["sky", "Sky"], ["durple", "Durple"], ["simon", "Simon"],
+  ["tunner", "Tunner"], ["wenda", "Wenda"], ["pinki", "Pinki"], ["jevin", "Jevin"]
+];
+
+function setHomeRunnerCharacter(runner, character) {
+  runner.dataset.sprunkiId = character[0];
+  runner.dataset.sprunkiName = character[1];
+  runner.setAttribute("aria-label", `${character[1]}在草地上玩`);
+  setHomeRunnerView(runner, "front");
+}
+
+function startHomeChase(runners) {
+  if (homeLawnGroupActive || runners.length < 2) return;
+  homeLawnGroupActive = true;
+  const shuffled = [...runners].sort(() => Math.random() - .5);
+  const [first, second] = shuffled;
+  const firstBubble = first.querySelector(".beat-runner-bubble");
+  const secondBubble = second.querySelector(".beat-runner-bubble");
+  if (firstBubble) firstBubble.textContent = "别跑，追到你啦！";
+  if (secondBubble) secondBubble.textContent = "哈哈，来追我呀！";
+  first.classList.add("home-chasing-a", "home-talking");
+  second.classList.add("home-chasing-b", "home-talking");
+  setHomeRunnerView(first, "right");
+  setHomeRunnerView(second, "right");
+  window.setTimeout(() => {
+    first.classList.remove("home-chasing-a", "home-talking");
+    second.classList.remove("home-chasing-b", "home-talking");
+    setHomeRunnerView(first, "front");
+    setHomeRunnerView(second, "front");
+    homeLawnGroupActive = false;
+  }, 2700);
+}
+
+function startHomeLawnConcert(runners) {
+  if (homeLawnGroupActive || !runners.length) return;
+  homeLawnGroupActive = true;
+  runners.forEach((runner, index) => {
+    runner.classList.add("home-concert");
+    const bubble = runner.querySelector(".beat-runner-bubble");
+    if (bubble) bubble.textContent = ["咚", "啪", "叮", "哒", "呜", "啦"][index % 6];
+    window.setTimeout(() => runner.classList.add("home-talking"), index * 120);
+  });
+  unlockRhythmAudio();
+  const tune = [262, 330, 392, 523, 392, 330, 294, 392, 494, 587, 494, 392];
+  tune.forEach((frequency, index) => window.setTimeout(() => {
+    playRhythmTone(frequency, .16, index % 3 ? "triangle" : "square", .045);
+    if (index % 4 === 0) playRhythmNoise(.04, .025, 5200);
+  }, index * 170));
+  window.setTimeout(() => {
+    runners.forEach(runner => runner.classList.remove("home-concert", "home-talking"));
+    homeLawnGroupActive = false;
+  }, 3000);
+}
+
+function sendHomeRunnerBeyondScreen(runners) {
+  if (homeLawnGroupActive || !runners.length) return;
+  homeLawnGroupActive = true;
+  const runner = runners.find(item => item.dataset.sprunkiId === "oren") || runners[Math.floor(Math.random() * runners.length)];
+  const goRight = Math.random() > .5;
+  const bubble = runner.querySelector(".beat-runner-bubble");
+  if (bubble) bubble.textContent = "我去远处看看！";
+  runner.classList.add("home-running-out", goRight ? "home-running-right" : "home-running-left", "home-talking");
+  setHomeRunnerView(runner, goRight ? "right" : "left");
+  window.setTimeout(() => {
+    const visible = new Set(runners.map(item => item.dataset.sprunkiId));
+    const choices = HOME_LAWN_CAST.filter(character => !visible.has(character[0]));
+    setHomeRunnerCharacter(runner, choices[Math.floor(Math.random() * choices.length)] || HOME_LAWN_CAST[Math.floor(Math.random() * HOME_LAWN_CAST.length)]);
+    if (bubble) bubble.textContent = "我从远方来玩啦！";
+    runner.classList.remove("home-running-out", "home-running-right", "home-running-left");
+    runner.classList.add("home-running-in", goRight ? "home-running-in-left" : "home-running-in-right");
+  }, 1050);
+  window.setTimeout(() => {
+    runner.classList.remove("home-running-in", "home-running-in-left", "home-running-in-right", "home-talking");
+    setHomeRunnerView(runner, "front");
+    homeLawnGroupActive = false;
+  }, 2300);
+}
+
 function playHomeLawnMoment(runners) {
-  if (!runners.length || homeHelpActive || document.body.classList.contains("home-mode") || isTerrorNightActive) return;
+  if (!runners.length || homeHelpActive || homeLawnGroupActive || document.body.classList.contains("home-mode") || isTerrorNightActive) return;
+  const eventRoll = Math.random();
+  if (eventRoll < .3) return startHomeChase(runners);
+  if (eventRoll < .47) return startHomeLawnConcert(runners);
+  if (eventRoll < .62) return sendHomeRunnerBeyondScreen(runners);
   const runner = runners[Math.floor(Math.random() * runners.length)];
   const bubble = runner.querySelector(".beat-runner-bubble");
   const views = ["front", "left", "right"];

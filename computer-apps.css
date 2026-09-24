@@ -90,3 +90,20 @@
 .dance-player.singing .dance-pose,.dance-rival .dance-pose{animation:none}
 
 .arcade-app{display:flex;flex-direction:column;align-items:center;gap:8px;overflow:auto;padding:12px!important;background:#ecf5fa;color:#183047;box-sizing:border-box}.arcade-app h2,.arcade-app p{margin:2px;text-align:center}.arcade-board{width:min(100%,360px);flex-shrink:0}.merge-board,.tic-board{display:grid;gap:6px;aspect-ratio:1}.merge-board{grid-template-columns:repeat(4,1fr)}.tic-board{grid-template-columns:repeat(3,1fr)}.merge-tile,.tic-board button{display:grid;place-items:center;font:bold clamp(20px,4vw,36px)/1 sans-serif;border-radius:8px;min-width:0;min-height:0}.tic-board button{background:#fff;border:2px solid #518ab3;color:#183047}.tic-board button:disabled{opacity:1}.arcade-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}.arcade-controls button{min-width:44px;min-height:44px;font-size:18px;touch-action:manipulation}.snake-board canvas{display:block;width:100%;height:auto;border-radius:8px}.software-fullscreen .arcade-board{width:min(60vh,85vw,480px)}
+
+/* Independently drawn FNF-style receptors and directional performance timing. */
+.dance-targets button{background:transparent!important;border:0!important;min-height:48px;filter:drop-shadow(0 3px 0 #111b);transition:filter .08s;overflow:visible}
+.dance-targets button svg{display:block;width:100%;height:clamp(44px,6vw,78px);overflow:visible;pointer-events:none}
+.dance-targets button path{fill:var(--arrow-color);stroke:#161221;stroke-width:9;stroke-linejoin:round;paint-order:stroke fill}
+.dance-targets button:nth-child(1){--arrow-color:#c66bea}.dance-targets button:nth-child(2){--arrow-color:#43dced}.dance-targets button:nth-child(3){--arrow-color:#78e65a}.dance-targets button:nth-child(4){--arrow-color:#ff626e}
+.dance-targets button[data-feedback="hit"]{filter:drop-shadow(0 0 12px var(--arrow-color)) brightness(1.35);transform:scale(1.13)}
+.dance-targets button[data-feedback="miss"]{filter:brightness(.65);transform:scale(.94)}
+.dance-targets button:focus-visible{outline:3px solid white;border-radius:12px}
+.dance-pose,.dance-rival img,.dance-lead-character{transform-origin:50% 100%;transition:transform .09s ease-out}
+.dance-player[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] img,.dance-player[data-pose="-1"] .dance-lead-character{animation:fnf-idle .6s infinite ease-in-out}
+.dance-player[data-pose="0"] .dance-pose,.dance-rival>div[data-pose="0"] .dance-pose,.dance-rival>div[data-pose="0"] img,.dance-player[data-pose="0"] .dance-lead-character{transform:translateX(-6px) rotate(-5deg)}
+.dance-player[data-pose="1"] .dance-pose,.dance-rival>div[data-pose="1"] .dance-pose,.dance-rival>div[data-pose="1"] img,.dance-player[data-pose="1"] .dance-lead-character{transform:translateY(5px) scale(1.06,.91)}
+.dance-player[data-pose="2"] .dance-pose,.dance-rival>div[data-pose="2"] .dance-pose,.dance-rival>div[data-pose="2"] img,.dance-player[data-pose="2"] .dance-lead-character{transform:translateY(-8px) scale(.97,1.05)}
+.dance-player[data-pose="3"] .dance-pose,.dance-rival>div[data-pose="3"] .dance-pose,.dance-rival>div[data-pose="3"] img,.dance-player[data-pose="3"] .dance-lead-character{transform:translateX(6px) rotate(5deg)}
+@keyframes fnf-idle{0%,100%{transform:scale(1,1)}50%{transform:translateY(2px) scale(1.025,.975)}}
+@media(prefers-reduced-motion:reduce){.dance-pose,.dance-rival img,.dance-lead-character{animation:none!important;transition:none}}

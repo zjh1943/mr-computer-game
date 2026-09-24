@@ -55,6 +55,22 @@
     const buffers=await Promise.all(track.mix.map(async stem=>{let pending=decodedSounds.get(stem.audio);if(!pending){pending=(async()=>{const response=await fetch(stem.audio);if(!response.ok)throw Error('合奏声音读取失败');return ctx.decodeAudioData(await response.arrayBuffer());})();decodedSounds.set(stem.audio,pending);pending.catch(()=>decodedSounds.delete(stem.audio));}return pending;}));
     return start=>{const beat=60/track.bpm;for(const part of sections)for(const i of part.voices){const stem=track.mix[i],source=ctx.createBufferSource(),gain=ctx.createGain(),at=start+2+part.from*beat,end=start+2+part.to*beat;source.buffer=buffers[i];source.loop=true;source.playbackRate.value=buffers[i].duration/(stem.beats*beat);source.connect(gain).connect(ctx.destination);gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(stem.gain,at+.025);gain.gain.setValueAtTime(stem.gain,end-.06);gain.gain.linearRampToValueAtTime(0,end);source.start(at);source.stop(end);source.onended=()=>{source.disconnect();gain.disconnect();};}};
   }
-  if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix,parseLyrics,captionAt};
-  else window.DanceMusic={tracks,open,sections,prepareMix,parseLyrics,captionAt};
+  // Every stem runs on one clock. Drag changes are quantized to a whole phrase.
+  async function prepareLiveMix(ctx,track){
+    const buffers=await Promise.all(track.mix.map(async stem=>{const response=await fetch(stem.audio);if(!response.ok)throw Error('角色声音读取失败');return ctx.decodeAudioData(await response.arrayBuffer());}));
+    return start=>{
+      const beat=60/track.bpm,origin=start+2,end=origin+128*beat,overrides=new Map();
+      const channels=track.mix.map((stem,i)=>{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffers[i];source.loop=true;source.playbackRate.value=buffers[i].duration/(stem.beats*beat);source.connect(gain).connect(ctx.destination);gain.gain.setValueAtTime(0,start);
+        for(const part of sections){const at=origin+part.from*beat;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(part.voices.includes(i)?stem.gain:0,at+.025);gain.gain.setValueAtTime(part.voices.includes(i)?stem.gain:0,origin+part.to*beat-.04);gain.gain.linearRampToValueAtTime(0,origin+part.to*beat);}
+        source.start(origin);source.stop(end);source.onended=()=>{source.disconnect();gain.disconnect();};return {source,gain};});
+      return {setVoice(i,enabled){if(!channels[i])return null;const stem=track.mix[i],phrase=stem.beats*beat,at=origin+Math.max(0,Math.ceil((ctx.currentTime+.05-origin)/phrase))*phrase;if(at>=end)return null;
+        const old=overrides.get(i)||[];overrides.set(i,[...old.filter(change=>change.at<at),{at,enabled}]);
+        const param=channels[i].gain.gain;param.cancelScheduledValues(at);param.setValueAtTime(0,at);param.linearRampToValueAtTime(enabled?stem.gain:0,at+.025);param.setValueAtTime(enabled?stem.gain:0,end-.04);param.linearRampToValueAtTime(0,end);return at-start;},
+        voicesAt(time){const absolute=start+time,b=(absolute-origin)/beat,part=sections.find(s=>b>=s.from&&b<s.to);if(!part)return [];return track.mix.flatMap((_,i)=>{const changes=overrides.get(i)||[],change=changes.filter(c=>c.at<=absolute).at(-1);return (change?change.enabled:part.voices.includes(i))?[i]:[];});},
+        stop(){channels.forEach(({source,gain})=>{try{source.stop();}catch{}source.disconnect();gain.disconnect();});}
+      };
+    };
+  }
+  if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt};
+  else window.DanceMusic={tracks,open,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt};
 })();

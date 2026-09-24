@@ -111,3 +111,25 @@
 /* Tempo-linked idle movement between anticipation / singing / recoil poses. */
 .dance-player[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] img,.dance-player[data-pose="-1"] .dance-lead-character{animation-duration:var(--dance-beat,.6s)}
 @keyframes fnf-idle{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}30%{transform:translateY(3px) rotate(0deg) scale(1.025,.965)}65%{transform:translateY(-2px) rotate(1deg) scale(.99,1.015)}}
+/* Right-hand player, one or two opponents, and an unobscured outdoor stage. */
+.dance-stage .dance-player{grid-column:3!important;grid-row:1!important}
+.dance-stage .dance-rival{grid-column:1!important;grid-row:1!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+.dance-stage{grid-template-columns:minmax(100px,1.3fr) minmax(140px,1.8fr) minmax(90px,1fr)!important}
+.dance-original{display:block;object-fit:contain;width:100%;height:clamp(120px,25vh,260px)!important;max-width:260px;margin:auto;transform-origin:50% 95%}
+.dance-stage .dance-rival img.dance-original{height:clamp(100px,22vh,230px)!important}
+.extra-app:not(.dance-custom-motion) .dance-original{animation:none!important;transform:none!important}
+.dance-player .dance-original{transition:transform .09s}
+.dance-battle{display:grid;grid-template-columns:auto minmax(80px,1fr) auto;align-items:center;gap:8px;font-size:12px;font-weight:bold;color:#223b33}
+.dance-balance{height:14px;background:#ee727e;border:2px solid #223b33;border-radius:9px;overflow:hidden;position:relative}
+.dance-balance i{position:absolute;right:0;top:0;bottom:0;width:var(--player-share,50%);background:#74de9a;transition:width .15s}
+.dance-battle progress{grid-column:1/-1;width:100%;height:5px;accent-color:#468ac5}
+.dance-rack{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;flex-shrink:0}
+.dance-rack button{display:flex;flex-direction:column;align-items:center;min-width:48px;touch-action:none;padding:3px 8px;border:2px solid #aab6ba;border-radius:10px;background:#f5f6ef;font-size:11px;cursor:grab}
+.dance-rack img{height:44px;width:42px;object-fit:contain;pointer-events:none}
+.dance-rack button[data-singing="true"]{border-color:#249d65;background:#def8c8;box-shadow:0 0 0 2px #249d6520}
+.dance-rack button[aria-pressed="true"]::after{content:'已加入';font-size:9px;color:#165c37}
+.dance-rack-help{margin:0;font-size:11px;text-align:center;color:#325348}
+@media(max-width:600px){.dance-stage{grid-template-columns:minmax(65px,1fr) minmax(130px,1.8fr) minmax(60px,1fr)!important;gap:1px}.dance-stage .dance-rival{gap:0}.dance-stage .dance-rival img.dance-original{height:110px!important}.dance-original{height:150px!important}.dance-rack button{padding:3px;min-width:40px}}
+.dance-custom-motion .dance-player[data-pose="-1"] .dance-original{animation:fnf-idle var(--dance-beat,.6s) infinite ease-in-out}
+.dance-rival:has(>div:only-child){grid-template-columns:1fr}
+@media(prefers-reduced-motion:reduce){.dance-custom-motion .dance-original{animation:none!important}}

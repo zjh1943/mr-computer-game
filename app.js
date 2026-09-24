@@ -429,7 +429,9 @@ let computerSongTimer = null;
 let homeSongAudio = null;
 let homeSongActive = false;
 let homeLawnActionTimer = null;
-let homeLawnHelpTimer = null;
+let homeLawnChaseTimer = null;
+let homeLawnConcertTimer = null;
+let homeLawnArrivalTimer = null;
 let homeHelpActive = false;
 let homeLawnGroupActive = false;
 const skyBodyAway = {
@@ -9799,10 +9801,74 @@ function setHomeRunnerCharacter(runner, character) {
   runner.dataset.sprunkiName = character[1];
   runner.setAttribute("aria-label", `${character[1]}在草地上玩`);
   setHomeRunnerView(runner, "front");
+  const homeName = document.querySelector(`.lawn-home[data-home-index="${runner.dataset.homeIndex}"] .lawn-home-name`);
+  if (homeName) homeName.textContent = `${character[1]}的家`;
+}
+
+function setupHomeLawnHomes(runners) {
+  const world = document.querySelector(".beatbox-runners");
+  if (!world || world.querySelector(".lawn-homes")) return;
+  const homes = document.createElement("div");
+  homes.className = "lawn-homes";
+  homes.setAttribute("aria-label", "节奏盒子成员的小房子");
+  runners.forEach((runner, index) => {
+    runner.dataset.homeIndex = String(index);
+    runner.dataset.lawnX = String([4, 16, 28, 70, 82, 92][index]);
+    const home = document.createElement("span");
+    home.className = "lawn-home";
+    home.dataset.homeIndex = String(index);
+    home.style.setProperty("--home-x", `${[4, 16, 28, 70, 82, 92][index]}vw`);
+    home.innerHTML = `<span class="lawn-home-roof"></span><span class="lawn-home-window"></span><span class="lawn-home-name">${runner.dataset.sprunkiName}的家</span>`;
+    homes.append(home);
+  });
+  world.prepend(homes);
+}
+
+function wanderHomeLawn(runners) {
+  if (document.body.classList.contains("night-mode") || homeLawnGroupActive || homeHelpActive || document.body.classList.contains("home-mode") || isTerrorNightActive) return;
+  const moving = [...runners].sort(() => Math.random() - .5).slice(0, 2 + Math.floor(Math.random() * 2));
+  moving.forEach((runner) => {
+    const before = Number(runner.dataset.lawnX || 50);
+    const next = 2 + Math.random() * 92;
+    runner.dataset.lawnX = next.toFixed(1);
+    runner.style.setProperty("--runner-x", `${next}vw`);
+    setHomeRunnerView(runner, next >= before ? "right" : "left");
+    runner.classList.add("home-walking");
+    window.setTimeout(() => {
+      runner.classList.remove("home-walking");
+      if (!document.body.classList.contains("night-mode") && !runner.classList.contains("home-sleeping")) setHomeRunnerView(runner, "front");
+    }, 1250);
+  });
+}
+
+function syncHomeLawnNight(runners) {
+  const night = document.body.classList.contains("night-mode");
+  document.querySelector(".lawn-homes")?.classList.toggle("night", night);
+  runners.forEach((runner, index) => {
+    runner.classList.remove("home-walking", "home-chasing-a", "home-chasing-b", "home-concert", "home-running-out", "home-running-in", "home-collision");
+    if (night) {
+      const homeX = [4, 16, 28, 70, 82, 92][index];
+      runner.dataset.lawnX = String(homeX);
+      runner.style.setProperty("--runner-x", `${homeX}vw`);
+      runner.classList.add("home-returning", "home-talking");
+      const bubble = runner.querySelector(".beat-runner-bubble");
+      if (bubble) bubble.textContent = "晚安，我回家睡觉啦";
+      window.setTimeout(() => {
+        if (!document.body.classList.contains("night-mode")) return;
+        runner.classList.remove("home-returning", "home-talking");
+        runner.classList.add("home-sleeping");
+        if (bubble) bubble.textContent = "Z z z";
+      }, 1450 + index * 90);
+    } else {
+      runner.classList.remove("home-returning", "home-sleeping", "home-talking");
+      setHomeRunnerView(runner, "front");
+    }
+  });
+  homeLawnGroupActive = false;
 }
 
 function startHomeChase(runners) {
-  if (homeLawnGroupActive || runners.length < 2) return;
+  if (document.body.classList.contains("night-mode") || homeLawnGroupActive || homeHelpActive || runners.length < 2) return;
   homeLawnGroupActive = true;
   const shuffled = [...runners].sort(() => Math.random() - .5);
   const [first, second] = shuffled;
@@ -9810,17 +9876,34 @@ function startHomeChase(runners) {
   const secondBubble = second.querySelector(".beat-runner-bubble");
   if (firstBubble) firstBubble.textContent = "别跑，追到你啦！";
   if (secondBubble) secondBubble.textContent = "哈哈，来追我呀！";
-  first.classList.add("home-chasing-a", "home-talking");
-  second.classList.add("home-chasing-b", "home-talking");
+  first.dataset.lawnX = "29";
+  second.dataset.lawnX = "67";
+  first.style.setProperty("--runner-x", "29vw");
+  second.style.setProperty("--runner-x", "67vw");
+  first.classList.add("home-talking");
+  second.classList.add("home-talking");
   setHomeRunnerView(first, "right");
-  setHomeRunnerView(second, "right");
+  setHomeRunnerView(second, "left");
   window.setTimeout(() => {
-    first.classList.remove("home-chasing-a", "home-talking");
-    second.classList.remove("home-chasing-b", "home-talking");
+    first.classList.add("home-chasing-a");
+    second.classList.add("home-chasing-b");
+  }, 120);
+  window.setTimeout(() => {
+    first.classList.remove("home-chasing-a");
+    second.classList.remove("home-chasing-b");
+    first.classList.add("home-collision");
+    second.classList.add("home-collision");
+    if (firstBubble) firstBubble.textContent = "哎呀，撞到一起啦！";
+    if (secondBubble) secondBubble.textContent = "电脑先生，帮帮忙！";
+    window.setTimeout(() => runHomeHelpEvent(runners, first, "追逐时撞到一起啦！"), 360);
+  }, 1480);
+  window.setTimeout(() => {
+    first.classList.remove("home-collision", "home-talking");
+    second.classList.remove("home-collision", "home-talking");
     setHomeRunnerView(first, "front");
     setHomeRunnerView(second, "front");
-    homeLawnGroupActive = false;
-  }, 2700);
+    if (!homeHelpActive) homeLawnGroupActive = false;
+  }, 5100);
 }
 
 function startHomeLawnConcert(runners) {
@@ -9890,16 +9973,15 @@ function playHomeLawnMoment(runners) {
   }, 1500);
 }
 
-function runHomeHelpEvent(runners) {
+function runHomeHelpEvent(runners, collisionRunner = null, collisionMessage = "") {
   if (!runners.length || homeHelpActive || homeSongActive || computerScreenMode !== "desktop" || currentComputerApp || document.body.classList.contains("home-mode") || isTerrorNightActive) return;
   homeHelpActive = true;
-  const runner = runners[Math.floor(Math.random() * runners.length)];
+  const runner = collisionRunner || runners[Math.floor(Math.random() * runners.length)];
   const bubble = runner.querySelector(".beat-runner-bubble");
-  const onLeft = runners.indexOf(runner) < runners.length / 2;
-  const problems = ["球滚远了！", "节拍器不响了！", "帽子卡住啦！", "帮我捡一下！"];
+  const onLeft = Number(runner.dataset.lawnX || 0) < 50;
   runner.classList.add("home-help-needed");
-  if (bubble) bubble.textContent = problems[Math.floor(Math.random() * problems.length)];
-  showHomeStageText("别着急，我来帮你！");
+  if (bubble) bubble.textContent = collisionMessage || "撞到一起啦！";
+  showHomeStageText("追逐撞到啦，别着急，我来帮你们！");
   computerShell.classList.add("home-helping", onLeft ? "home-helping-left" : "home-helping-right", "hat-spinning");
   window.setTimeout(() => {
     runner.classList.remove("home-help-needed");
@@ -9909,8 +9991,10 @@ function runHomeHelpEvent(runners) {
   }, 1550);
   window.setTimeout(() => {
     runner.classList.remove("home-helped");
+    runners.forEach(item => item.classList.remove("home-collision"));
     computerShell.classList.remove("home-helping", "home-helping-left", "home-helping-right", "hat-spinning");
     homeHelpActive = false;
+    homeLawnGroupActive = false;
     restoreHomeStageScreen();
   }, 3200);
 }
@@ -9919,9 +10003,15 @@ function setupHomeLawnCast() {
   const runners = Array.from(document.querySelectorAll(".beat-runner[data-sprunki-id]"));
   if (!runners.length) return;
   runners.forEach((runner) => setHomeRunnerView(runner, "front"));
+  setupHomeLawnHomes(runners);
   document.querySelector(".home-song-button")?.addEventListener("click", startHomeComputerSong);
-  homeLawnActionTimer = window.setInterval(() => playHomeLawnMoment(runners), 2600);
-  homeLawnHelpTimer = window.setInterval(() => runHomeHelpEvent(runners), 17000);
+  homeLawnActionTimer = window.setInterval(() => wanderHomeLawn(runners), 1450);
+  homeLawnChaseTimer = window.setInterval(() => startHomeChase(runners), 7600);
+  homeLawnConcertTimer = window.setInterval(() => startHomeLawnConcert(runners), 22000);
+  homeLawnArrivalTimer = window.setInterval(() => sendHomeRunnerBeyondScreen(runners), 11800);
+  window.setTimeout(() => startHomeChase(runners), 1200);
+  new MutationObserver(() => syncHomeLawnNight(runners)).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  syncHomeLawnNight(runners);
 }
 
 function generateReply(text) {

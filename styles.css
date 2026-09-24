@@ -6106,6 +6106,65 @@ body.computer-away .call-back-toggle {
   pointer-events: none;
 }
 
+.lawn-homes {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lawn-home {
+  position: absolute;
+  left: var(--home-x);
+  bottom: 3px;
+  width: clamp(44px, 5vw, 64px);
+  height: clamp(38px, 4.5vw, 54px);
+  translate: -50% 0;
+  border: 3px solid #713f21;
+  border-radius: 4px 4px 2px 2px;
+  background: #f0bb63;
+  box-shadow: 0 5px 0 rgba(65,85,31,.28);
+  transition: filter 600ms ease, background 600ms ease;
+}
+
+.lawn-home-roof {
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: -21px;
+  height: 24px;
+  background: #df5b41;
+  clip-path: polygon(50% 0,100% 100%,0 100%);
+}
+
+.lawn-home-window {
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  width: 13px;
+  height: 14px;
+  border: 2px solid #724927;
+  background: #aee4ef;
+  transition: background 500ms ease, box-shadow 500ms ease;
+}
+
+.lawn-home-name {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  translate: -50% 4px;
+  width: max-content;
+  max-width: 78px;
+  overflow: hidden;
+  color: #2b311f;
+  font: 800 8px/1 system-ui,sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lawn-homes.night .lawn-home { background:#71567a; filter:brightness(.8); }
+.lawn-homes.night .lawn-home-window { background:#ffe66d; box-shadow:0 0 12px #ffe66d; }
+
 .home-song-button {
   position: fixed;
   left: 50%;
@@ -6147,6 +6206,7 @@ body.computer-away .call-back-toggle {
   animation: home-runner-idle 1.15s ease-in-out infinite alternate;
   animation-delay: var(--runner-delay);
   transition: left 900ms ease, bottom 500ms ease, filter 220ms ease;
+  z-index: 2;
 }
 
 .beat-runner > :not(.beat-runner-bubble) {
@@ -6174,7 +6234,8 @@ body.computer-away .call-back-toggle {
 
 .beat-runner.home-talking .beat-runner-bubble,
 .beat-runner.home-help-needed .beat-runner-bubble,
-.beat-runner.home-helped .beat-runner-bubble {
+.beat-runner.home-helped .beat-runner-bubble,
+.beat-runner.home-sleeping .beat-runner-bubble {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
@@ -6196,14 +6257,35 @@ body.computer-away .call-back-toggle {
   animation: home-runner-cheer 420ms ease-in-out 3;
 }
 
+.beat-runner.home-walking {
+  animation: home-walk-bob 300ms ease-in-out infinite alternate;
+}
+
+.beat-runner.home-returning {
+  animation: home-walk-bob 260ms ease-in-out infinite alternate;
+}
+
+.beat-runner.home-sleeping {
+  bottom: 16px;
+  opacity: .78;
+  transform: scale(.58) translateY(12px);
+  filter: brightness(.55) drop-shadow(0 3px 2px rgba(0,0,0,.4));
+  animation: home-sleep-breathe 2.4s ease-in-out infinite;
+}
+
+.beat-runner.home-collision {
+  animation: home-collision 250ms ease-in-out 4 alternate;
+  filter: drop-shadow(0 0 9px #ffe76a);
+}
+
 .beat-runner.home-chasing-a {
   z-index: 3;
-  animation: home-chase-a 540ms ease-in-out 5 alternate;
+  animation: home-chase-a 1.36s cubic-bezier(.35,.05,.65,1) forwards;
 }
 
 .beat-runner.home-chasing-b {
   z-index: 4;
-  animation: home-chase-b 540ms ease-in-out 5 alternate;
+  animation: home-chase-b 1.36s cubic-bezier(.35,.05,.65,1) forwards;
 }
 
 .beat-runner.home-concert {
@@ -6279,14 +6361,32 @@ body.computer-away .call-back-toggle {
   50% { transform: translateY(-22px) scale(1.08); }
 }
 
+@keyframes home-walk-bob {
+  from { transform: translateY(0) rotate(-4deg); }
+  to { transform: translateY(-8px) rotate(4deg); }
+}
+
+@keyframes home-sleep-breathe {
+  50% { transform: scale(.6,.55) translateY(14px); }
+}
+
+@keyframes home-collision {
+  from { transform: translateX(-4px) rotate(-5deg); }
+  to { transform: translateX(4px) rotate(5deg); }
+}
+
 @keyframes home-chase-a {
-  from { transform: translateX(-4vw) translateY(0) rotate(-7deg); }
-  to { transform: translateX(22vw) translateY(-9px) rotate(7deg); }
+  0% { transform: translateX(0) translateY(0) rotate(-7deg); }
+  30% { transform: translateX(6vw) translateY(-10px) rotate(7deg); }
+  65% { transform: translateX(12vw) translateY(0) rotate(-7deg); }
+  100% { transform: translateX(18vw) translateY(-5px) rotate(8deg); }
 }
 
 @keyframes home-chase-b {
-  from { transform: translateX(5vw) translateY(-8px) rotate(8deg); }
-  to { transform: translateX(30vw) translateY(0) rotate(-5deg); }
+  0% { transform: translateX(0) translateY(-7px) rotate(8deg); }
+  30% { transform: translateX(-6vw) translateY(0) rotate(-6deg); }
+  65% { transform: translateX(-12vw) translateY(-10px) rotate(7deg); }
+  100% { transform: translateX(-18vw) translateY(-5px) rotate(-8deg); }
 }
 
 @keyframes home-concert {
@@ -6351,6 +6451,10 @@ body.terror-night .beatbox-runners {
   .beat-runner,
   .beat-runner.home-playing,
   .beat-runner.home-turning,
+  .beat-runner.home-walking,
+  .beat-runner.home-returning,
+  .beat-runner.home-sleeping,
+  .beat-runner.home-collision,
   .beat-runner.home-chasing-a,
   .beat-runner.home-chasing-b,
   .beat-runner.home-running-out,

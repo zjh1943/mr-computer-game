@@ -426,6 +426,11 @@ let rhythmPraiseCooldown = false;
 let lastRhythmDropAt = 0;
 let lastComputerSongAt = 0;
 let computerSongTimer = null;
+let homeSongAudio = null;
+let homeSongActive = false;
+let homeLawnActionTimer = null;
+let homeLawnHelpTimer = null;
+let homeHelpActive = false;
 const skyBodyAway = {
   sun: false,
   moon: false
@@ -9720,6 +9725,119 @@ function startMouthTalking(duration = 1800) {
   }, duration);
 }
 
+const HOME_COMPUTER_SONG_CAPTIONS = [
+  [0, "HELLO!"],
+  [1.45, "WOULD YOU LIKE"],
+  [3.15, "TO HAVE SOME FUN"],
+  [5.05, "WITH US RIGHT NOW?"],
+  [7.35, "COME AND SING!"]
+];
+
+function showHomeStageText(text, className = "") {
+  if (computerScreenMode !== "desktop" || currentComputerApp || isPoweredOff || isTerrorNightActive) return false;
+  if (computerDesktop) computerDesktop.hidden = true;
+  moodPanel.classList.remove("desktop-mode", "face-mode", "colorful");
+  moodPanel.classList.add("text-mode");
+  screenSubtitle.textContent = text;
+  screenSubtitle.style.display = "block";
+  if (className) computerShell.classList.add(className);
+  return true;
+}
+
+function restoreHomeStageScreen(className = "") {
+  if (className) computerShell.classList.remove(className);
+  if (computerScreenMode === "desktop" && !currentComputerApp) showComputerDesktop();
+}
+
+function startHomeComputerSong() {
+  if (homeSongActive || homeHelpActive || computerScreenMode !== "desktop" || currentComputerApp || isPoweredOff || isTerrorNightActive) return;
+  if (!showHomeStageText(HOME_COMPUTER_SONG_CAPTIONS[0][1], "home-song-performing")) return;
+  homeSongActive = true;
+  computerShell.classList.add("computer-speaking", "rhythm-loving");
+  const source = window.DanceCast?.computer?.audio || "./assets/dance-audio/normal/computer.wav";
+  const audio = homeSongAudio || new Audio(source);
+  homeSongAudio = audio;
+  audio.currentTime = 0;
+  let captionIndex = 0;
+  const syncCaption = () => {
+    while (captionIndex + 1 < HOME_COMPUTER_SONG_CAPTIONS.length && audio.currentTime >= HOME_COMPUTER_SONG_CAPTIONS[captionIndex + 1][0]) captionIndex += 1;
+    if (homeSongActive && screenSubtitle) screenSubtitle.textContent = HOME_COMPUTER_SONG_CAPTIONS[captionIndex][1];
+  };
+  const finish = () => {
+    audio.removeEventListener("timeupdate", syncCaption);
+    audio.removeEventListener("ended", finish);
+    audio.removeEventListener("error", finish);
+    homeSongActive = false;
+    computerShell.classList.remove("computer-speaking", "rhythm-loving");
+    restoreHomeStageScreen("home-song-performing");
+  };
+  audio.addEventListener("timeupdate", syncCaption);
+  audio.addEventListener("ended", finish, { once: true });
+  audio.addEventListener("error", finish, { once: true });
+  audio.play().catch(() => {
+    finish();
+    singComputerSong();
+  });
+}
+
+function setHomeRunnerView(runner, view = "front") {
+  const id = runner?.dataset.sprunkiId;
+  if (!id) return;
+  runner.style.setProperty("--runner-sprite", `url("./assets/sprunki-views/${view}/${id}.png")`);
+}
+
+function playHomeLawnMoment(runners) {
+  if (!runners.length || homeHelpActive || document.body.classList.contains("home-mode") || isTerrorNightActive) return;
+  const runner = runners[Math.floor(Math.random() * runners.length)];
+  const bubble = runner.querySelector(".beat-runner-bubble");
+  const views = ["front", "left", "right"];
+  const lines = ["一起玩呀", "看我的动作", "转个身", "追到你啦", "再来一拍"];
+  setHomeRunnerView(runner, views[Math.floor(Math.random() * views.length)]);
+  runner.classList.remove("home-playing", "home-turning", "home-talking");
+  void runner.offsetWidth;
+  const action = Math.random() < .55 ? "home-playing" : "home-turning";
+  runner.classList.add(action, "home-talking");
+  if (bubble) bubble.textContent = lines[Math.floor(Math.random() * lines.length)];
+  window.setTimeout(() => {
+    runner.classList.remove(action, "home-talking");
+    setHomeRunnerView(runner, "front");
+  }, 1500);
+}
+
+function runHomeHelpEvent(runners) {
+  if (!runners.length || homeHelpActive || homeSongActive || computerScreenMode !== "desktop" || currentComputerApp || document.body.classList.contains("home-mode") || isTerrorNightActive) return;
+  homeHelpActive = true;
+  const runner = runners[Math.floor(Math.random() * runners.length)];
+  const bubble = runner.querySelector(".beat-runner-bubble");
+  const onLeft = runners.indexOf(runner) < runners.length / 2;
+  const problems = ["球滚远了！", "节拍器不响了！", "帽子卡住啦！", "帮我捡一下！"];
+  runner.classList.add("home-help-needed");
+  if (bubble) bubble.textContent = problems[Math.floor(Math.random() * problems.length)];
+  showHomeStageText("别着急，我来帮你！");
+  computerShell.classList.add("home-helping", onLeft ? "home-helping-left" : "home-helping-right", "hat-spinning");
+  window.setTimeout(() => {
+    runner.classList.remove("home-help-needed");
+    runner.classList.add("home-helped");
+    if (bubble) bubble.textContent = "谢谢电脑先生！";
+    if (screenSubtitle && computerScreenMode === "desktop" && !currentComputerApp) screenSubtitle.textContent = "修好啦，继续玩吧！";
+  }, 1550);
+  window.setTimeout(() => {
+    runner.classList.remove("home-helped");
+    computerShell.classList.remove("home-helping", "home-helping-left", "home-helping-right", "hat-spinning");
+    homeHelpActive = false;
+    restoreHomeStageScreen();
+  }, 3200);
+}
+
+function setupHomeLawnCast() {
+  const runners = Array.from(document.querySelectorAll(".beat-runner[data-sprunki-id]"));
+  if (!runners.length) return;
+  runners.forEach((runner) => setHomeRunnerView(runner, "front"));
+  document.querySelector(".home-song-button")?.addEventListener("click", startHomeComputerSong);
+  homeLawnActionTimer = window.setInterval(() => playHomeLawnMoment(runners), 2600);
+  homeLawnHelpTimer = window.setInterval(() => runHomeHelpEvent(runners), 17000);
+}
+
 function generateReply(text) {
   if (window.ComputerKnowledge) {
     let memory = {};
@@ -11359,6 +11477,7 @@ setupSpeechUnlock();
 setupAutoReload();
 setupFoodDrag();
 setupRhythmBox();
+setupHomeLawnCast();
 updateRhythmTvMount();
 updateTvWeatherMarks();
 setupMinecraftGame();

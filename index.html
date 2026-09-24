@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>电脑先生</title>
-    <link rel="stylesheet" href="./styles.css?v=20260924-video2" />
-  <script src="./game-runtime.js?v=20260924-video2" defer></script>
+    <link rel="stylesheet" href="./styles.css?v=20260924-home1" />
+  <script src="./game-runtime.js?v=20260924-home1" defer></script>
 </head>
   <body><div id="game-boot" role="status" aria-live="polite"><div class="loading-computer">● ●<br>▽</div><p>电脑先生正在开机…</p></div><style>#game-boot{position:fixed;inset:0;background:#142237;color:#fff;display:grid;place-content:center;text-align:center;z-index:99999} .loading-computer{display:inline-block;background:#080b10;color:#fff;border:6px solid #9daebd;border-radius:12px;padding:18px;font-size:26px;animation:game-bob .7s ease-in-out infinite alternate}@keyframes game-bob{to{transform:translateY(-10px)}}@media(prefers-reduced-motion:reduce){.loading-computer{animation:none}}</style>
     <script>setTimeout(()=>{const boot=document.getElementById('game-boot');if(!boot)return;boot.querySelector('p').textContent='网络有点慢，可以重新试试。';const retry=document.createElement('button');retry.textContent='重新加载';retry.onclick=()=>location.reload();boot.append(retry);},20000);</script>
@@ -42,8 +42,9 @@
       <div class="snow-field" aria-hidden="true"></div>
     </div>
     <main class="stage">
-      <div class="beatbox-runners">
-        <span class="beat-runner runner-one" data-sprunki-name="Oren">
+      <div class="beatbox-runners" aria-label="在草地上玩耍的节奏盒子成员">
+        <button class="home-song-button" type="button" aria-label="请电脑先生唱电脑先生之歌">♪ 电脑先生之歌</button>
+        <span class="beat-runner runner-one" data-sprunki-id="oren" data-sprunki-name="Oren">
           <span class="beat-runner-bubble">咚咚咚</span>
           <span class="beat-head"><span class="beat-face"></span></span>
           <span class="beat-body"></span>
@@ -52,7 +53,7 @@
           <span class="beat-leg leg-left"></span>
           <span class="beat-leg leg-right"></span>
         </span>
-        <span class="beat-runner runner-two" data-sprunki-name="Raddy">
+        <span class="beat-runner runner-two" data-sprunki-id="raddy" data-sprunki-name="Raddy">
           <span class="beat-runner-bubble">换个拍子</span>
           <span class="beat-head"><span class="beat-face"></span></span>
           <span class="beat-body"></span>
@@ -61,7 +62,7 @@
           <span class="beat-leg leg-left"></span>
           <span class="beat-leg leg-right"></span>
         </span>
-        <span class="beat-runner runner-three" data-sprunki-name="Clukr">
+        <span class="beat-runner runner-three" data-sprunki-id="clukr" data-sprunki-name="Clukr">
           <span class="beat-runner-bubble">嘿嘿</span>
           <span class="beat-head"><span class="beat-face"></span></span>
           <span class="beat-body"></span>
@@ -70,7 +71,7 @@
           <span class="beat-leg leg-left"></span>
           <span class="beat-leg leg-right"></span>
         </span>
-        <span class="beat-runner runner-four" data-sprunki-name="Fun Bot">
+        <span class="beat-runner runner-four" data-sprunki-id="fun-bot" data-sprunki-name="Fun Bot">
           <span class="beat-runner-bubble">我来和声</span>
           <span class="beat-head"><span class="beat-face"></span></span>
           <span class="beat-body"></span>
@@ -79,7 +80,7 @@
           <span class="beat-leg leg-left"></span>
           <span class="beat-leg leg-right"></span>
         </span>
-        <span class="beat-runner runner-five" data-sprunki-name="Vineria">
+        <span class="beat-runner runner-five" data-sprunki-id="vineria" data-sprunki-name="Vineria">
           <span class="beat-runner-bubble">跑快点</span>
           <span class="beat-head"><span class="beat-face"></span></span>
           <span class="beat-body"></span>
@@ -88,7 +89,7 @@
           <span class="beat-leg leg-left"></span>
           <span class="beat-leg leg-right"></span>
         </span>
-        <span class="beat-runner runner-six" data-sprunki-name="Pinki">
+        <span class="beat-runner runner-six" data-sprunki-id="pinki" data-sprunki-name="Pinki">
           <span class="beat-runner-bubble">叭叭叭</span>
           <span class="beat-head"><span class="beat-face"></span></span>
           <span class="beat-body"></span>
@@ -525,21 +526,21 @@
       </section>
     </main>
 
-    <link rel="stylesheet" href="./computer-apps.css?v=20260924-video2">
-    <script src="./voxel-rules.js?v=20260924-video2"></script>
-<script src="./voxel-terrain.js?v=20260924-video2"></script>
-    <script src="./voxel-workstations.js?v=20260924-video2"></script>
-    <script src="./voxel-audio.js?v=20260924-video2"></script>
-    <script src="./voxel-survival.js?v=20260924-video2"></script>
-    <script src="./voxel-shell.js?v=20260924-video2"></script>
-    <script src="./voxel-world.js?v=20260924-video2"></script>
-    <script src="./dance-cast.js?v=20260924-video2"></script><script src="./dance-reference-data.js?v=20260924-video2"></script><script src="./dance-reference.js?v=20260924-video2"></script><script src="./dance-music.js?v=20260924-video2"></script>
-    <script src="./arcade-games.js?v=20260924-video2"></script>
+    <link rel="stylesheet" href="./computer-apps.css?v=20260924-home1">
+    <script src="./voxel-rules.js?v=20260924-home1"></script>
+<script src="./voxel-terrain.js?v=20260924-home1"></script>
+    <script src="./voxel-workstations.js?v=20260924-home1"></script>
+    <script src="./voxel-audio.js?v=20260924-home1"></script>
+    <script src="./voxel-survival.js?v=20260924-home1"></script>
+    <script src="./voxel-shell.js?v=20260924-home1"></script>
+    <script src="./voxel-world.js?v=20260924-home1"></script>
+    <script src="./dance-cast.js?v=20260924-home1"></script><script src="./dance-reference-data.js?v=20260924-home1"></script><script src="./dance-reference.js?v=20260924-home1"></script><script src="./dance-music.js?v=20260924-home1"></script>
+    <script src="./arcade-games.js?v=20260924-home1"></script>
 
-    <script src="./computer-apps.js?v=20260924-video2"></script>
-    <script src="./computer-knowledge.js?v=20260924-video2"></script>
-    <script src="./app.js?v=20260924-video2"></script>
-    <script src="./computer-voice.js?v=20260924-video2"></script>
-    <script src="./computer-experience.js?v=20260924-video2"></script>
+    <script src="./computer-apps.js?v=20260924-home1"></script>
+    <script src="./computer-knowledge.js?v=20260924-home1"></script>
+    <script src="./app.js?v=20260924-home1"></script>
+    <script src="./computer-voice.js?v=20260924-home1"></script>
+    <script src="./computer-experience.js?v=20260924-home1"></script>
   </body>
 </html>

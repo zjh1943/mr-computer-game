@@ -6098,6 +6098,195 @@ body.computer-away .call-back-toggle {
   pointer-events: none;
 }
 
+.beatbox-runners {
+  position: fixed;
+  inset: auto 0 18vh;
+  height: 150px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.home-song-button {
+  position: fixed;
+  left: 50%;
+  top: 92px;
+  bottom: auto;
+  translate: -50% 0;
+  z-index: 9;
+  pointer-events: auto;
+  border: 3px solid #26342d;
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: #172219;
+  background: #fff7b2;
+  box-shadow: 0 5px 0 #54743d;
+  font: 800 12px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.home-song-button:active {
+  translate: -50% 4px;
+  box-shadow: 0 1px 0 #54743d;
+}
+
+.beat-runner {
+  --runner-x: 4vw;
+  --runner-delay: 0s;
+  position: absolute;
+  left: var(--runner-x);
+  bottom: 0;
+  display: block;
+  width: clamp(58px, 7vw, 92px);
+  height: clamp(82px, 11vw, 136px);
+  background-image: var(--runner-sprite);
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 8px 3px rgba(24, 63, 19, 0.28));
+  transform-origin: 50% 100%;
+  animation: home-runner-idle 1.15s ease-in-out infinite alternate;
+  animation-delay: var(--runner-delay);
+  transition: left 900ms ease, bottom 500ms ease, filter 220ms ease;
+}
+
+.beat-runner > :not(.beat-runner-bubble) {
+  display: none;
+}
+
+.beat-runner-bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 96%;
+  min-width: max-content;
+  max-width: 110px;
+  translate: -50% 0;
+  padding: 5px 8px;
+  border: 2px solid #23332b;
+  border-radius: 12px 12px 12px 3px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #172219;
+  font: 800 11px/1.2 system-ui, sans-serif;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(7px) scale(0.85);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.beat-runner.home-talking .beat-runner-bubble,
+.beat-runner.home-help-needed .beat-runner-bubble,
+.beat-runner.home-helped .beat-runner-bubble {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.beat-runner.home-playing {
+  animation: home-runner-play 420ms cubic-bezier(.2,.8,.3,1) infinite alternate;
+}
+
+.beat-runner.home-turning {
+  animation: home-runner-turn 720ms ease-in-out;
+}
+
+.beat-runner.home-help-needed {
+  animation: home-runner-worry 180ms ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 7px #ffe55c);
+}
+
+.beat-runner.home-helped {
+  animation: home-runner-cheer 420ms ease-in-out 3;
+}
+
+.runner-one { --runner-x: 2vw; --runner-delay: -.3s; }
+.runner-two { --runner-x: 12vw; --runner-delay: -.7s; }
+.runner-three { --runner-x: 22vw; --runner-delay: -.1s; }
+.runner-four { --runner-x: 70vw; --runner-delay: -.8s; }
+.runner-five { --runner-x: 80vw; --runner-delay: -.4s; }
+.runner-six { --runner-x: 90vw; --runner-delay: -.95s; }
+
+.computer-shell.home-song-performing .screen-body {
+  background: #050607;
+}
+
+.computer-shell.home-song-performing .screen-subtitle {
+  display: block !important;
+  color: #fff;
+  font-size: clamp(14px, 2.4vw, 22px);
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-shadow: 0 0 8px rgba(255,255,255,.55);
+}
+
+.computer-shell.home-helping-left {
+  animation: computer-help-left 3.1s ease-in-out;
+}
+
+.computer-shell.home-helping-right {
+  animation: computer-help-right 3.1s ease-in-out;
+}
+
+@keyframes home-runner-idle {
+  from { transform: translateY(0) rotate(-2deg); }
+  to { transform: translateY(-5px) rotate(2deg); }
+}
+
+@keyframes home-runner-play {
+  from { transform: translateY(0) rotate(-7deg) scale(1, .98); }
+  to { transform: translateY(-14px) rotate(7deg) scale(.98, 1.04); }
+}
+
+@keyframes home-runner-turn {
+  0%, 100% { transform: rotate(0); }
+  45% { transform: rotate(-10deg) translateX(-8px); }
+  70% { transform: rotate(9deg) translateX(8px); }
+}
+
+@keyframes home-runner-worry {
+  from { transform: translateX(-3px) rotate(-3deg); }
+  to { transform: translateX(3px) rotate(3deg); }
+}
+
+@keyframes home-runner-cheer {
+  50% { transform: translateY(-22px) scale(1.08); }
+}
+
+@keyframes computer-help-left {
+  0%, 100% { translate: 0 0; }
+  38%, 68% { translate: min(-25vw, -180px) -14px; }
+}
+
+@keyframes computer-help-right {
+  0%, 100% { translate: 0 0; }
+  38%, 68% { translate: min(25vw, 180px) -14px; }
+}
+
+body.home-mode .beatbox-runners,
+body.computer-app-open .beatbox-runners,
+body.terror-night .beatbox-runners {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .beatbox-runners { bottom: 20vh; height: 105px; }
+  .runner-one { --runner-x: 1vw; }
+  .runner-two { --runner-x: 15vw; }
+  .runner-three { --runner-x: 29vw; }
+  .runner-four { --runner-x: 58vw; }
+  .runner-five { --runner-x: 72vw; }
+  .runner-six { --runner-x: 86vw; }
+  .beat-runner { width: 54px; height: 84px; }
+  .home-song-button { top: 84px; padding: 6px 10px; font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beat-runner,
+  .beat-runner.home-playing,
+  .beat-runner.home-turning,
+  .beat-runner.home-help-needed,
+  .beat-runner.home-helped,
+  .computer-shell.home-helping-left,
+  .computer-shell.home-helping-right { animation: none; }
+}
+
 .minecraft-xp-bar i {
   position: absolute;
   left: 3px;

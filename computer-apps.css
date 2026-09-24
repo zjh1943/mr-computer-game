@@ -107,3 +107,7 @@
 .dance-player[data-pose="3"] .dance-pose,.dance-rival>div[data-pose="3"] .dance-pose,.dance-rival>div[data-pose="3"] img,.dance-player[data-pose="3"] .dance-lead-character{transform:translateX(6px) rotate(5deg)}
 @keyframes fnf-idle{0%,100%{transform:scale(1,1)}50%{transform:translateY(2px) scale(1.025,.975)}}
 @media(prefers-reduced-motion:reduce){.dance-pose,.dance-rival img,.dance-lead-character{animation:none!important;transition:none}}
+
+/* Tempo-linked idle movement between anticipation / singing / recoil poses. */
+.dance-player[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] img,.dance-player[data-pose="-1"] .dance-lead-character{animation-duration:var(--dance-beat,.6s)}
+@keyframes fnf-idle{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}30%{transform:translateY(3px) rotate(0deg) scale(1.025,.965)}65%{transform:translateY(-2px) rotate(1deg) scale(.99,1.015)}}

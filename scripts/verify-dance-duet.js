@@ -1,10 +1,16 @@
 const assert=require('node:assert/strict');
-const {battleChart,soloChart,orientedLane,stageSunVisible,grade}=require('../computer-apps.js');
+const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,grade}=require('../computer-apps.js');
 const {tracks}=require('../dance-reference-data.js');
 for(const song of tracks){const b=battleChart(song);assert.equal(b.player.length+b.opponent.length,song.notes.length);assert(b.player.length>100&&b.opponent.length>100);assert(b.player.every(n=>n.hit??n.side==='player'));assert(b.opponent.every(n=>!(n.hit??n.side==='player')));assert(b.opponent.every(n=>n.done===false));}
 assert(soloChart(tracks[0]).length>100);
 assert(soloChart(tracks[0]).every(n=>n.hit??n.side==='player'));
 assert.equal(soloChart(tracks[1]).length,0);
+assert(notesForMode(tracks[0],'play').length>100);
+assert.equal(notesForMode(tracks[0],'watch').length,0);
+assert.equal(singAnimationFor(['idle','singLEFT'],2),'singLEFT');
+assert.equal(singAnimationFor(['idle','singLEFT','singUP'],2),'singUP');
+assert(performanceHold('opponent','lime',false,0)>=.65);
+assert(performanceHold('opponent','lime',true,0)>=1);
 const b=battleChart({bpm:120,duration:20});assert(b.player.length&&b.opponent.length);assert(b.player.every(n=>!b.opponent.some(o=>o.time===n.time)));assert(b.opponent[0].time<b.player[0].time);
 assert.deepEqual([0,1,2,3].map(lane=>orientedLane('opponent',lane)),[0,1,2,3]);
 assert.deepEqual([0,1,2,3].map(lane=>orientedLane('player',lane)),[3,1,2,0]);

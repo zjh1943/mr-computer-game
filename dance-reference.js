@@ -7,5 +7,5 @@
  function draw(canvas,id,animation,elapsed){const art=data.characters[id],image=images.get(id);if(!art)return;if(!image){load(id).catch(()=>{});return;}const anim=art.animations[animation]||art.animations.idle;if(!anim)return;const index=Math.max(0,Math.floor(elapsed*anim.fps)),frame=anim.frames[anim.loop?index%anim.frames.length:Math.min(index,anim.frames.length-1)],key=id+':'+frame;if(canvas.dataset.frame===key)return;canvas.dataset.frame=key;
   const [w,h]=art.cell;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}const g=canvas.getContext('2d');g.clearRect(0,0,w,h);g.drawImage(image,frame%art.columns*w,Math.floor(frame/art.columns)*h,w,h,0,0,w,h);
  }
- window.DanceReference={has:id=>!!data.characters[id],prepare:ids=>Promise.all([...new Set(ids.filter(Boolean))].map(load)),draw};
+ window.DanceReference={has:id=>!!data.characters[id],animations:id=>Object.keys(data.characters[id]?.animations||{}),prepare:ids=>Promise.all([...new Set(ids.filter(Boolean))].map(load)),draw};
 })();

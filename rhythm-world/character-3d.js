@@ -3,6 +3,7 @@ import { getCharacter } from './character-catalog.js';
 import { getMouthShape } from './character-speech.js';
 import { selectCharacterView } from './character-view.js';
 import { eyeStyleFor, mouthAnchorFor, needsEyeCorrection } from './character-appearance.js';
+import { getPerformancePose } from './performance-motion.js';
 
 const loader = new THREE.TextureLoader();
 const textureCache = new Map();
@@ -156,7 +157,7 @@ export function stopCharacterSpeech(group) {
   group.userData.speakingUntil = 0;
 }
 
-export function setCharacterMotion(group, { moving = false, speaking = false, time = 0, direction = 0, cameraYaw = 0, gazeDirection = 0, motionMode = '' } = {}) {
+export function setCharacterMotion(group, { moving = false, speaking = false, performing = false, performanceBeat = 0, performanceRole = 'voice', time = 0, direction = 0, cameraYaw = 0, gazeDirection = 0, motionMode = '' } = {}) {
   const baseScale = group.userData.baseScale || group.scale.x || 1;
   const isSpeaking = speaking || time < group.userData.speakingUntil;
   const selected = selectCharacterView(direction, cameraYaw);
@@ -168,19 +169,22 @@ export function setCharacterMotion(group, { moving = false, speaking = false, ti
   }
   sprite.scale.x = Math.abs(sprite.scale.x) * (selected.flip ? -1 : 1);
   const isComputer = group.userData.id === 'mr-fun-computer';
-  const bounce = Math.abs(Math.sin(time * 0.006)) * (moving ? 0.12 : 0.025);
-  group.position.y = isComputer ? (motionMode === 'shutdown' ? 0 : motionMode === 'carried' ? 1.35 : 1.12 + Math.sin(time * .0022) * .12) : bounce;
+  const performance = getPerformancePose(group.userData.id, performanceBeat, performing);
+  const bounce = performing ? Math.abs(performance.bob) * .018 : Math.abs(Math.sin(time * 0.006)) * (moving ? 0.12 : 0.025);
+  group.position.y = isComputer ? (motionMode === 'shutdown' ? 0 : motionMode === 'carried' ? 1.35 : 1.12 + Math.sin(time * .0022) * .12 + bounce) : bounce;
   const pulse = isSpeaking ? 1 + Math.sin(time * 0.018) * 0.035 : 1;
-  group.scale.set(baseScale * pulse, baseScale * pulse, baseScale);
+  const performanceScale = performing ? performance.squash : 1;
+  group.scale.set(baseScale * pulse / performanceScale, baseScale * pulse * performanceScale, baseScale);
+  sprite.rotation.z = performing ? performance.sway * Math.PI / 180 : 0;
   const mouth = group.getObjectByName('mouthSprite');
   const gaze = group.getObjectByName('gazeSprite');
   const correctedEyes = group.getObjectByName('correctedEyes');
   const bubble = group.getObjectByName('speechBubble');
-  mouth.visible = isSpeaking && selected.view === 'front';
+  mouth.visible = (isSpeaking || performing) && selected.view === 'front';
   correctedEyes.visible = needsEyeCorrection(group.userData.id) && selected.view !== 'back';
-  gaze.visible = isSpeaking && selected.view === 'front' && !correctedEyes.visible;
+  gaze.visible = (isSpeaking || performing) && selected.view === 'front' && !correctedEyes.visible;
   bubble.visible = isSpeaking;
-  if (mouth.visible) drawMouth(mouth, getMouthShape(Math.floor(time / 130)), mouth.userData.coverColor);
+  if (mouth.visible) drawMouth(mouth, getMouthShape(performing ? Math.floor(performanceBeat * 4 + performance.mouth * 3 + performanceRole.length) : Math.floor(time / 130)), mouth.userData.coverColor);
   if (correctedEyes.visible) drawCorrectedEyes(correctedEyes, group.userData.id, selected.view, isSpeaking ? Math.sin(time / 320 + gazeDirection) * 5 : 0);
   if (gaze.visible) drawGaze(gaze, Math.sin(time / 320 + gazeDirection) * 8);
 }

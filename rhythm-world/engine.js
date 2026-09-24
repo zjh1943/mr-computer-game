@@ -12,9 +12,10 @@ import { resolveSolidCollisions } from './solid-collision.js';
 
 export const distanceTo = distanceBetween;
 
-export function createEngine({ canvas, state, onInteract, onMessage = () => {}, onSunFarewell = onMessage }) {
+export function createEngine({ canvas, state, onInteract, onMessage = () => {}, onSunFarewell = onMessage, getBeatTime = () => 0 }) {
   let mode = 'factory';
   let player = createCharacter3D(state.player.character || 'gray');
+  let playerPerformance = { active: false, role: 'voice' };
   let cameraControl, input, town, sky, npcs, interaction;
   player.position.set(state.player.x || 0, 0, state.player.z ?? state.player.y ?? 0);
   player.rotation.y = Math.PI;
@@ -42,10 +43,11 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
       state.player.z = player.position.z;
       state.player.y = player.position.z;
     }
-    setCharacterMotion(player, { moving, time: now, direction: player.rotation.y, cameraYaw: cameraControl.yaw });
+    const performanceBeat = getBeatTime();
+    setCharacterMotion(player, { moving, performing: playerPerformance.active, performanceBeat, performanceRole: playerPerformance.role, time: now, direction: player.rotation.y, cameraYaw: cameraControl.yaw });
     town.update(player.position);
     sky.update(dayState, runtime.camera, now);
-    npcs.update({ time: now, dayState, player, cameraYaw: cameraControl.yaw });
+    npcs.update({ time: now, dayState, player, cameraYaw: cameraControl.yaw, performanceBeat });
     cameraControl.update(dt);
     interaction.update();
   }
@@ -84,6 +86,8 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
     stopPlayerSpeech() { stopCharacterSpeech(player); },
     getNearbyResidents(range) { return npcs.getNearbyResidents(player, range); },
     setNpcChorusRole(id, role) { npcs.setChorusRole(id, role); },
+    setPlayerPerforming(active, role = 'voice') { playerPerformance = { active, role }; },
+    setNpcPerforming(id, active, role = 'voice') { npcs.setPerforming(id, active, role); },
     getNearbyInteractable() { if (mode === 'factory') return { kind: 'factoryExit', label: '离开生产中心' }; return interaction.currentTarget; },
     getMode: () => mode,
     residentHomes: npcs.entities.map(npc => npc.home),

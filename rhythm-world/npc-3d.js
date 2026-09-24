@@ -13,7 +13,7 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
     const character = catalog.find(item => item.id === home.id), spawn = spawns[index], object = createCharacter3D(home.id, { scale: .92 });
     object.position.set(spawn.x, 0, spawn.z); object.userData = { ...object.userData, kind: 'resident', id: home.id, label: character.name, residentHome: home };
     scene.add(object);
-    return { character, home, spawn, object, phase: index * .73, speaking: false, goingHome: false, direction: 0, power: home.id === 'mr-fun-computer' ? createComputerPowerState() : null, rescuing: false, chorusRole: '' };
+    return { character, home, spawn, object, phase: index * .73, speaking: false, performing: false, performanceRole: 'voice', goingHome: false, direction: 0, power: home.id === 'mr-fun-computer' ? createComputerPowerState() : null, rescuing: false, chorusRole: '' };
   });
   const computer = entities.find(item => item.home.id === 'mr-fun-computer');
   const happyRobot = entities.find(item => item.home.id === 'fun-bot');
@@ -46,7 +46,7 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
     computer.object.userData.powerStatus = status; computer.object.userData.charge = computer.power.charge;
   }
 
-  function update({ time, dayState, player, cameraYaw = 0 }) {
+  function update({ time, dayState, player, cameraYaw = 0, performanceBeat = 0 }) {
     const dtMs = Math.max(0, Math.min(100, time - (lastTime || time))); lastTime = time;
     updateComputer(time, dtMs);
     let nearest = null;
@@ -74,9 +74,9 @@ export function createNpcSystem({ scene, catalog = CHARACTER_CATALOG, onSpeech =
       const lookAtPlayer = nearest?.npc === npc && nearest.distance <= 3.2;
       const direction = lookAtPlayer ? Math.atan2(player.position.x - npc.object.position.x, player.position.z - npc.object.position.z) : npc.direction;
       const motionMode = isComputer ? (computer.power.status === 'shutdown' ? 'shutdown' : computer.power.status === 'rescued' ? 'carried' : 'flying') : '';
-      setCharacterMotion(npc.object, { moving: !isTree && (!isComputer || computer.power.status === 'flying' || computer.power.status === 'returning'), speaking: npc.speaking, time, direction, cameraYaw, gazeDirection: direction, motionMode });
+      setCharacterMotion(npc.object, { moving: !isTree && (!isComputer || computer.power.status === 'flying' || computer.power.status === 'returning'), speaking: npc.speaking, performing: npc.performing, performanceBeat, performanceRole: npc.performanceRole, time, direction, cameraYaw, gazeDirection: direction, motionMode });
     }
     if (conversation.speakId) { const npc = entities.find(item => item.home.id === conversation.speakId); onSpeech({ kind: 'resident', id: npc.home.id, label: npc.character.name, x: npc.object.position.x, y: npc.object.position.z, object3d: npc.object }); }
   }
-  return { entities, getInteractables: () => entities.map(npc => npc.object), getNearbyResidents(player,range=16){return entities.map(npc=>({id:npc.home.id,label:npc.character.name,distance:npc.object.position.distanceTo(player.position)})).filter(item=>item.distance<=range).sort((a,b)=>a.distance-b.distance)},setChorusRole(id,role){const npc=entities.find(item=>item.home.id===id);if(npc)npc.chorusRole=role}, getSolidColliders: () => entities.filter(npc => npc.home.id === 'mr-tree').map(npc => ({ x: npc.object.position.x, z: npc.object.position.z, radius: 1.2 })), speak(id, text, duration) { const npc = entities.find(item => item.home.id === id); if (npc) setCharacterSpeech(npc.object, text, duration); }, stopSpeaking(id) { const npc = entities.find(item => item.home.id === id); if (npc) stopCharacterSpeech(npc.object); }, update, rescueComputer, dispose() { for (const npc of entities) scene.remove(npc.object); } };
+  return { entities, getInteractables: () => entities.map(npc => npc.object), getNearbyResidents(player,range=16){return entities.map(npc=>({id:npc.home.id,label:npc.character.name,distance:npc.object.position.distanceTo(player.position)})).filter(item=>item.distance<=range).sort((a,b)=>a.distance-b.distance)},setChorusRole(id,role){const npc=entities.find(item=>item.home.id===id);if(npc)npc.chorusRole=role},setPerforming(id,active,role='voice'){const npc=entities.find(item=>item.home.id===id);if(npc){npc.performing=active;npc.performanceRole=role}}, getSolidColliders: () => entities.filter(npc => npc.home.id === 'mr-tree').map(npc => ({ x: npc.object.position.x, z: npc.object.position.z, radius: 1.2 })), speak(id, text, duration) { const npc = entities.find(item => item.home.id === id); if (npc) setCharacterSpeech(npc.object, text, duration); }, stopSpeaking(id) { const npc = entities.find(item => item.home.id === id); if (npc) stopCharacterSpeech(npc.object); }, update, rescueComputer, dispose() { for (const npc of entities) scene.remove(npc.object); } };
 }

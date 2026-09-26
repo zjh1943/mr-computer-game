@@ -116,6 +116,8 @@
 .dance-stage .dance-rival{grid-column:1!important;grid-row:1!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
 .dance-stage{grid-template-columns:minmax(100px,1.3fr) minmax(140px,1.8fr) minmax(90px,1fr)!important}
 .dance-original{display:block;object-fit:contain;width:100%;height:clamp(120px,25vh,260px)!important;max-width:260px;margin:auto;transform-origin:50% 95%}
+.dance-normal-character{display:block;object-fit:contain;width:100%;height:clamp(120px,25vh,260px)!important;max-width:220px;margin:auto;transform-origin:50% 95%;filter:saturate(1.08)}
+.dance-stage .dance-rival img.dance-normal-character{height:clamp(100px,22vh,230px)!important}
 .dance-stage .dance-rival img.dance-original{height:clamp(100px,22vh,230px)!important}
 .extra-app:not(.dance-custom-motion) .dance-original{animation:none!important;transform:none!important}
 .dance-player .dance-original{transition:transform .09s}

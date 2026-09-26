@@ -9795,6 +9795,9 @@ const HOME_LAWN_CAST = [
   ["owakcx", "OWAKCX"], ["sky", "Sky"], ["durple", "Durple"], ["simon", "Simon"],
   ["tunner", "Tunner"], ["wenda", "Wenda"], ["pinki", "Pinki"], ["jevin", "Jevin"]
 ];
+const HOME_LAWN_COLLISION_CHANCE = 0.1;
+const HOME_LAWN_CHASE_MIN_DELAY = 22000;
+const HOME_LAWN_CHASE_DELAY_RANGE = 26000;
 
 function setHomeRunnerCharacter(runner, character) {
   runner.dataset.sprunkiId = character[0];
@@ -9872,6 +9875,7 @@ function startHomeChase(runners) {
   homeLawnGroupActive = true;
   const shuffled = [...runners].sort(() => Math.random() - .5);
   const [first, second] = shuffled;
+  const collided = Math.random() < HOME_LAWN_COLLISION_CHANCE;
   const firstBubble = first.querySelector(".beat-runner-bubble");
   const secondBubble = second.querySelector(".beat-runner-bubble");
   if (firstBubble) firstBubble.textContent = "别跑，追到你啦！";
@@ -9891,6 +9895,15 @@ function startHomeChase(runners) {
   window.setTimeout(() => {
     first.classList.remove("home-chasing-a");
     second.classList.remove("home-chasing-b");
+    if (!collided) {
+      first.dataset.lawnX = "70";
+      second.dataset.lawnX = "94";
+      first.style.setProperty("--runner-x", "70vw");
+      second.style.setProperty("--runner-x", "94vw");
+      if (firstBubble) firstBubble.textContent = "差一点就追到啦！";
+      if (secondBubble) secondBubble.textContent = "跑开啦，下次再追！";
+      return;
+    }
     first.classList.add("home-collision");
     second.classList.add("home-collision");
     if (firstBubble) firstBubble.textContent = "哎呀，撞到一起啦！";
@@ -9903,7 +9916,16 @@ function startHomeChase(runners) {
     setHomeRunnerView(first, "front");
     setHomeRunnerView(second, "front");
     if (!homeHelpActive) homeLawnGroupActive = false;
-  }, 5100);
+  }, collided ? 5100 : 2900);
+}
+
+function scheduleHomeLawnChase(runners) {
+  window.clearTimeout(homeLawnChaseTimer);
+  const delay = HOME_LAWN_CHASE_MIN_DELAY + Math.random() * HOME_LAWN_CHASE_DELAY_RANGE;
+  homeLawnChaseTimer = window.setTimeout(() => {
+    startHomeChase(runners);
+    scheduleHomeLawnChase(runners);
+  }, delay);
 }
 
 function startHomeLawnConcert(runners) {
@@ -10006,10 +10028,9 @@ function setupHomeLawnCast() {
   setupHomeLawnHomes(runners);
   document.querySelector(".home-song-button")?.addEventListener("click", startHomeComputerSong);
   homeLawnActionTimer = window.setInterval(() => wanderHomeLawn(runners), 1450);
-  homeLawnChaseTimer = window.setInterval(() => startHomeChase(runners), 7600);
+  scheduleHomeLawnChase(runners);
   homeLawnConcertTimer = window.setInterval(() => startHomeLawnConcert(runners), 22000);
   homeLawnArrivalTimer = window.setInterval(() => sendHomeRunnerBeyondScreen(runners), 11800);
-  window.setTimeout(() => startHomeChase(runners), 1200);
   new MutationObserver(() => syncHomeLawnNight(runners)).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   syncHomeLawnNight(runners);
 }

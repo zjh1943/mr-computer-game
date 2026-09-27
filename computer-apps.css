@@ -86,25 +86,24 @@
 @keyframes dance-load-carry{0%{left:-30%;transform:translateY(2px)}48%{left:43%;transform:translateY(-5px)}100%{left:112%;transform:translateY(2px)}}
 
 /* A recoverable miss scene: one role icon leaves, a gray singer walks in, then the icon returns. */
+.dance-character-icon{display:block;width:52px;height:62px;background-image:url('./assets/dance-reference/role-icons.png');background-repeat:no-repeat;background-size:655px 130px;image-rendering:auto}
 .dance-failure-scene{display:none;position:absolute;inset:0;z-index:17;pointer-events:none;overflow:hidden;background:#16223888}
 .dance-failure-scene.is-active{display:block}
 .dance-failure-scene strong{position:absolute;left:12%;right:12%;top:10%;padding:8px;border:3px solid #222d3a;border-radius:10px;background:#fff;color:#303846;text-align:center;font:800 clamp(13px,2vw,20px)/1.2 sans-serif}
-.dance-failure-icon{position:absolute;left:24%;bottom:24%;width:66px;height:66px;padding:5px;border:4px solid #303947;border-radius:12px;background:#f7f2e6;animation:dance-icon-taken 2.45s ease-in-out both}
-.dance-failure-icon img{width:100%;height:100%;object-fit:contain}
-.dance-failure-scene.is-player-defeat .dance-failure-icon{animation:dance-icon-taken 1.15s ease-in-out both}
-.dance-gray-person{position:absolute;left:-20%;bottom:12%;width:72px;height:104px;animation:dance-gray-walk 2.2s ease-out forwards}
-.dance-gray-head{position:absolute;left:17px;top:0;width:38px;height:38px;border:4px solid #31363c;border-radius:50%;background:#a7adb2}.dance-gray-head::before{content:'︵';position:absolute;left:5px;top:5px;color:#30343a;font:800 22px/1 sans-serif;transform:rotate(180deg)}
-.dance-gray-body{position:absolute;left:12px;top:36px;width:48px;height:58px;border:4px solid #31363c;border-radius:18px 18px 8px 8px;background:#8f969c}
-.dance-gray-hand{position:absolute;z-index:-1;top:45px;width:20px;height:20px;border:3px solid #31363c;border-radius:50%;background:#8f969c;transform-origin:50% 170%;animation:dance-sad-hand 380ms ease-in-out infinite alternate}.dance-gray-hand-left{left:0}.dance-gray-hand-right{right:0;animation-direction:alternate-reverse}
+.dance-failure-icon{position:absolute;left:24%;bottom:24%;width:62px;height:62px;padding:5px;border:4px solid #303947;border-radius:12px;background:#f7f2e6;animation:dance-icon-taken 1.05s ease-in forwards}
+.dance-failure-icon .dance-character-icon{position:absolute;inset:0;margin:auto}
+.dance-failure-scene.is-returning .dance-failure-icon{animation:dance-icon-return 1.05s ease-out forwards}
+.dance-gray-person{position:absolute;left:-20%;bottom:8%;width:130px;height:auto;object-fit:contain;opacity:0;animation:dance-gray-walk 1.15s .65s ease-out forwards}
+.dance-failure-scene.is-returning .dance-gray-person{left:43%;opacity:1;animation:dance-gray-transform 1.05s ease-in forwards}
 .dance-player.dance-role-lost{filter:grayscale(1);opacity:.18;transform:scale(.55)!important;transition:filter .3s,opacity .3s,transform .3s!important}.dance-rack .role-taken{opacity:.18;transform:translateY(-16px);pointer-events:none}
 @keyframes dance-icon-taken{0%{transform:translate(0,0) scale(1)}100%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}}
 @keyframes dance-icon-return{0%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}100%{transform:translate(0,0) rotate(0) scale(1)}}
-@keyframes dance-gray-walk{0%{left:-20%;transform:translateY(0)}70%{left:47%;transform:translateY(-5px)}100%{left:47%;transform:translateY(0)}}
-@keyframes dance-sad-hand{from{transform:rotate(22deg)}to{transform:rotate(-24deg)}}
-.dance-opponent-swap{display:none;position:absolute;left:10%;top:18%;width:112px;height:112px;z-index:16;pointer-events:none}.dance-opponent-swap.is-swapping{display:block}.dance-opponent-swap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.dance-opponent-swap.is-swapping .dance-swap-old{animation:dance-swap-old 340ms ease-in forwards}.dance-opponent-swap.is-swapping .dance-swap-new{animation:dance-swap-new 720ms ease-out both}
+@keyframes dance-gray-walk{0%{left:-20%;opacity:0;transform:translateY(0)}20%{opacity:1}70%{left:43%;transform:translateY(-5px)}100%{left:43%;opacity:1;transform:translateY(0)}}
+@keyframes dance-gray-transform{0%{opacity:1;transform:scale(1)}70%{opacity:.35;transform:scale(.72) rotate(-4deg)}100%{opacity:0;transform:scale(.5) rotate(0)}}
+.dance-opponent-swap{display:none;position:absolute;left:10%;top:18%;width:112px;height:112px;z-index:16;pointer-events:none}.dance-opponent-swap.is-swapping{display:block}.dance-opponent-swap .dance-character-icon{position:absolute;left:25px;top:25px}.dance-opponent-swap.is-swapping .dance-swap-old{animation:dance-swap-old 340ms ease-in forwards}.dance-opponent-swap.is-swapping .dance-swap-new{animation:dance-swap-new 720ms ease-out both}
 @keyframes dance-swap-old{to{transform:translate(-65px,-72px) rotate(-18deg) scale(.35);opacity:0}}
 @keyframes dance-swap-new{0%,45%{transform:translate(65px,-72px) rotate(18deg) scale(.35);opacity:0}100%{transform:translate(0,0) rotate(0) scale(1);opacity:1}}
-@media(prefers-reduced-motion:reduce){.dance-loading-worker,.dance-failure-icon,.dance-gray-person,.dance-gray-hand,.dance-opponent-swap img{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+@media(prefers-reduced-motion:reduce){.dance-loading-worker,.dance-failure-icon,.dance-gray-person,.dance-opponent-swap .dance-character-icon{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 
 /* Generated directional art: each input selects a distinct drawing. */
 .dance-pose{background-repeat:no-repeat;background-position-x:var(--pose-x,33.333333%);width:100%;flex:none}
@@ -154,14 +153,14 @@
 .dance-battle{display:grid;grid-template-columns:auto minmax(80px,1fr) auto;align-items:center;gap:8px;font-size:12px;font-weight:bold;color:#223b33}
 .dance-balance{height:14px;background:#ee727e;border:2px solid #223b33;border-radius:9px;overflow:visible;position:relative}
 .dance-balance i{position:absolute;right:0;top:0;bottom:0;width:var(--player-share,50%);background:#74de9a;border-radius:0 7px 7px 0;transition:width .15s}
-.dance-battle-icons{position:absolute;z-index:2;left:calc(var(--player-share,50%) - 26px);top:-10px;display:flex;align-items:center;transition:left .15s;filter:drop-shadow(0 2px 1px #15212d99)}
-.dance-battle-icon{width:25px;height:25px;object-fit:contain;border:2px solid #223b33;border-radius:7px;background:#fff}
-.dance-battle-opponent-icon{margin-right:-4px;transform:scaleX(-1)}
-.dance-battle-player-icon{z-index:1}
+.dance-battle-icons{position:absolute;z-index:2;left:calc(var(--player-share,50%) - 25px);top:-9px;width:50px;height:29px;transition:left .15s;filter:drop-shadow(0 2px 1px #15212d99)}
+.dance-battle-icon{position:absolute;top:0;transform:scale(.44);transform-origin:top left}
+.dance-battle-opponent-icon{left:0}
+.dance-battle-player-icon{left:23px;z-index:1}
 .dance-battle progress{grid-column:1/-1;width:100%;height:5px;accent-color:#468ac5}
 .dance-rack{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;flex-shrink:0}
 .dance-rack button{display:flex;flex-direction:column;align-items:center;min-width:48px;touch-action:none;padding:3px 8px;border:2px solid #aab6ba;border-radius:10px;background:#f5f6ef;font-size:11px;cursor:grab}
-.dance-rack img{height:44px;width:42px;object-fit:contain;pointer-events:none}
+.dance-rack .dance-character-icon{width:52px;height:62px;pointer-events:none;transform:scale(.72);transform-origin:center;margin:-8px -5px}
 .dance-rack button[data-singing="true"]{border-color:#249d65;background:#def8c8;box-shadow:0 0 0 2px #249d6520}
 .dance-rack button[aria-pressed="true"]::after{content:'已加入';font-size:9px;color:#165c37}
 .dance-rack-help{margin:0;font-size:11px;text-align:center;color:#325348}

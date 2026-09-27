@@ -91,17 +91,20 @@
 .dance-failure-scene strong{position:absolute;left:12%;right:12%;top:10%;padding:8px;border:3px solid #222d3a;border-radius:10px;background:#fff;color:#303846;text-align:center;font:800 clamp(13px,2vw,20px)/1.2 sans-serif}
 .dance-failure-icon{position:absolute;left:24%;bottom:24%;width:66px;height:66px;padding:5px;border:4px solid #303947;border-radius:12px;background:#f7f2e6;animation:dance-icon-taken 2.45s ease-in-out both}
 .dance-failure-icon img{width:100%;height:100%;object-fit:contain}
-.dance-failure-scene.is-returning .dance-failure-icon{animation:dance-icon-return 1.5s ease-in-out both}
+.dance-failure-scene.is-player-defeat .dance-failure-icon{animation:dance-icon-taken 1.15s ease-in-out both}
 .dance-gray-person{position:absolute;left:-20%;bottom:12%;width:72px;height:104px;animation:dance-gray-walk 2.2s ease-out forwards}
 .dance-gray-head{position:absolute;left:17px;top:0;width:38px;height:38px;border:4px solid #31363c;border-radius:50%;background:#a7adb2}.dance-gray-head::before{content:'︵';position:absolute;left:5px;top:5px;color:#30343a;font:800 22px/1 sans-serif;transform:rotate(180deg)}
 .dance-gray-body{position:absolute;left:12px;top:36px;width:48px;height:58px;border:4px solid #31363c;border-radius:18px 18px 8px 8px;background:#8f969c}
 .dance-gray-hand{position:absolute;z-index:-1;top:45px;width:20px;height:20px;border:3px solid #31363c;border-radius:50%;background:#8f969c;transform-origin:50% 170%;animation:dance-sad-hand 380ms ease-in-out infinite alternate}.dance-gray-hand-left{left:0}.dance-gray-hand-right{right:0;animation-direction:alternate-reverse}
-.dance-role-lost{filter:grayscale(1);opacity:.18;transform:scale(.55)!important;transition:filter .3s,opacity .3s,transform .3s!important}.dance-rack .role-taken{opacity:.18;transform:translateY(-16px);pointer-events:none}
+.dance-player.dance-role-lost{filter:grayscale(1);opacity:.18;transform:scale(.55)!important;transition:filter .3s,opacity .3s,transform .3s!important}.dance-rack .role-taken{opacity:.18;transform:translateY(-16px);pointer-events:none}
 @keyframes dance-icon-taken{0%{transform:translate(0,0) scale(1)}100%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}}
 @keyframes dance-icon-return{0%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}100%{transform:translate(0,0) rotate(0) scale(1)}}
 @keyframes dance-gray-walk{0%{left:-20%;transform:translateY(0)}70%{left:47%;transform:translateY(-5px)}100%{left:47%;transform:translateY(0)}}
 @keyframes dance-sad-hand{from{transform:rotate(22deg)}to{transform:rotate(-24deg)}}
-@media(prefers-reduced-motion:reduce){.dance-loading-worker,.dance-failure-icon,.dance-gray-person,.dance-gray-hand{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+.dance-opponent-swap{display:none;position:absolute;left:10%;top:18%;width:112px;height:112px;z-index:16;pointer-events:none}.dance-opponent-swap.is-swapping{display:block}.dance-opponent-swap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.dance-opponent-swap.is-swapping .dance-swap-old{animation:dance-swap-old 340ms ease-in forwards}.dance-opponent-swap.is-swapping .dance-swap-new{animation:dance-swap-new 720ms ease-out both}
+@keyframes dance-swap-old{to{transform:translate(-65px,-72px) rotate(-18deg) scale(.35);opacity:0}}
+@keyframes dance-swap-new{0%,45%{transform:translate(65px,-72px) rotate(18deg) scale(.35);opacity:0}100%{transform:translate(0,0) rotate(0) scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.dance-loading-worker,.dance-failure-icon,.dance-gray-person,.dance-gray-hand,.dance-opponent-swap img{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 
 /* Generated directional art: each input selects a distinct drawing. */
 .dance-pose{background-repeat:no-repeat;background-position-x:var(--pose-x,33.333333%);width:100%;flex:none}
@@ -151,6 +154,7 @@
 .dance-battle{display:grid;grid-template-columns:auto minmax(80px,1fr) auto;align-items:center;gap:8px;font-size:12px;font-weight:bold;color:#223b33}
 .dance-balance{height:14px;background:#ee727e;border:2px solid #223b33;border-radius:9px;overflow:hidden;position:relative}
 .dance-balance i{position:absolute;right:0;top:0;bottom:0;width:var(--player-share,50%);background:#74de9a;transition:width .15s}
+.dance-balance em{position:absolute;z-index:2;left:calc(var(--player-share,50%) - 9px);top:-5px;width:18px;height:18px;border:2px solid #223b33;border-radius:50%;background:#fff;color:#2b6dd4;font:900 12px/15px sans-serif;text-align:center;transition:left .15s}
 .dance-battle progress{grid-column:1/-1;width:100%;height:5px;accent-color:#468ac5}
 .dance-rack{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;flex-shrink:0}
 .dance-rack button{display:flex;flex-direction:column;align-items:center;min-width:48px;touch-action:none;padding:3px 8px;border:2px solid #aab6ba;border-radius:10px;background:#f5f6ef;font-size:11px;cursor:grab}

@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,grade}=require('../computer-apps.js');
+const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,noteTravelY,grade}=require('../computer-apps.js');
 const {tracks}=require('../dance-reference-data.js');
 for(const song of tracks){const b=battleChart(song);assert.equal(b.player.length+b.opponent.length,song.notes.length);assert(b.player.length>100&&b.opponent.length>100);assert(b.player.every(n=>n.hit??n.side==='player'));assert(b.opponent.every(n=>!(n.hit??n.side==='player')));assert(b.opponent.every(n=>n.done===false));}
 assert(soloChart(tracks[0]).length>100);
@@ -17,6 +17,10 @@ assert.deepEqual([0,1,2,3].map(lane=>orientedLane('opponent',lane)),[0,1,2,3]);
 assert.deepEqual([0,1,2,3].map(lane=>orientedLane('player',lane)),[3,1,2,0]);
 assert.equal(grade(.24),60);
 assert.equal(grade(.29),0);
+assert(Math.abs(noteTravelY(12.2,10,34,300)-300)<1e-9,'a note enters at the bottom edge');
+assert.equal(noteTravelY(10,10,34,300),34,'a note reaches the top receptor on its beat');
+assert(noteTravelY(11,10,34,300)>34&&noteTravelY(11,10,34,300)<300,'a note crosses the full lane between bottom and top');
+assert(require('node:fs').readFileSync('computer-apps.js','utf8').includes('n.time>=NOTE_TRAVEL_SECONDS'),'reference songs need a full-lane opening before judging notes');
 assert.equal(stageSunVisible(['oren','raddy']),true);
 assert.equal(stageSunVisible(['oren','mr_sun']),false);
 console.log('Original scores keep all notes on their correct side; generated scores alternate four-beat turns.');

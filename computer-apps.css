@@ -74,6 +74,35 @@
 
 .game-loading{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#172737;color:white}.game-is-loading .dance-status:before{content:'';display:inline-block;width:16px;height:16px;margin-right:8px;border:3px solid #89a7bc;border-top-color:#3459dc;border-radius:50%;animation:game-spin .8s linear infinite}@keyframes game-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.game-is-loading .dance-status:before{animation:none}}
 
+/* The connection screen is a tiny stage crew instead of an indefinite spinner. */
+.dance-loading-stage{display:none;position:absolute;inset:0;z-index:18;overflow:hidden;background:linear-gradient(#61cffa 0 61%,#85d357 62%);border-radius:10px;pointer-events:none}
+.game-is-loading .dance-loading-stage{display:block}
+.dance-loading-worker{position:absolute;bottom:12%;left:-28%;width:128px;height:112px;animation:dance-load-carry 2.2s ease-in-out infinite}
+.dance-loading-worker:nth-child(2){bottom:27%;animation-delay:-.72s}.dance-loading-worker:nth-child(3){bottom:43%;animation-delay:-1.44s}
+.dance-loading-worker i{position:absolute;left:0;bottom:0;width:58px;height:83px;background:url('./assets/sprunki-views/right/oren.png') center bottom/contain no-repeat}
+.dance-loading-worker:nth-child(2) i{background-image:url('./assets/sprunki-views/right/pinki.png')}.dance-loading-worker:nth-child(3) i{background-image:url('./assets/sprunki-views/right/sky.png')}
+.dance-loading-worker b{position:absolute;right:0;bottom:18px;width:75px;padding:5px;border:3px solid #233746;border-radius:8px;background:#fff8;color:#213342;font:800 11px/1.1 sans-serif;text-align:center}
+.dance-loading-floor b{background:conic-gradient(#ff668b,#ffe05e,#5ce4e5,#9478f2,#ff668b);color:#172532}.dance-loading-sky b{border-radius:50%;background:linear-gradient(#72d7ff 0 62%,#fff 63% 69%,#8bdd63 70%)}
+@keyframes dance-load-carry{0%{left:-30%;transform:translateY(2px)}48%{left:43%;transform:translateY(-5px)}100%{left:112%;transform:translateY(2px)}}
+
+/* A recoverable miss scene: one role icon leaves, a gray singer walks in, then the icon returns. */
+.dance-failure-scene{display:none;position:absolute;inset:0;z-index:17;pointer-events:none;overflow:hidden;background:#16223888}
+.dance-failure-scene.is-active{display:block}
+.dance-failure-scene strong{position:absolute;left:12%;right:12%;top:10%;padding:8px;border:3px solid #222d3a;border-radius:10px;background:#fff;color:#303846;text-align:center;font:800 clamp(13px,2vw,20px)/1.2 sans-serif}
+.dance-failure-icon{position:absolute;left:24%;bottom:24%;width:66px;height:66px;padding:5px;border:4px solid #303947;border-radius:12px;background:#f7f2e6;animation:dance-icon-taken 2.45s ease-in-out both}
+.dance-failure-icon img{width:100%;height:100%;object-fit:contain}
+.dance-failure-scene.is-returning .dance-failure-icon{animation:dance-icon-return 1.5s ease-in-out both}
+.dance-gray-person{position:absolute;left:-20%;bottom:12%;width:72px;height:104px;animation:dance-gray-walk 2.2s ease-out forwards}
+.dance-gray-head{position:absolute;left:17px;top:0;width:38px;height:38px;border:4px solid #31363c;border-radius:50%;background:#a7adb2}.dance-gray-head::before{content:'︵';position:absolute;left:5px;top:5px;color:#30343a;font:800 22px/1 sans-serif;transform:rotate(180deg)}
+.dance-gray-body{position:absolute;left:12px;top:36px;width:48px;height:58px;border:4px solid #31363c;border-radius:18px 18px 8px 8px;background:#8f969c}
+.dance-gray-hand{position:absolute;z-index:-1;top:45px;width:20px;height:20px;border:3px solid #31363c;border-radius:50%;background:#8f969c;transform-origin:50% 170%;animation:dance-sad-hand 380ms ease-in-out infinite alternate}.dance-gray-hand-left{left:0}.dance-gray-hand-right{right:0;animation-direction:alternate-reverse}
+.dance-role-lost{filter:grayscale(1);opacity:.18;transform:scale(.55)!important;transition:filter .3s,opacity .3s,transform .3s!important}.dance-rack .role-taken{opacity:.18;transform:translateY(-16px);pointer-events:none}
+@keyframes dance-icon-taken{0%{transform:translate(0,0) scale(1)}100%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}}
+@keyframes dance-icon-return{0%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}100%{transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes dance-gray-walk{0%{left:-20%;transform:translateY(0)}70%{left:47%;transform:translateY(-5px)}100%{left:47%;transform:translateY(0)}}
+@keyframes dance-sad-hand{from{transform:rotate(22deg)}to{transform:rotate(-24deg)}}
+@media(prefers-reduced-motion:reduce){.dance-loading-worker,.dance-failure-icon,.dance-gray-person,.dance-gray-hand{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
 /* Generated directional art: each input selects a distinct drawing. */
 .dance-pose{background-repeat:no-repeat;background-position-x:var(--pose-x,33.333333%);width:100%;flex:none}
 .computer-pose{position:relative;aspect-ratio:543 / 724;background-image:url('./assets/dance-poses/computer-directions.png');background-size:400% 100%;max-width:240px;margin:auto}
@@ -116,8 +145,6 @@
 .dance-stage .dance-rival{grid-column:1!important;grid-row:1!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
 .dance-stage{grid-template-columns:minmax(100px,1.3fr) minmax(140px,1.8fr) minmax(90px,1fr)!important}
 .dance-original{display:block;object-fit:contain;width:100%;height:clamp(120px,25vh,260px)!important;max-width:260px;margin:auto;transform-origin:50% 95%}
-.dance-normal-character{display:block;object-fit:contain;width:100%;height:clamp(120px,25vh,260px)!important;max-width:220px;margin:auto;transform-origin:50% 95%;filter:saturate(1.08)}
-.dance-stage .dance-rival img.dance-normal-character{height:clamp(100px,22vh,230px)!important}
 .dance-stage .dance-rival img.dance-original{height:clamp(100px,22vh,230px)!important}
 .extra-app:not(.dance-custom-motion) .dance-original{animation:none!important;transform:none!important}
 .dance-player .dance-original{transition:transform .09s}
@@ -192,6 +219,48 @@
 .dance-watch-mode .dance-lanes{display:none!important}
 @media(max-width:600px){.dance-stage .dance-lanes{inset:64% 12% 3%}.dance-player-targets button svg{height:30px}}
 
+/* Friend Like You safe stage: two top banks, then one centered bank for Black's middle solo. */
+.dance-stage .dance-lanes{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 8px minmax(0,1fr);
+  gap:8px;
+  inset:1% 5% 56%;
+  height:auto;
+  overflow:visible;
+  pointer-events:none;
+  z-index:5;
+}
+.dance-stage .dance-bank{position:relative;height:100%;overflow:hidden;border:0;background:transparent;box-shadow:none}
+.dance-stage .dance-bank>b{top:0;color:#fff;font-size:10px;text-shadow:0 2px 3px #000}
+.dance-stage .dance-bank canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+.dance-stage .dance-divider{width:3px;height:92%;background:#fff8;box-shadow:0 0 7px #000;align-self:center}
+.dance-stage .dance-targets{top:17%;left:0;right:0;translate:0 -50%;z-index:6}
+.dance-stage .dance-player-targets{pointer-events:auto}
+.dance-stage .dance-opponent-targets{pointer-events:none}
+.dance-stage .dance-targets button,.dance-stage .dance-opponent-targets span{min-height:0;background:transparent!important;border:0!important;padding:0!important}
+.dance-stage .dance-targets img{display:block;width:100%;height:clamp(32px,4.6vw,58px);object-fit:contain;filter:drop-shadow(0 3px 1px #111)}
+.dance-stage .dance-opponent-targets [data-feedback="hit"] img{filter:brightness(1.55) drop-shadow(0 0 9px #fff)}
+.friend-safe-stage .dance-stage{background:#20dbe6 url('./assets/friend-like-you/stage-day.png') center/cover no-repeat!important;transition:filter 1.2s ease,background-color 1.2s ease}
+.friend-safe-stage.friend-night-phase .dance-stage{background:#120307 url('./assets/friend-like-you/stage-black.png') center/cover no-repeat!important;filter:none;animation:friend-dusk-shift 1.2s ease both}
+.friend-safe-stage.friend-night-phase .dance-sky-sun{opacity:0;transition:opacity .8s ease}
+.friend-safe-stage.friend-night-phase .dance-player{visibility:hidden}
+.friend-safe-stage.friend-night-phase .dance-rival{grid-column:1/4!important;grid-template-columns:1fr;justify-self:center;width:min(34%,260px);z-index:3}
+.friend-safe-stage.friend-single-bank .dance-stage .dance-lanes{grid-template-columns:minmax(0,1fr);inset-inline:31%}
+.friend-safe-stage.friend-single-bank .dance-opponent-bank,.friend-safe-stage.friend-single-bank .dance-divider{display:none}
+.friend-safe-stage.friend-single-bank .dance-player-bank{display:block}
+.friend-safe-stage.friend-single-bank .dance-rival [data-character="black"]{animation:friend-black-arrive .8s ease-out both,friend-black-dance 360ms .8s steps(2,jump-none) infinite;filter:none}
+@keyframes friend-dusk-shift{0%{opacity:.7}100%{opacity:1}}
+@keyframes friend-black-arrive{0%{translate:75vw 0;opacity:0}65%{translate:-10px 0;opacity:1}100%{translate:0 0;opacity:1}}
+@keyframes friend-black-dance{0%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-16px) rotate(5deg)}100%{transform:translateY(-3px) rotate(-2deg)}}
+.friend-chorus-crowd{display:none;position:absolute;inset:auto 7% 4%;height:42%;z-index:0;align-items:end;justify-content:space-around;pointer-events:none}
+.friend-chorus-phase .friend-chorus-crowd{display:flex}
+.friend-chorus-crowd>div{width:14%;height:100%;display:grid;align-items:end;justify-items:center;animation:friend-crowd-bounce var(--dance-beat,.5s) ease-in-out infinite alternate}
+.friend-chorus-crowd canvas{width:100%;height:100%;object-fit:contain}
+.friend-chorus-crowd small{display:none}
+.friend-chorus-crowd>div:nth-child(even){animation-delay:calc(var(--dance-beat,.5s) * -.5)}
+@keyframes friend-crowd-bounce{to{translate:0 -10px;rotate:2deg}}
+@media(max-width:600px){.dance-stage .dance-lanes{grid-template-columns:minmax(0,1fr) 3px minmax(0,1fr);gap:3px;inset:2% 1% 59%}.friend-safe-stage.friend-single-bank .dance-stage .dance-lanes{inset-inline:22%}.dance-stage .dance-targets img{height:32px}}
+
 /* Exact normal FNF receptors cropped from the reference mod's NOTE_assets atlas. */
 .dance-player-targets button img{
   display:block;
@@ -204,3 +273,70 @@
 .dance-player-targets button[data-feedback="hit"] img{filter:brightness(1.75) drop-shadow(0 0 8px #fff)}
 .dance-player-targets button[data-feedback="miss"] img{filter:brightness(.55)}
 @media(max-width:600px){.dance-player-targets button img{height:34px}}
+
+/* The source video supplies the exact song clock and sound; local art forms one seamless stage. */
+.friend-safe-stage .dance-stage .dance-video{display:block!important;position:absolute!important;left:-9999px!important;top:0!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden;pointer-events:none}
+.friend-safe-stage .dance-stage .dance-video>p{display:none}
+.friend-safe-stage .dance-stage .dance-video>div{position:absolute;inset:0;width:1px;height:1px}
+.friend-safe-stage .dance-stage .dance-video iframe{width:1px;height:1px;border:0;pointer-events:none}
+.friend-safe-stage .dance-rival{visibility:visible;z-index:3}
+.friend-safe-stage .dance-friend-actor{position:relative;display:block;margin-inline:auto;transform-origin:50% 100%;will-change:transform}
+.friend-safe-stage .dance-friend-layer{position:absolute;inset:0;width:100%!important;height:100%!important;max-height:none!important;object-fit:contain;opacity:0;transition:opacity 150ms ease-in-out;filter:inherit;transform:none!important;animation:none!important;will-change:opacity}
+.friend-safe-stage .dance-friend-layer.is-active{opacity:1}
+.friend-safe-stage .dance-player>small,.friend-safe-stage .dance-rival>div>small{display:none}
+.friend-safe-stage .dance-rival .dance-friend-opponent{width:min(38vw,450px);height:clamp(170px,32vh,320px)!important;filter:drop-shadow(0 6px 0 #173b29)}
+.friend-safe-stage .dance-rival [data-character="black"] .dance-friend-opponent{width:min(32vw,360px);height:clamp(180px,38vh,360px)!important;filter:drop-shadow(0 6px 0 #26040c)}
+.friend-safe-stage .dance-opponent-bank,.friend-safe-stage .dance-divider{visibility:visible}
+.friend-safe-stage .dance-player{z-index:4}
+.friend-safe-stage .dance-player .dance-friend-view{width:min(28vw,310px);height:clamp(170px,34vh,330px);filter:drop-shadow(0 5px 0 #17202a)}
+.friend-safe-stage.friend-night-phase .dance-lanes{z-index:6}
+@media(max-width:600px){.friend-safe-stage .dance-player .dance-friend-view{width:38vw;height:clamp(140px,30vh,240px)}.friend-safe-stage .dance-rival .dance-friend-opponent{width:42vw;height:clamp(140px,30vh,240px)!important}}
+
+/* Video-scale Friend Like You staging: large actors, compact receptors and a full concert finale. */
+.friend-safe-stage .dance-stage .dance-lanes{inset:9% 7% 47%;grid-template-columns:minmax(0,44%) minmax(16px,4%) minmax(0,44%);justify-content:space-between;gap:2%}
+.friend-safe-stage .dance-bank .dance-targets{left:11%;right:11%;gap:0}
+.friend-safe-stage .dance-bank .dance-targets img{width:112%;height:clamp(40px,5.2vw,66px)}
+.friend-safe-stage:not(.friend-night-phase) .dance-rival{position:absolute;left:-1%;bottom:-3%;width:50%;height:100%;display:block!important;margin:0;overflow:visible}
+.friend-safe-stage:not(.friend-night-phase) .dance-player{position:absolute;grid-column:auto!important;grid-row:auto!important;right:-2%;bottom:-5%;width:39%;height:96%;display:grid;place-items:end center;margin:0;overflow:visible}
+.friend-safe-stage:not(.friend-night-phase) .dance-rival>div{width:100%;height:100%}
+.friend-safe-stage:not(.friend-night-phase) .dance-rival .dance-friend-opponent{width:100%;height:100%!important;margin:0;animation:friend-video-idle calc(var(--dance-beat,.5s) * 2) ease-in-out infinite}
+.friend-safe-stage:not(.friend-night-phase) .dance-player .dance-friend-view{width:100%;height:100%;margin:0;animation:friend-video-idle calc(var(--dance-beat,.5s) * 2) ease-in-out infinite reverse}
+.friend-safe-stage.friend-opening-phase .dance-rival{animation:friend-stage-enter-tree .9s cubic-bezier(.16,.84,.28,1) both}
+.friend-safe-stage.friend-opening-phase .dance-player{animation:friend-stage-enter-computer 1s .06s cubic-bezier(.16,.84,.28,1) both}
+@keyframes friend-stage-enter-tree{0%{translate:-65% 12%;opacity:0}55%{translate:5% -2%;opacity:1}76%{translate:-2% 1%}100%{translate:0 0;opacity:1}}
+@keyframes friend-stage-enter-computer{0%{translate:72% 14%;opacity:0}55%{translate:-6% -3%;opacity:1}78%{translate:2% 1%}100%{translate:0 0;opacity:1}}
+@keyframes friend-video-idle{0%,100%{translate:0 0;rotate:-.8deg}35%{translate:0 -7px;rotate:1.2deg}70%{translate:0 2px;rotate:-1.4deg}}
+.friend-finale-floor{display:none;position:absolute;inset:auto -3% -8%;height:47%;z-index:0;transform:perspective(360px) rotateX(58deg);transform-origin:50% 100%;background:conic-gradient(from 90deg,#ff3ac8 0 25%,#36dcff 0 50%,#ffe24f 0 75%,#7b4dff 0) 0 0/72px 72px;border-top:6px solid #fff8;box-shadow:0 -10px 32px #ff58e999}
+.friend-chorus-phase .dance-stage{background:radial-gradient(circle at 18% 14%,#fff 0 2%,transparent 2.4%),radial-gradient(circle at 82% 18%,#fff 0 2%,transparent 2.4%),linear-gradient(145deg,#5126a2 0 36%,#c92b91 64%,#14236d 100%)!important}
+.friend-chorus-phase .friend-finale-floor{display:block;animation:friend-floor-flash calc(var(--dance-beat,.5s) * 2) steps(2,jump-none) infinite}
+@keyframes friend-floor-flash{0%{filter:hue-rotate(0deg) brightness(.8)}50%{filter:hue-rotate(55deg) brightness(1.45)}100%{filter:hue-rotate(115deg) brightness(1)}}
+.friend-chorus-phase .friend-chorus-crowd{display:grid;grid-template-columns:repeat(5,1fr);inset:auto 8% 1%;height:48%;z-index:1;align-items:end;gap:1%}
+.friend-chorus-crowd>div{width:100%;height:52%;align-self:end}
+.friend-chorus-crowd>div:nth-child(n+6){translate:0 -72%;scale:.78;filter:brightness(.82)}
+@media(max-width:600px){.friend-safe-stage .dance-stage .dance-lanes{inset-inline:2%;grid-template-columns:46% 4% 46%;gap:2%}.friend-safe-stage .dance-bank .dance-targets{left:1%;right:1%}.friend-safe-stage:not(.friend-night-phase) .dance-rival{left:-14%;width:64%;height:100%}.friend-safe-stage:not(.friend-night-phase) .dance-player{right:-7%;width:48%;height:85%}.friend-chorus-phase .friend-chorus-crowd{inset-inline:2%;grid-template-columns:repeat(5,1fr)}}
+
+/* Local video cabinet: every picture and voice comes from the bundled Sprunki game. */
+.offline-video-app{display:grid!important;grid-template-rows:auto auto minmax(240px,1fr) auto;gap:10px!important;overflow:auto!important;padding:12px!important;background:linear-gradient(145deg,#122038,#203d5f 54%,#16223d)!important;color:#fff!important}
+.offline-video-title,.offline-video-help{margin:0;text-align:center}.offline-video-help{color:#cfefff}
+.offline-video-player{display:grid;grid-template-rows:minmax(220px,1fr) auto auto;gap:7px;min-height:0}
+.offline-video-stage{position:relative;display:flex;align-items:flex-end;justify-content:center;gap:min(1.5vw,14px);min-height:240px;overflow:hidden;border:5px solid #0b121e;border-radius:14px;background:linear-gradient(#83d9ff 0 68%,#70c84f 68%);box-shadow:inset 0 0 0 3px #fff7,0 8px 18px #0008}
+.offline-video-stage[data-theme="computer"]{background:radial-gradient(circle at 50% 22%,#6fe6ff 0 4%,transparent 30%),linear-gradient(#182b51 0 68%,#704ba3 68%)}
+.offline-video-stage[data-theme="robot"]{background:linear-gradient(135deg,#1b2230 25%,#273b52 25% 50%,#1b2230 50% 75%,#273b52 75%);background-size:42px 42px}
+.offline-video-stage[data-theme="rainbow"],.offline-video-stage[data-theme="finale"]{background:linear-gradient(145deg,#ff78bd,#755cff 45%,#32d6ea 70%,#7bdc65)}
+.offline-video-stage[data-theme="forest"]{background:radial-gradient(circle at 18% 70%,#245f33 0 18%,transparent 19%),radial-gradient(circle at 82% 72%,#347b3f 0 22%,transparent 23%),linear-gradient(#9bdcff 0 68%,#4c9c47 68%)}
+.offline-video-stage figure{position:relative;z-index:1;width:min(15%,120px);min-width:54px;margin:0;text-align:center;transform-origin:50% 100%;animation:offline-video-idle 720ms ease-in-out infinite alternate;animation-delay:var(--video-delay)}
+.offline-video-stage[data-theme="computer"] figure{width:min(36%,250px)}
+.offline-video-stage figure.video-singing{animation:offline-video-sing 410ms cubic-bezier(.2,.75,.25,1) infinite alternate}
+.offline-video-stage figure img{display:block;width:100%;height:clamp(120px,28vh,270px);object-fit:contain;filter:drop-shadow(0 6px 2px #0006)}
+.offline-video-stage figure figcaption{padding:2px 5px;border-radius:8px;background:#07111dcc;color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.offline-video-caption{text-align:center;font-size:clamp(16px,2vw,24px);color:#fff19a;text-shadow:0 2px #000}
+.offline-video-controls{display:flex;align-items:center;justify-content:center;gap:8px}.offline-video-controls progress{width:min(55%,420px);height:16px}
+.offline-video-grid{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:8px}
+.offline-video-card{display:grid!important;grid-template-rows:76px auto auto;gap:3px;min-width:0!important;padding:7px!important;background:#edf7ff!important;color:#14283e!important;border:3px solid #5e87a9!important;border-radius:10px!important;text-align:center}
+.offline-video-card[aria-pressed="true"]{border-color:#ffe34f!important;box-shadow:0 0 0 3px #ff9f43}
+.offline-video-thumb{display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:7px;background:linear-gradient(#75d5ff 0 67%,#78c655 67%)}
+.offline-video-thumb img{width:25%;height:72px;object-fit:contain}.offline-video-card strong,.offline-video-card small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes offline-video-idle{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-6px) rotate(2deg)}}
+@keyframes offline-video-sing{0%{transform:translate(-3px,0) rotate(-5deg) scale(1,.97)}55%{transform:translate(3px,-16px) rotate(5deg) scale(.96,1.06)}100%{transform:translate(0,-4px) rotate(-1deg)}}
+@container game-window (max-width:620px){.offline-video-grid{grid-template-columns:repeat(2,minmax(110px,1fr))}.offline-video-stage{min-height:210px}.offline-video-stage figure{min-width:42px}.offline-video-stage figure img{height:170px}}
+@media(prefers-reduced-motion:reduce){.offline-video-stage figure,.offline-video-stage figure.video-singing{animation:none}}

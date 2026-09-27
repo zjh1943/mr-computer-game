@@ -1,4 +1,4 @@
-/* Official hosted songs stay in their visible, credited original player. */
+/* Playable songs use local audio; reference links are credits only. */
 (() => {
   const previousMixes = [
 {"id":"mix-sunny","name":"SPRUNKI · 草地派对","artist":"电脑先生编曲 · 多角色混音","bpm":100,"duration":78.8,"cast":["oren","raddy","clukr","simon","pinki"],"mix":[{"id":"oren","audio":"./assets/sprunki-kiss-local/assets/2ff9e556ae0b3cb4f9e4750dbe9b17d4.wav","beats":8,"gain":0.19},{"id":"raddy","audio":"./assets/sprunki-kiss-local/assets/ae111f7b2abb4ffe113d49e85cadcf7c.wav","beats":8,"gain":0.19},{"id":"clukr","audio":"./assets/sprunki-kiss-local/assets/70a511bac6487b9dfb4b9420ad7e86f6.wav","beats":8,"gain":0.19},{"id":"simon","audio":"./assets/sprunki-kiss-local/assets/5a09fb11b6441a49fc732a93b3b86b00.wav","beats":8,"gain":0.19},{"id":"pinki","audio":"./assets/sprunki-kiss-local/assets/be1cb011ce50969caf9511048105f167.wav","beats":16,"gain":0.19},{"id":"computer","audio":"./assets/sprunki-kiss-local/assets/cc85f2be1b1764358cd1ab84455d00a0.wav","beats":8,"gain":0.23}]},
@@ -11,7 +11,10 @@
   const custom={...previousMixes[0],id:'mix-sunny',name:'原版 SPRUNKI 合奏',artist:'拖入角色 · 原版正常音色',cast:['oren','raddy'],duration:78.8,originalMix:true,captionLoop:9.6,captions:[{time:0,text:'HELLO!'},{time:.9,text:'WOULD YOU LIKE'},{time:2.2,text:'TO HAVE SOME FUN'},{time:3.2,text:'WITH US RIGHT NOW?'},{time:7.7,text:'COME AND SING!'}]};
   const order=[...previousMixes[0].mix.map(s=>s.id),...Object.keys(cast).filter(id=>!previousMixes[0].mix.some(s=>s.id===id)&&!cast[id].silent)];
   custom.mix=order.map(id=>({id,audio:cast[id].audio,beats:cast[id].beats,gain:cast[id].gain}));
-  const tracks=[...reference.tracks,custom];
+  const friendBeat=60/120,friendNotes=[];
+  for(let i=0,t=2;t<148;i++,t=2+i*friendBeat/2){const middle=t>=55&&t<90,playerTurn=Math.floor((t-2)/(friendBeat*4))%2===1,side=middle?'dad':playerTurn?'player':'dad';friendNotes.push({time:Number(t.toFixed(5)),lane:(i*3+Math.floor(i/5))%4,side,hit:middle||playerTurn,hold:i%19===8?1.5:i%11===5?.75:0,animate:true});}
+  const friendLocal={id:'friend-like-you',name:'Friend Like You',artist:'Mr. Tree · 电脑先生 · Black',bpm:120,duration:150,reference:true,friendLikeYou:true,audioFile:'./assets/dance-audio/friend-like-you-safe.wav',cast:['mr_tree','computer','black'],lead:'computer',initial:{player:'computer',dad:'mr_tree'},notes:friendNotes,events:[{time:55,side:'dad',character:'black'},{time:90,side:'dad',character:'mr_tree'}],source:'https://www.youtube.com/watch?v=_bwDYOzbkBY'};
+  const tracks=[...reference.tracks,friendLocal,custom];
   function parseLyrics(text){const cues=[];for(const line of text.split(/\r?\n/)){const words=line.replace(/\[\d+:\d+(?:\.\d+)?\]/g,'').trim();for(const match of line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g))cues.push({time:Number(match[1])*60+Number(match[2]),text:words.slice(0,160)});}return cues.sort((a,b)=>a.time-b.time);}
   function captionAt(cues,time){let result='';for(const cue of cues||[]){if(cue.time>time)break;result=time-cue.time<6?cue.text:'';}return result;}
   function captionForTrack(track,time){const at=track?.captionLoop?Math.max(0,time-2)%track.captionLoop:time;return captionAt(track?.captions,at);}
@@ -40,7 +43,7 @@
       const g=++generation;player?.destroy();host.replaceChildren();const slot=document.createElement('div');host.append(slot);
       arm(g,15000,()=>fail('原曲连接仍未成功，请点“重试原曲”；本机歌曲可离线播放'));
       player=new YT.Player(slot,{width:'100%',height:'220',videoId:track.video,
-        playerVars:{playsinline:1,autoplay:1,origin:location.origin,start:Math.floor(resumeAt)},events:{
+        playerVars:{playsinline:1,autoplay:1,controls:0,disablekb:1,modestbranding:1,origin:location.origin,start:Math.floor(resumeAt)},events:{
           onReady:e=>{if(!valid(g))return;e.target.unMute?.();e.target.playVideo();arm(g,6000,()=>events.blocked());},
           onStateChange:e=>{if(!valid(g))return;clearTimeout(timer);events.state(e.data,e.target);if(e.data===3)arm(g,20000,()=>fail('歌曲缓冲超时，请重试原曲'));},
           onAutoplayBlocked:()=>{if(valid(g)){clearTimeout(timer);events.blocked();}},

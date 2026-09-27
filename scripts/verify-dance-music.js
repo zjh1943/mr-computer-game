@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {tracks,captionForTrack}=require('../dance-music.js');
 const originalMix=tracks.find(t=>t.mix);assert.equal(originalMix.name,'原版 SPRUNKI 合奏');assert(originalMix.captions.length>=5);assert.equal(captionForTrack(originalMix,2.1),'HELLO!');assert.equal(captionForTrack(originalMix,11.7),'HELLO!');
-for(const t of tracks)for(const c of t.cast)assert(fs.existsSync('assets/sprunki-2d/'+c+'.png'));
+for(const t of tracks)for(const c of t.cast){const file={mr_tree:'mr-tree',computer:'mr-fun-computer'}[c]||c;assert(fs.existsSync('assets/sprunki-2d/'+file+'.png'));}
 for(const t of tracks.filter(t=>t.audio)){assert(fs.existsSync(t.audio));const data=fs.readFileSync(t.audio);assert.equal(data.toString('ascii',0,4),'RIFF');assert(t.bpm>40&&t.bpm<240);assert(t.duration>30);}
 (async()=>{
  let id=0,plays=0,destroyed=0,states=[],blocked=0,errors=[],loading=0;const timers=new Map(),players=[];

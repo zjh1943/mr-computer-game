@@ -15,7 +15,8 @@ for (const name of ['chat', 'paint', 'music', 'clock', 'town', 'dance', 'blocks3
     document: { body: { classList: { toggle() {} } } },
     computerShell: { classList: { toggle() {}, add(value) { classes.add(value); } } },
     window: { setTimeout(fn, delay) { timers.set(++id, { fn, delay }); return id; }, clearTimeout(key) { timers.delete(key); } },
-    speakAsComputer: () => 100, cleanRainFromComputerByHappyRobot: () => false, isHappyRobotRainGuardActive: () => false };
+    speakAsComputer: () => 100, cleanRainFromComputerByHappyRobot: () => false, isHappyRobotRainGuardActive: () => false,
+    isRainFriendUmbrellaActive: () => false };
   for (const fn of ['clearRainErrorState','updateComputerWeatherMarks','updateWeatherToggleLabel','updateWeatherDetectorDisplay','updateTvWeatherMarks','showFaceOnly','setMood','enterRainCodeMode']) context[fn] = () => {};
   vm.createContext(context);
   vm.runInContext(extract(app, 'setWeather') + '\nsetWeather("rain");', context);

@@ -328,7 +328,7 @@ let nightAwakeUntil = 0;
 let money = 0;
 let computerScreenMode = "desktop";
 let currentComputerApp = "";
-let installedComputerApps = ["chat", "store", "minecraft", "town"];
+let installedComputerApps = ["chat", "store", "minecraft", "town", "videos"];
 let computerTown3D = null;
 let computerTownThreePromise = null;
 let computerTownAudio = null;
@@ -428,10 +428,18 @@ let lastComputerSongAt = 0;
 let computerSongTimer = null;
 let homeSongAudio = null;
 let homeSongActive = false;
+let homeSongAnimationFrame = 0;
+let homeSongStop = null;
 let homeLawnActionTimer = null;
 let homeLawnChaseTimer = null;
 let homeLawnConcertTimer = null;
 let homeLawnArrivalTimer = null;
+let homeLawnNightConcertTimer = null;
+let homeLawnConcertEndTimer = null;
+let homeLawnDanceFrameTimer = null;
+let homeLawnWasNight = null;
+const homeLawnConcertAudio = new Set();
+const homeLawnVoiceBuffers = new Map();
 let homeHelpActive = false;
 let homeLawnGroupActive = false;
 const skyBodyAway = {
@@ -1287,8 +1295,8 @@ function loadGameState() {
 
   money = Number.isFinite(saveData.money) ? saveData.money : 0;
   installedComputerApps = Array.isArray(saveData.installedComputerApps)
-    ? Array.from(new Set(["chat", "store", "minecraft", "town", ...saveData.installedComputerApps.filter((app) => typeof app === "string")]))
-    : ["chat", "store", "minecraft", "town"];
+    ? Array.from(new Set(["chat", "store", "minecraft", "town", "videos", ...saveData.installedComputerApps.filter((app) => typeof app === "string")]))
+    : ["chat", "store", "minecraft", "town", "videos"];
   minedItems = Array.isArray(saveData.minedItems)
     ? saveData.minedItems
         .map((id) => mineralTypes.find((item) => item.id === id))
@@ -6391,6 +6399,10 @@ function updateComputerWeatherMarks() {
   }
 
   if (currentWeather === "rain") {
+    if (isRainFriendUmbrellaActive()) {
+      computerShell.classList.remove("wet", "rained-on", "rain-squint", "rain-error", "rain-code-mode");
+      return;
+    }
     if (cleanRainFromComputerByHappyRobot(false)) return;
     computerShell.classList.add("wet");
     computerShell.classList.remove("sun-drying");
@@ -6417,7 +6429,7 @@ function setWeather(weather, announce = true) {
   document.body.classList.toggle("weather-cloudy", currentWeather === "cloudy");
   document.body.classList.toggle("weather-rain", currentWeather === "rain");
   document.body.classList.toggle("weather-snow", currentWeather === "snow");
-  computerShell.classList.toggle("rained-on", currentWeather === "rain" && !isAtHome && !isHappyRobotRainGuardActive());
+  computerShell.classList.toggle("rained-on", currentWeather === "rain" && !isAtHome && !isHappyRobotRainGuardActive() && !isRainFriendUmbrellaActive());
   updateComputerWeatherMarks();
   updateWeatherToggleLabel();
   updateWeatherDetectorDisplay();
@@ -6427,7 +6439,7 @@ function setWeather(weather, announce = true) {
 
   let weatherMessage = "晴天来了，太阳公公又亮起来了。";
   if (currentWeather === "rain") {
-    weatherMessage = "下雨了，电脑先生被雨淋到了。";
+    weatherMessage = isRainFriendUmbrellaActive() ? "下雨了，快乐机器人、加诺德和克拉克一起给电脑先生打伞。" : "下雨了，电脑先生被雨淋到了。";
   } else if (currentWeather === "cloudy") {
     weatherMessage = "多云了，天上好多云。";
   } else if (currentWeather === "snow") {
@@ -6442,15 +6454,16 @@ function setWeather(weather, announce = true) {
     showFaceOnly();
     setMood(0);
     updateComputerWeatherMarks();
-    computerShell.classList.toggle("rain-squint", currentWeather === "rain" && !isAtHome && !isHappyRobotRainGuardActive());
+    computerShell.classList.toggle("rain-squint", currentWeather === "rain" && !isAtHome && !isHappyRobotRainGuardActive() && !isRainFriendUmbrellaActive());
   }, weatherSpeechDuration);
   // Damage must not be cancelled when chat replaces the subtitle timer.
     if (currentWeather === "rain" && !isAtHome) {
+      if (isRainFriendUmbrellaActive()) return;
       if (cleanRainFromComputerByHappyRobot(true)) return;
       rainErrorTimer = window.setTimeout(() => {
         rainErrorTimer = null;
         if (currentWeather !== "rain" || isAtHome || isPoweredOff || isTerrorNightActive) return;
-        if (cleanRainFromComputerByHappyRobot(true)) return;
+        if (isRainFriendUmbrellaActive() || cleanRainFromComputerByHappyRobot(true)) return;
         computerShell.classList.add("rain-error");
         rainCodeTimer = window.setTimeout(() => {
           rainCodeTimer = null;
@@ -9736,6 +9749,17 @@ const HOME_COMPUTER_SONG_CAPTIONS = [
   [7.35, "COME AND SING!"]
 ];
 
+// Exact costume changes from the original Scratch `play loop` blocks.
+// Loop 1 uses anim..anim12; loop 2 starts at 4.8 s with anim13.
+const HOME_COMPUTER_ORIGINAL_CUES = [
+  [0, 1], [0.1, 2], [0.9, 3], [1, 4], [1.3, 5], [1.6, 6],
+  [1.9, 7], [2.2, 8], [2.5, 9], [2.6, 10], [3.1, 11],
+  [3.35, 12], [3.6, 11], [3.85, 12], [4.1, 11],
+  [4.8, 13], [5.1, 14], [5.7, 15], [5.95, 16], [6.2, 15],
+  [6.45, 16], [6.7, 11], [6.95, 12], [7.2, 11], [7.45, 12],
+  [7.7, 11], [7.95, 17], [8.5, 18]
+];
+
 function showHomeStageText(text, className = "") {
   if (computerScreenMode !== "desktop" || currentComputerApp || isPoweredOff || isTerrorNightActive) return false;
   if (computerDesktop) computerDesktop.hidden = true;
@@ -9752,7 +9776,8 @@ function restoreHomeStageScreen(className = "") {
   if (computerScreenMode === "desktop" && !currentComputerApp) showComputerDesktop();
 }
 
-function startHomeComputerSong() {
+function startHomeComputerSong(options = {}) {
+  const { loop = false, duration = 0 } = options;
   if (homeSongActive || homeHelpActive || computerScreenMode !== "desktop" || currentComputerApp || isPoweredOff || isTerrorNightActive) return;
   if (!showHomeStageText(HOME_COMPUTER_SONG_CAPTIONS[0][1], "home-song-performing")) return;
   homeSongActive = true;
@@ -9761,26 +9786,79 @@ function startHomeComputerSong() {
   const audio = homeSongAudio || new Audio(source);
   homeSongAudio = audio;
   audio.currentTime = 0;
+  audio.loop = loop;
+  const songScreen = document.createElement("span");
+  songScreen.className = "home-song-original";
+  songScreen.setAttribute("role", "img");
+  songScreen.setAttribute("aria-label", "原版节奏盒子游戏里电脑先生屏幕的唱歌画面");
+  const songFrame = document.createElement("img");
+  songFrame.className = "home-song-screen-frame";
+  songFrame.alt = "";
+  songScreen.append(songFrame);
+  moodPanel.append(songScreen);
+  const originalComputer = window.DanceCast?.computer;
+  const originalFrames = [originalComputer?.idle, ...(originalComputer?.frames || [])].filter(Boolean);
+  let shownFrame = "";
+  const drawOriginalSong = () => {
+    if (!homeSongActive || !songScreen.isConnected) return;
+    const phase = Math.max(0, audio.currentTime) % 9.6;
+    let frameIndex = HOME_COMPUTER_ORIGINAL_CUES[0][1];
+    for (const [cueTime, cueFrame] of HOME_COMPUTER_ORIGINAL_CUES) {
+      if (phase < cueTime) break;
+      frameIndex = cueFrame;
+    }
+    const frameName = originalFrames[frameIndex];
+    if (frameName && frameName !== shownFrame) {
+      shownFrame = frameName;
+      songFrame.src = `./assets/sprunki-kiss-local/assets/${frameName}`;
+      songFrame.animate([
+        { transform: "translate(0,0) rotate(0deg) scale(1)" },
+        { transform: `translate(${Math.sin(phase*2.3)*2}px,${-2-Math.abs(Math.cos(phase*2.3))*2}px) scale(1.025)` },
+        { transform: "translate(0,0) rotate(0deg) scale(1)" }
+      ], { duration: 460, easing: "cubic-bezier(.2,.72,.24,1)" });
+    }
+    homeSongAnimationFrame = requestAnimationFrame(drawOriginalSong);
+  };
+  drawOriginalSong();
   let captionIndex = 0;
   const syncCaption = () => {
-    while (captionIndex + 1 < HOME_COMPUTER_SONG_CAPTIONS.length && audio.currentTime >= HOME_COMPUTER_SONG_CAPTIONS[captionIndex + 1][0]) captionIndex += 1;
+    const captionTime = loop ? audio.currentTime % 9.6 : audio.currentTime;
+    captionIndex = 0;
+    while (captionIndex + 1 < HOME_COMPUTER_SONG_CAPTIONS.length && captionTime >= HOME_COMPUTER_SONG_CAPTIONS[captionIndex + 1][0]) captionIndex += 1;
     if (homeSongActive && screenSubtitle) screenSubtitle.textContent = HOME_COMPUTER_SONG_CAPTIONS[captionIndex][1];
   };
+  let durationTimer = null;
+  let finished = false;
   const finish = () => {
+    if (finished) return;
+    finished = true;
     audio.removeEventListener("timeupdate", syncCaption);
     audio.removeEventListener("ended", finish);
     audio.removeEventListener("error", finish);
+    cancelAnimationFrame(homeSongAnimationFrame);
+    homeSongAnimationFrame = 0;
+    window.clearTimeout(durationTimer);
+    audio.loop = false;
+    audio.pause();
+    songScreen.remove();
     homeSongActive = false;
+    if (homeSongStop === finish) homeSongStop = null;
     computerShell.classList.remove("computer-speaking", "rhythm-loving");
     restoreHomeStageScreen("home-song-performing");
   };
+  homeSongStop = finish;
   audio.addEventListener("timeupdate", syncCaption);
   audio.addEventListener("ended", finish, { once: true });
   audio.addEventListener("error", finish, { once: true });
+  if (duration > 0) durationTimer = window.setTimeout(finish, duration);
   audio.play().catch(() => {
     finish();
     singComputerSong();
   });
+}
+
+function stopHomeComputerSong() {
+  if (homeSongStop) homeSongStop();
 }
 
 function setHomeRunnerView(runner, view = "front") {
@@ -9795,17 +9873,47 @@ const HOME_LAWN_CAST = [
   ["owakcx", "OWAKCX"], ["sky", "Sky"], ["durple", "Durple"], ["simon", "Simon"],
   ["tunner", "Tunner"], ["wenda", "Wenda"], ["pinki", "Pinki"], ["jevin", "Jevin"]
 ];
-const HOME_LAWN_COLLISION_CHANCE = 0.1;
+const HOME_LAWN_COLLISION_CHANCE = 0.05;
 const HOME_LAWN_CHASE_MIN_DELAY = 22000;
 const HOME_LAWN_CHASE_DELAY_RANGE = 26000;
+const HOME_LAWN_NIGHT_CONCERT_DURATION = 60000;
+const HOME_LAWN_VOICE_IDS = {
+  "fun-bot": "funbot",
+  owakcx: "lime"
+};
+const HOME_RUNNER_HAND_COLORS = {
+  oren: "#f29135", raddy: "#d64040", clukr: "#9ea8ad", "fun-bot": "#d7dadd",
+  vineria: "#4caf68", gray: "#777b82", brud: "#9b6848", garnold: "#d7b22c",
+  owakcx: "#a7d543", sky: "#80c9ef", durple: "#7250ad", simon: "#f0d13d",
+  tunner: "#b99162", wenda: "#ece9df", pinki: "#ef8eb3", jevin: "#4655a8"
+};
+// Measured RMS of the bundled normal-mode loops. Web Audio gain brings every
+// singer to the same perceived level without changing the original files.
+const HOME_LAWN_VOICE_LEVELS = {
+  brud: 1.73, clukr: 3.25, computer: .49, durple: .96, funbot: 1.22,
+  garnold: 1.08, gray: .45, jevin: .88, lime: 1.78, mr_sun: .53,
+  mr_tree: .57, oren: .59, pinki: .91, raddy: 1.14, simon: .95,
+  sky: .85, tunner: 1.04, vineria: 2.25, wenda: 1.35
+};
 
 function setHomeRunnerCharacter(runner, character) {
   runner.dataset.sprunkiId = character[0];
   runner.dataset.sprunkiName = character[1];
   runner.setAttribute("aria-label", `${character[1]}在草地上玩`);
+  runner.style.setProperty("--runner-hand-color", HOME_RUNNER_HAND_COLORS[character[0]] || "#d7dadd");
   setHomeRunnerView(runner, "front");
-  const homeName = document.querySelector(`.lawn-home[data-home-index="${runner.dataset.homeIndex}"] .lawn-home-name`);
-  if (homeName) homeName.textContent = `${character[1]}的家`;
+  ensureHomeRunnerHands(runner);
+}
+
+function ensureHomeRunnerHands(runner) {
+  if (runner.querySelector(".home-runner-hand-left")) return;
+  const left = document.createElement("span");
+  const right = document.createElement("span");
+  left.className = "home-runner-hand home-runner-hand-left";
+  right.className = "home-runner-hand home-runner-hand-right";
+  left.setAttribute("aria-hidden", "true");
+  right.setAttribute("aria-hidden", "true");
+  runner.append(left, right);
 }
 
 function setupHomeLawnHomes(runners) {
@@ -9846,28 +9954,24 @@ function wanderHomeLawn(runners) {
 
 function syncHomeLawnNight(runners) {
   const night = document.body.classList.contains("night-mode");
+  if (homeLawnWasNight === night) return;
+  homeLawnWasNight = night;
   document.querySelector(".lawn-homes")?.classList.toggle("night", night);
+  window.clearTimeout(homeLawnNightConcertTimer);
+  if (!night) stopHomeLawnConcertAudio();
   runners.forEach((runner, index) => {
-    runner.classList.remove("home-walking", "home-chasing-a", "home-chasing-b", "home-concert", "home-running-out", "home-running-in", "home-collision");
+    runner.classList.remove("home-walking", "home-chasing-a", "home-chasing-b", "home-concert", "home-running-out", "home-running-in", "home-collision", "home-returning", "home-sleeping", "home-talking", "home-inside-house");
     if (night) {
       const homeX = [4, 16, 28, 70, 82, 92][index];
       runner.dataset.lawnX = String(homeX);
       runner.style.setProperty("--runner-x", `${homeX}vw`);
-      runner.classList.add("home-returning", "home-talking");
-      const bubble = runner.querySelector(".beat-runner-bubble");
-      if (bubble) bubble.textContent = "晚安，我回家睡觉啦";
-      window.setTimeout(() => {
-        if (!document.body.classList.contains("night-mode")) return;
-        runner.classList.remove("home-returning", "home-talking");
-        runner.classList.add("home-sleeping");
-        if (bubble) bubble.textContent = "Z z z";
-      }, 1450 + index * 90);
+      runner.classList.add("home-inside-house");
     } else {
-      runner.classList.remove("home-returning", "home-sleeping", "home-talking");
       setHomeRunnerView(runner, "front");
     }
   });
   homeLawnGroupActive = false;
+  if (night) scheduleHomeLawnNightConcert(runners, 5200);
 }
 
 function startHomeChase(runners) {
@@ -9929,24 +10033,297 @@ function scheduleHomeLawnChase(runners) {
 }
 
 function startHomeLawnConcert(runners) {
+  if (document.body.classList.contains("night-mode")) return startHomeLawnNightConcert(runners);
   if (homeLawnGroupActive || !runners.length) return;
   homeLawnGroupActive = true;
   runners.forEach((runner, index) => {
     runner.classList.add("home-concert");
+    setHomeConcertPose(runner, index * 2);
     const bubble = runner.querySelector(".beat-runner-bubble");
     if (bubble) bubble.textContent = ["咚", "啪", "叮", "哒", "呜", "啦"][index % 6];
     window.setTimeout(() => runner.classList.add("home-talking"), index * 120);
   });
   unlockRhythmAudio();
+  let daytimeBeat = 0;
+  window.clearInterval(homeLawnDanceFrameTimer);
+  homeLawnDanceFrameTimer = window.setInterval(() => {
+    runners.forEach((runner, index) => setHomeConcertPose(runner, daytimeBeat + index * 2));
+    daytimeBeat += 1;
+  }, 220);
   const tune = [262, 330, 392, 523, 392, 330, 294, 392, 494, 587, 494, 392];
   tune.forEach((frequency, index) => window.setTimeout(() => {
     playRhythmTone(frequency, .16, index % 3 ? "triangle" : "square", .045);
     if (index % 4 === 0) playRhythmNoise(.04, .025, 5200);
   }, index * 170));
   window.setTimeout(() => {
-    runners.forEach(runner => runner.classList.remove("home-concert", "home-talking"));
+    window.clearInterval(homeLawnDanceFrameTimer);
+    homeLawnDanceFrameTimer = null;
+    runners.forEach(runner => {
+      runner.classList.remove("home-concert", "home-talking");
+      clearHomeConcertPose(runner);
+    });
     homeLawnGroupActive = false;
   }, 3000);
+}
+
+function stopHomeLawnConcertAudio() {
+  window.clearTimeout(homeLawnConcertEndTimer);
+  homeLawnConcertEndTimer = null;
+  homeLawnConcertAudio.forEach((audio) => {
+    if (typeof audio.stop === "function") audio.stop();
+    else {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  });
+  homeLawnConcertAudio.clear();
+  window.clearInterval(homeLawnDanceFrameTimer);
+  homeLawnDanceFrameTimer = null;
+  stopHomeComputerSong();
+  document.querySelectorAll(".beat-runner.home-original-performing").forEach(clearHomeConcertPose);
+  document.querySelectorAll(".home-concert-visitor").forEach(visitor => visitor.remove());
+  document.querySelectorAll(".home-concert-stage-crew").forEach(crew => crew.remove());
+  document.querySelectorAll(".beat-runner").forEach(runner => runner.classList.remove("home-concert", "home-talking", "home-concert-accent", "home-performer-clukr", "home-performer-funbot", "home-performer-garnold"));
+  document.body.classList.remove("home-night-concert-active", "home-concert-preparing", "home-concert-packing");
+  homeLawnGroupActive = false;
+}
+
+function playHomeLawnConcertAudio(source, volume = .18, options = {}) {
+  const audio = new Audio(source);
+  audio.volume = volume;
+  audio.loop = Boolean(options.loop);
+  homeLawnConcertAudio.add(audio);
+  audio.addEventListener("ended", () => homeLawnConcertAudio.delete(audio), { once: true });
+  audio.play().catch(() => homeLawnConcertAudio.delete(audio));
+  return audio;
+}
+
+async function loadHomeLawnVoiceBuffer(voiceId) {
+  if (homeLawnVoiceBuffers.has(voiceId)) return homeLawnVoiceBuffers.get(voiceId);
+  const context = getRhythmAudioContext();
+  if (!context) return null;
+  const loading = fetch(`./assets/dance-audio/normal/${voiceId}.wav`)
+    .then(response => {
+      if (!response.ok) throw new Error(`voice ${voiceId} unavailable`);
+      return response.arrayBuffer();
+    })
+    .then(data => context.decodeAudioData(data));
+  homeLawnVoiceBuffers.set(voiceId, loading);
+  try {
+    return await loading;
+  } catch (error) {
+    homeLawnVoiceBuffers.delete(voiceId);
+    return null;
+  }
+}
+
+async function playHomeLawnConcertVoices(performers) {
+  const context = getRhythmAudioContext();
+  if (!context || !rhythmMasterGain) return;
+  const voices = performers.map(performer => ({
+    performer,
+    voiceId: HOME_LAWN_VOICE_IDS[performer.dataset.sprunkiId] || performer.dataset.sprunkiId
+  })).filter(voice => window.DanceCast?.[voice.voiceId]?.audio);
+  const buffers = await Promise.all(voices.map(voice => loadHomeLawnVoiceBuffer(voice.voiceId)));
+  if (!document.body.classList.contains("night-mode") || !homeLawnGroupActive) return;
+  const startAt = context.currentTime + .08;
+  voices.forEach((voice, index) => {
+    const buffer = buffers[index];
+    if (!buffer) return;
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    source.loop = true;
+    gain.gain.value = HOME_LAWN_VOICE_LEVELS[voice.voiceId] || 1;
+    source.connect(gain).connect(rhythmMasterGain);
+    const handle = {
+      stop() {
+        try { source.stop(); } catch (error) { /* already stopped */ }
+        source.disconnect();
+        gain.disconnect();
+        homeLawnConcertAudio.delete(handle);
+      }
+    };
+    homeLawnConcertAudio.add(handle);
+    source.start(startAt);
+  });
+}
+
+function setHomeConcertPose(runner, frame = 0) {
+  const voiceId = HOME_LAWN_VOICE_IDS[runner.dataset.sprunkiId] || runner.dataset.sprunkiId;
+  const original = window.DanceCast?.[voiceId];
+  if (!original) return;
+  let pose = runner.querySelector(".home-concert-pose");
+  if (!pose) {
+    pose = document.createElement("img");
+    pose.className = "home-concert-pose";
+    pose.alt = "";
+    runner.append(pose);
+  }
+  const frames = original.frames?.length ? original.frames : [original.idle];
+  const frameName = frames[frame % frames.length] || original.idle;
+  pose.src = `./assets/sprunki-kiss-local/assets/${frameName}`;
+  runner.classList.add("home-original-performing");
+}
+
+function clearHomeConcertPose(runner) {
+  runner.classList.remove("home-original-performing", "home-performer-clukr", "home-performer-funbot", "home-performer-garnold");
+  runner.querySelector(".home-concert-pose")?.remove();
+  runner.querySelectorAll(".home-clukr-disc, .home-performance-hand, .home-hand-confetti").forEach(effect => effect.remove());
+  runner.style.removeProperty("--concert-bottom");
+}
+
+function addHomeConcertSpecials(performers) {
+  performers.forEach(performer => {
+    const voiceId = HOME_LAWN_VOICE_IDS[performer.dataset.sprunkiId] || performer.dataset.sprunkiId;
+    if (voiceId === "clukr") {
+      performer.classList.add("home-performer-clukr");
+      const disc = document.createElement("span");
+      disc.className = "home-clukr-disc";
+      disc.setAttribute("aria-hidden", "true");
+      performer.append(disc);
+    }
+    if (voiceId === "funbot" || voiceId === "garnold") {
+      performer.classList.add(voiceId === "funbot" ? "home-performer-funbot" : "home-performer-garnold");
+      ["left", "right"].forEach(side => {
+        const hand = document.createElement("span");
+        hand.className = `home-performance-hand home-performance-hand-${side}`;
+        const confetti = document.createElement("span");
+        confetti.className = `home-hand-confetti home-hand-confetti-${side}`;
+        hand.append(confetti);
+        performer.append(hand);
+      });
+    }
+  });
+}
+
+function createHomeConcertStageCrew(mode = "prepare") {
+  const world = document.querySelector(".beatbox-runners");
+  if (!world) return;
+  world.querySelectorAll(".home-concert-stage-crew").forEach(crew => crew.remove());
+  const labels = mode === "pack"
+    ? [["floor", "搬走彩色地板"], ["sky", "收好天空装饰"], ["star", "演员回家休息"]]
+    : [["floor", "铺开彩色地板"], ["sky", "装好天空"], ["star", "搬来角色"]];
+  labels.forEach(([kind, label], index) => {
+    const crew = document.createElement("span");
+    crew.className = `home-concert-stage-crew home-stage-${kind} home-stage-${mode}`;
+    crew.style.setProperty("--crew-delay", `${index * 180}ms`);
+    crew.innerHTML = `<span class="home-stage-helper"></span><span class="home-stage-prop"></span><b>${label}</b>`;
+    world.append(crew);
+  });
+}
+
+function positionHomeConcertPerformers(performers) {
+  const columns = Math.min(7, Math.max(1, Math.ceil(performers.length / 2)));
+  performers.forEach((performer, index) => {
+    const row = Math.floor(index / columns);
+    const rowStart = row * columns;
+    const rowCount = Math.min(columns, performers.length - rowStart);
+    const column = index - rowStart;
+    const rowLeft = row % 2 ? 8 : 1;
+    const rowSpan = 84;
+    const x = rowCount === 1 ? 47 : rowLeft + column * (rowSpan / (rowCount - 1));
+    performer.dataset.lawnX = x.toFixed(1);
+    performer.style.setProperty("--runner-x", `${x.toFixed(1)}vw`);
+    performer.style.setProperty("--concert-bottom", `${row * 146}px`);
+  });
+}
+
+function createHomeConcertVisitors(runners) {
+  const world = document.querySelector(".beatbox-runners");
+  if (!world) return [];
+  world.querySelectorAll(".home-concert-visitor").forEach(visitor => visitor.remove());
+  const visible = new Set(runners.map(runner => runner.dataset.sprunkiId));
+  const guests = HOME_LAWN_CAST.filter(character => !visible.has(character[0])).sort(() => Math.random() - .5).slice(0, 8);
+  return guests.map((character, index) => {
+    const visitor = document.createElement("span");
+    visitor.className = `beat-runner home-concert-visitor ${index % 2 ? "home-concert-arriving-right" : "home-concert-arriving-left"}`;
+    visitor.dataset.sprunkiId = character[0];
+    visitor.dataset.sprunkiName = character[1];
+    visitor.dataset.lawnX = String(7 + index * 12);
+    visitor.style.setProperty("--runner-x", `${7 + index * 12}vw`);
+    visitor.style.setProperty("--runner-delay", `${-index * .08}s`);
+    visitor.setAttribute("aria-label", `${character[1]}从屏幕外跑来参加夜晚演唱会`);
+    const bubble = document.createElement("span");
+    bubble.className = "beat-runner-bubble";
+    bubble.textContent = ["咚", "啪", "叮", "哒"][index % 4];
+    visitor.append(bubble);
+    setHomeRunnerView(visitor, index % 2 ? "left" : "right");
+    world.append(visitor);
+    window.setTimeout(() => {
+      visitor.classList.remove("home-concert-arriving-left", "home-concert-arriving-right");
+      visitor.classList.add("home-concert", "home-talking");
+    }, 850 + index * 85);
+    return visitor;
+  });
+}
+
+function scheduleHomeLawnNightConcert(runners, delay = 46000 + Math.random() * 22000) {
+  window.clearTimeout(homeLawnNightConcertTimer);
+  if (!document.body.classList.contains("night-mode")) return;
+  homeLawnNightConcertTimer = window.setTimeout(() => startHomeLawnNightConcert(runners), delay);
+}
+
+function startHomeLawnNightConcert(runners) {
+  if (!document.body.classList.contains("night-mode") || !runners.length) return;
+  if (homeLawnGroupActive || homeHelpActive) {
+    scheduleHomeLawnNightConcert(runners, 2200);
+    return;
+  }
+  stopHomeLawnConcertAudio();
+  homeLawnGroupActive = true;
+  document.body.classList.add("home-concert-preparing");
+  createHomeConcertStageCrew("prepare");
+  homeLawnConcertEndTimer = window.setTimeout(() => {
+    if (!document.body.classList.contains("night-mode")) return stopHomeLawnConcertAudio();
+    document.body.classList.remove("home-concert-preparing");
+    document.body.classList.add("home-night-concert-active");
+    document.querySelectorAll(".home-concert-stage-crew").forEach(crew => crew.remove());
+    const visitors = createHomeConcertVisitors(runners);
+    const performers = [...runners, ...visitors];
+    positionHomeConcertPerformers(performers);
+    addHomeConcertSpecials(performers);
+    runners.forEach((runner, index) => {
+      runner.classList.remove("home-sleeping", "home-returning", "home-inside-house");
+      runner.classList.add("home-concert", "home-talking");
+      const bubble = runner.querySelector(".beat-runner-bubble");
+      if (bubble) bubble.textContent = ["今晚开演！", "一起唱歌！", "跟上节拍！"][index % 3];
+    });
+    unlockRhythmAudio();
+    playHomeLawnConcertAudio("./assets/dance-reference/colorful-bunch-erect-inst.ogg", .1, { loop: true });
+    startHomeComputerSong({ loop: true, duration: HOME_LAWN_NIGHT_CONCERT_DURATION });
+    playHomeLawnConcertVoices(performers);
+    let beat = 0;
+    homeLawnDanceFrameTimer = window.setInterval(() => {
+      performers.forEach((performer, index) => setHomeConcertPose(performer, beat + index * 2));
+      beat += 1;
+    }, 240);
+    homeLawnConcertEndTimer = window.setTimeout(() => {
+      homeLawnConcertAudio.forEach(audio => typeof audio.stop === "function" ? audio.stop() : (audio.pause(), audio.currentTime = 0));
+      homeLawnConcertAudio.clear();
+      window.clearInterval(homeLawnDanceFrameTimer);
+      stopHomeComputerSong();
+      document.body.classList.add("home-concert-packing");
+      createHomeConcertStageCrew("pack");
+      visitors.forEach((visitor, index) => {
+        visitor.classList.remove("home-concert", "home-talking");
+        visitor.classList.add(index % 2 ? "home-concert-leaving-right" : "home-concert-leaving-left");
+      });
+      homeLawnConcertEndTimer = window.setTimeout(() => {
+        visitors.forEach(visitor => visitor.remove());
+        runners.forEach(runner => {
+          runner.classList.remove("home-concert", "home-talking");
+          clearHomeConcertPose(runner);
+          setHomeRunnerView(runner, "front");
+          if (document.body.classList.contains("night-mode")) runner.classList.add("home-inside-house");
+        });
+        document.querySelectorAll(".home-concert-stage-crew").forEach(crew => crew.remove());
+        document.body.classList.remove("home-night-concert-active", "home-concert-packing");
+        homeLawnGroupActive = false;
+        scheduleHomeLawnNightConcert(runners);
+      }, 2200);
+    }, HOME_LAWN_NIGHT_CONCERT_DURATION);
+  }, 2400);
 }
 
 function sendHomeRunnerBeyondScreen(runners) {
@@ -10024,8 +10401,13 @@ function runHomeHelpEvent(runners, collisionRunner = null, collisionMessage = ""
 function setupHomeLawnCast() {
   const runners = Array.from(document.querySelectorAll(".beat-runner[data-sprunki-id]"));
   if (!runners.length) return;
-  runners.forEach((runner) => setHomeRunnerView(runner, "front"));
+  runners.forEach((runner) => {
+    setHomeRunnerView(runner, "front");
+    runner.style.setProperty("--runner-hand-color", HOME_RUNNER_HAND_COLORS[runner.dataset.sprunkiId] || "#d7dadd");
+    ensureHomeRunnerHands(runner);
+  });
   setupHomeLawnHomes(runners);
+  setupRainFriendUmbrellas();
   document.querySelector(".home-song-button")?.addEventListener("click", startHomeComputerSong);
   homeLawnActionTimer = window.setInterval(() => wanderHomeLawn(runners), 1450);
   scheduleHomeLawnChase(runners);
@@ -10033,6 +10415,30 @@ function setupHomeLawnCast() {
   homeLawnArrivalTimer = window.setInterval(() => sendHomeRunnerBeyondScreen(runners), 11800);
   new MutationObserver(() => syncHomeLawnNight(runners)).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   syncHomeLawnNight(runners);
+}
+
+function setupRainFriendUmbrellas() {
+  if (document.querySelector(".rain-friend-umbrellas")) return;
+  const group = document.createElement("div");
+  group.className = "rain-friend-umbrellas";
+  group.setAttribute("aria-label", "快乐机器人、加诺德和克拉克一起给电脑先生打伞");
+  [["funbot", "快乐机器人"], ["garnold", "加诺德"], ["clukr", "克拉克"]].forEach(([id, name], index) => {
+    const friend = document.createElement("span");
+    friend.className = `rain-friend-umbrella rain-friend-${id}`;
+    friend.style.setProperty("--rain-friend-index", index);
+    const image = document.createElement("img");
+    image.src = `./assets/sprunki-kiss-local/assets/${window.DanceCast?.[id]?.idle || "FunBot.svg"}`;
+    image.alt = name;
+    const umbrella = document.createElement("span");
+    umbrella.className = "rain-friend-canopy";
+    friend.append(image, umbrella);
+    group.append(friend);
+  });
+  document.body.append(group);
+}
+
+function isRainFriendUmbrellaActive() {
+  return currentWeather === "rain" && !isAtHome && !isPoweredOff && !isTerrorNightActive && Boolean(document.querySelector(".rain-friend-umbrellas"));
 }
 
 function generateReply(text) {

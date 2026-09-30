@@ -21,7 +21,7 @@
   const singAnimationFor=(available,lane)=>{const wanted=['singLEFT','singDOWN','singUP','singRIGHT'][lane];return available.includes(wanted)?wanted:available.find(name=>name.startsWith('sing'))||'idle';};
   const performanceHold=(side,character,watching,hold=0)=>{const minimum=watching?1.05:(side==='player'&&character==='simon'?0.85:0.68);return Math.max(hold,minimum);};
   const orientedLane=(side,lane)=>side==='player'&&lane%3===0?3-lane:lane;
-  const characterFrameDuration=frameCount=>Math.max(220,Math.min(480,Math.round(4800/Math.max(1,frameCount))));
+  const characterFrameDuration=frameCount=>Math.max(110,Math.min(220,Math.round(2400/Math.max(1,frameCount))));
   const NOTE_TRAVEL_SECONDS=2.2;
   const BATTLE_GRACE_MS=5000;
   const noteTravelY=(noteTime,now,start,target)=>{const remaining=Math.max(0,Math.min(NOTE_TRAVEL_SECONDS,noteTime-now));return start+(target-start)*(1-remaining/NOTE_TRAVEL_SECONDS);};

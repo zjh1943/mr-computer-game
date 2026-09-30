@@ -13,6 +13,10 @@
 @media(max-width:700px){.voxel-shell .voxel-top strong{font-size:12px}.voxel-shell .voxel-top button{font-size:12px;padding:3px}.voxel-shell .voxel-coords{top:58px;max-width:80%;font-size:12px}.voxel-shell .voxel-menu-card h1{font-size:36px}}
 .computer-app-window:has(.voxel-shell){font-family:VoxelPixel,monospace}
 .voxel-shell .voxel-top .voxel-audio-toggle{width:112px;min-width:112px;white-space:nowrap}
+.voxel-edition-badge{padding:9px 12px;border:2px solid #d9c68d;background:#24362dcc;color:#fff2b8;box-shadow:inset 0 0 0 2px #101b16,0 4px 0 #0b120f;font-size:13px;letter-spacing:.03em}
+.voxel-shell[data-voxel-edition="java"] .voxel-joystick{display:none!important}
+.voxel-shell[data-voxel-edition="java"] .voxel-view canvas{cursor:crosshair}
+.voxel-shell[data-voxel-edition="bedrock"] .voxel-bottom{background:#294638}
 .voxel-menu-card.voxel-inventory{width:min(980px,100%);text-align:left;padding:16px;background:#c6c6bc;color:#202820;border-color:#eee}
 .voxel-menu-card.voxel-inventory h2{color:#253924}
 .dance-keys button{font-size:32px;font-weight:900;-webkit-text-stroke:1px currentColor;min-height:46px}.dance-song-sources a{display:block;padding:7px 0;color:#214aa1;text-decoration:underline}.dance-song-sources{padding:6px;border-top:1px solid #a9bad2}
@@ -393,6 +397,11 @@
 .friend-fnf-hud{display:none}
 .friend-safe-stage>.dance-battle{display:none}
 .friend-safe-stage .friend-fnf-hud{display:grid;position:absolute;inset:0;z-index:12;grid-template-rows:34px 1fr 25px;pointer-events:none;color:#fff;font:900 clamp(8px,1.15vw,13px)/1.1 "Courier New",monospace;text-shadow:2px 2px 0 #000}
+.friend-safe-stage .dance-stage{height:clamp(360px,56vh,640px);min-height:360px;flex-basis:360px}
+.friend-safe-stage .friend-fnf-hud,.friend-safe-stage .friend-fnf-time,.friend-safe-stage .friend-fnf-bottom{font-family:VoxelPixel,"Courier New",monospace!important}
+.friend-safe-stage .friend-fnf-countdown{position:absolute;left:50%;top:43%;translate:-50% -50%;z-index:15;color:#fff;font:400 clamp(54px,11vw,126px)/1 VoxelPixel,"Courier New",monospace;text-shadow:6px 6px 0 #161616,-3px -3px 0 #161616;animation:friend-countdown-pop 520ms steps(3,end) infinite;white-space:nowrap}
+.friend-safe-stage .friend-fnf-countdown[hidden]{display:none}
+@keyframes friend-countdown-pop{0%{scale:.72;opacity:.2}45%{scale:1.1;opacity:1}100%{scale:1;opacity:.92}}
 .friend-safe-stage .friend-fnf-top{grid-row:1;position:relative;background:#050505;border-bottom:2px solid #242424;box-shadow:0 4px 8px #0008}
 .friend-safe-stage .friend-fnf-time{position:absolute;left:50%;top:4px;translate:-50% 0;min-width:48px;text-align:center;font-size:clamp(12px,1.6vw,18px)}
 .friend-safe-stage .friend-fnf-health{position:absolute;left:22%;right:22%;bottom:3px;height:5px;background:linear-gradient(90deg,#d6272f 0 50%,#dedede 50%);border:2px solid #111}
@@ -417,7 +426,9 @@
 .friend-safe-stage.friend-chorus-phase .friend-chorus-crowd{z-index:3;height:43%;inset-inline:4%;grid-template-columns:repeat(5,minmax(0,1fr));gap:2%}
 .friend-safe-stage.friend-chorus-phase .friend-chorus-crowd>div{height:62%}
 .friend-safe-stage.friend-chorus-phase .friend-chorus-crowd>div:nth-child(n+6){translate:0 -66%;scale:.7}
-@media(max-width:600px){.friend-safe-stage .friend-fnf-hud{grid-template-rows:27px 1fr 20px;font-size:7px}.friend-safe-stage .friend-fnf-bottom{gap:7px;padding:4px}.friend-safe-stage .dance-stage .dance-lanes{inset-inline:2%}.friend-safe-stage.friend-single-bank .dance-stage .dance-lanes{inset-inline:23%}}
+.friend-safe-stage:not(.friend-night-phase) .dance-rival{left:-3%;width:55%;height:103%}
+.friend-safe-stage:not(.friend-night-phase) .dance-player{right:-3%;width:43%;height:100%}
+@media(max-width:600px){.friend-safe-stage .dance-stage{height:clamp(330px,62vh,520px);min-height:330px;flex-basis:330px}.friend-safe-stage .friend-fnf-hud{grid-template-rows:27px 1fr 20px;font-size:7px}.friend-safe-stage .friend-fnf-bottom{gap:7px;padding:4px}.friend-safe-stage .dance-stage .dance-lanes{inset-inline:2%}.friend-safe-stage.friend-single-bank .dance-stage .dance-lanes{inset-inline:23%}}
 
 /* Character facts stay readable in both wide and narrow app windows. */
 .character-guide-facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:3px 12px;width:min(100%,520px);margin:4px auto;text-align:left;font-size:13px}

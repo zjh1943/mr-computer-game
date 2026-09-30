@@ -89,7 +89,9 @@
       for(const [k,value] of Object.entries(saved.cropAge||{}))if(edits.get(k)==='crop')cropAge[k]=Math.max(0,Math.min(60,Number(value)||0));
       host.querySelector('.voxel-top strong').textContent=options.name||'方块原野';
       const modeLabel=host.querySelector('.voxel-top span');
-      function hud(){modeLabel.textContent=survival?`生命 ${health}/20 · 饱食 ${hunger}/20${inventory.armor?' · 已穿护甲':''}`:'创造模式 · 无限材料';}hud();
+      const editionName=options.edition==='java'?'电脑 Java 版':'电脑基岩版';
+      host.querySelector('.voxel-help').innerHTML=options.edition==='java'?'Java 操作：点击锁定鼠标 · WASD 移动 · 空格跳跃 · F5 视角<br>左键长按挖掘 · 右键放置 · E 背包 · P 暂停':'基岩操作：摇杆或方向键移动 · 拖动画面转头<br>长按方块挖掘 · 轻点放置 · 也支持键盘和鼠标';
+      function hud(){modeLabel.textContent=editionName+' · '+(survival?`生命 ${health}/20 · 饱食 ${hunger}/20${inventory.armor?' · 已穿护甲':''}`:'创造模式 · 无限材料');}hud();
       const pauseButton=document.createElement('button');pauseButton.textContent='暂停';pauseButton.onclick=()=>{document.exitPointerLock?.();options.onPause?.();};host.querySelector('.voxel-top').append(pauseButton);
       const audio=window.VoxelAudio.create(host);
       const scene=new T.Scene();scene.background=new T.Color('#9cd4f0');scene.fog=new T.Fog('#9cd4f0',18,34);

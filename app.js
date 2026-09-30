@@ -10044,7 +10044,14 @@ function startHomeLawnConcert(runners) {
   if (homeLawnGroupActive || !runners.length) return;
   stopHomeLawnConcertAudio();
   homeLawnGroupActive = true;
-  runners.forEach((runner, index) => {
+  const smallComputer = createHomeSmallComputerSinger();
+  document.querySelector(".beatbox-runners")?.append(smallComputer);
+  smallComputer.dataset.lawnX = "62";
+  smallComputer.style.setProperty("--runner-x", "62vw");
+  smallComputer.classList.add("home-concert", "home-talking");
+  startHomeSunConcert();
+  const daytimePerformers = [...runners, smallComputer];
+  daytimePerformers.forEach((runner, index) => {
     runner.classList.add("home-concert");
     setHomeConcertPose(runner, index * 2);
     const bubble = runner.querySelector(".beat-runner-bubble");
@@ -10055,10 +10062,10 @@ function startHomeLawnConcert(runners) {
   let daytimeBeat = 0;
   window.clearInterval(homeLawnDanceFrameTimer);
   homeLawnDanceFrameTimer = window.setInterval(() => {
-    runners.forEach((runner, index) => setHomeConcertPose(runner, daytimeBeat + index * 2));
+    daytimePerformers.forEach((runner, index) => setHomeConcertPose(runner, daytimeBeat + index * 2));
     daytimeBeat += 1;
   }, 220);
-  playHomeLawnConcertVoices(runners);
+  playHomeLawnConcertVoices(runners, { includeSun: true, extraPerformers: [smallComputer] });
   window.setTimeout(() => {
     stopHomeLawnConcertAudio();
   }, 3000);
@@ -10078,6 +10085,7 @@ function stopHomeLawnConcertAudio() {
   window.clearInterval(homeLawnDanceFrameTimer);
   homeLawnDanceFrameTimer = null;
   stopHomeComputerSong();
+  stopHomeSunConcert();
   document.querySelectorAll(".beat-runner.home-original-performing").forEach(clearHomeConcertPose);
   document.querySelectorAll(".home-concert-visitor").forEach(visitor => visitor.remove());
   document.querySelectorAll(".home-concert-stage-crew").forEach(crew => crew.remove());
@@ -10116,12 +10124,15 @@ async function loadHomeLawnVoiceBuffer(voiceId) {
 }
 
 async function playHomeLawnConcertVoices(performers) {
+  const options = arguments[1] || {};
   const context = getRhythmAudioContext();
   if (!context || !rhythmMasterGain) return;
-  const voices = performers.map(performer => ({
+  const ensemble = [...performers, ...(options.extraPerformers || [])];
+  const voices = ensemble.map(performer => ({
     performer,
     voiceId: HOME_LAWN_VOICE_IDS[performer.dataset.sprunkiId] || performer.dataset.sprunkiId
   })).filter(voice => window.DanceCast?.[voice.voiceId]?.audio);
+  if (options.includeSun) voices.push({ performer: document.getElementById("sky-sun"), voiceId: "mr_sun" });
   const buffers = await Promise.all(voices.map(voice => loadHomeLawnVoiceBuffer(voice.voiceId)));
   if (!homeLawnGroupActive) return;
   const startAt = context.currentTime + .08;
@@ -10227,6 +10238,37 @@ function positionHomeConcertPerformers(performers) {
   });
 }
 
+function createHomeSmallComputerSinger() {
+  const visitor = document.createElement("span");
+  visitor.className = "beat-runner home-concert-visitor home-small-computer-singer";
+  visitor.dataset.sprunkiId = "computer";
+  visitor.dataset.sprunkiName = "电脑先生家的小电脑";
+  visitor.setAttribute("aria-label", "电脑先生家的小电脑使用原版造型参加演奏");
+  const bubble = document.createElement("span");
+  bubble.className = "beat-runner-bubble";
+  bubble.textContent = "COME AND SING!";
+  visitor.append(bubble);
+  setHomeRunnerView(visitor, "front");
+  return visitor;
+}
+
+function startHomeSunConcert() {
+  const sun = document.getElementById("sky-sun");
+  if (!sun) return;
+  sun.classList.add("home-concert-singer");
+  const bubble = sun.querySelector(".sky-bubble");
+  if (bubble) {
+    bubble.textContent = document.body.classList.contains("night-mode") ? "我飞下来发着光演奏！" : "太阳公公也加入！";
+    bubble.classList.add("visible");
+  }
+}
+
+function stopHomeSunConcert() {
+  const sun = document.getElementById("sky-sun");
+  sun?.classList.remove("home-concert-singer");
+  sun?.querySelector(".sky-bubble")?.classList.remove("visible");
+}
+
 function createHomeConcertVisitors(runners) {
   const world = document.querySelector(".beatbox-runners");
   if (!world) return [];
@@ -10236,18 +10278,18 @@ function createHomeConcertVisitors(runners) {
   const smallComputer = available.find(character => character[0] === 'computer');
   const guests = [smallComputer, ...available.filter(character => character !== smallComputer).sort(() => Math.random() - .5)].filter(Boolean).slice(0, 8);
   return guests.map((character, index) => {
-    const visitor = document.createElement("span");
-    visitor.className = `beat-runner home-concert-visitor ${index % 2 ? "home-concert-arriving-right" : "home-concert-arriving-left"}`;
+    const visitor = character[0] === "computer" ? createHomeSmallComputerSinger() : document.createElement("span");
+    visitor.classList.add("beat-runner", "home-concert-visitor", index % 2 ? "home-concert-arriving-right" : "home-concert-arriving-left");
     visitor.dataset.sprunkiId = character[0];
     visitor.dataset.sprunkiName = character[1];
     visitor.dataset.lawnX = String(7 + index * 12);
     visitor.style.setProperty("--runner-x", `${7 + index * 12}vw`);
     visitor.style.setProperty("--runner-delay", `${-index * .08}s`);
     visitor.setAttribute("aria-label", `${character[1]}从屏幕外跑来参加夜晚演唱会`);
-    const bubble = document.createElement("span");
+    const bubble = visitor.querySelector(".beat-runner-bubble") || document.createElement("span");
     bubble.className = "beat-runner-bubble";
     bubble.textContent = ["咚", "啪", "叮", "哒"][index % 4];
-    visitor.append(bubble);
+    if (!bubble.isConnected) visitor.append(bubble);
     setHomeRunnerView(visitor, index % 2 ? "left" : "right");
     world.append(visitor);
     window.setTimeout(() => {
@@ -10281,6 +10323,7 @@ function startHomeLawnNightConcert(runners) {
     document.querySelectorAll(".home-concert-stage-crew").forEach(crew => crew.remove());
     const visitors = createHomeConcertVisitors(runners);
     const performers = [...runners, ...visitors];
+    startHomeSunConcert();
     positionHomeConcertPerformers(performers);
     addHomeConcertSpecials(performers);
     runners.forEach((runner, index) => {
@@ -10291,7 +10334,7 @@ function startHomeLawnNightConcert(runners) {
     });
     unlockRhythmAudio();
     playHomeLawnConcertAudio("./assets/dance-reference/colorful-bunch-erect-inst.ogg", .1, { loop: true });
-    playHomeLawnConcertVoices(performers);
+    playHomeLawnConcertVoices(performers, { includeSun: true });
     let beat = 0;
     homeLawnDanceFrameTimer = window.setInterval(() => {
       performers.forEach((performer, index) => setHomeConcertPose(performer, beat + index * 2));
@@ -10302,6 +10345,7 @@ function startHomeLawnNightConcert(runners) {
       homeLawnConcertAudio.clear();
       window.clearInterval(homeLawnDanceFrameTimer);
       stopHomeComputerSong();
+      stopHomeSunConcert();
       document.body.classList.add("home-concert-packing");
       createHomeConcertStageCrew("pack");
       visitors.forEach((visitor, index) => {

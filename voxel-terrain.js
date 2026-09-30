@@ -18,28 +18,28 @@
     if(x>=-128&&x<128&&z>=-304&&z< -112)return biomes.snow;
     return biomes.plains;
   }
-  function groundAt(x,z){const b=biomeAt(x,z).id,p=region(x,z);
+  function groundAt(x,z,seed=0){const b=biomeAt(x,z).id,p=region(x,z),shift=(Number(seed)||0)%997;
     if(b==='ocean')return -Math.min(6,1+Math.floor(Math.min(p.x-276,595-p.x,p.z+128,127-p.z)/3));
     if(b==='sulphur')return (Math.sin(x*.12)+Math.cos(z*.15)>.8)?0:1;
-    return Math.floor(1.8+Math.sin(x*.12)*1.4+Math.cos(z*.13)*1.3);
+    return Math.floor(1.8+Math.sin((x+shift)*.12)*1.4+Math.cos((z-shift)*.13)*1.3);
   }
   function lootAt(x,y,z){const p=region(x,z);return p.x===361&&p.z===2&&y===-4?{iron:3,emerald:2,coal:5}:{};}
   function generateChunk(cx,cz,options={}){
-    const map=new Map(),x0=cx*SIZE,z0=cz*SIZE;
+    const map=new Map(),x0=cx*SIZE,z0=cz*SIZE,seed=Number(options.seed)||0,noise=(x,z)=>hash(x+seed%9973,z-seed%7919);
     const set=(x,y,z,t)=>{if(x>=x0&&x<x0+SIZE&&z>=z0&&z<z0+SIZE)map.set(key(x,y,z),t);};
     for(let x=x0;x<x0+SIZE;x++)for(let z=z0;z<z0+SIZE;z++){
-      const b=options.flat?'plains':biomeAt(x,z).id,top=options.flat?1:groundAt(x,z);
+      const b=options.flat?'plains':biomeAt(x,z).id,top=options.flat?1:groundAt(x,z,seed);
       const surface={maple:'redgrass',desert:'sand',sulphur:'sulphur',snow:'snowgrass',ocean:'sand'}[b]||'grass';
       for(let y=MIN_Y;y<=top;y++){if(y!==MIN_Y&&caveAt(x,y,z))continue;if(y<-8&&y!==MIN_Y&&![[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].some(([a,b,c])=>caveAt(x+a,y+b,z+c)))continue;set(x,y,z,y===MIN_Y?'bedrock':y===top?surface:y<top-2?(options.oreAt?.(x,y,z)||'stone'):'dirt');}
-      if(b==='ocean'){for(let y=top+1;y<=0;y++)set(x,y,z,'water');if(hash(x,z)%37===0){const tall=1+hash(z,x)%3;for(let y=1;y<=tall&&top+y<0;y++)set(x,top+y,z,y===1&&hash(x,z)%2?'coral':'kelp');}}
+      if(b==='ocean'){for(let y=top+1;y<=0;y++)set(x,y,z,'water');if(noise(x,z)%37===0){const tall=1+noise(z,x)%3;for(let y=1;y<=tall&&top+y<0;y++)set(x,top+y,z,y===1&&noise(x,z)%2?'coral':'kelp');}}
       if(b==='sulphur'&&top===0)set(x,1,z,'sulphurwater');
-      if(b==='desert'&&hash(x,z)%139===0)for(let n=1;n<=3;n++)set(x,top+n,z,'cactus');
+      if(b==='desert'&&noise(x,z)%139===0)for(let n=1;n<=3;n++)set(x,top+n,z,'cactus');
     }
     // Global tree anchors are generated outside each chunk too, avoiding clipped crowns at seams.
     if(!options.flat)for(let ax=Math.floor((x0-3)/8)*8;ax<x0+SIZE+3;ax+=8)for(let az=Math.floor((z0-3)/8)*8;az<z0+SIZE+3;az+=8){
-      const x=ax+hash(ax,az)%3,z=az+hash(az,ax)%3,b=biomeAt(x,z).id;
+      const x=ax+noise(ax,az)%3,z=az+noise(az,ax)%3,b=biomeAt(x,z).id;
       if(!['forest','jungle','maple','snow'].includes(b))continue;
-      const h=groundAt(x,z),tall=b==='jungle'?7:4,wood=b==='maple'?'redwood':b==='jungle'?'junglewood':'wood',leaves=b==='maple'?'redleaves':b==='jungle'?'jungleleaves':'leaves';
+      const h=groundAt(x,z,seed),tall=b==='jungle'?7:4,wood=b==='maple'?'redwood':b==='jungle'?'junglewood':'wood',leaves=b==='maple'?'redleaves':b==='jungle'?'jungleleaves':'leaves';
       for(let n=1;n<=tall;n++)set(x,h+n,z,wood);
       for(let a=-2;a<=2;a++)for(let c=-2;c<=2;c++)for(let y=tall-1;y<=tall+1;y++)if(Math.abs(a)+Math.abs(c)<4&&(a||c||y>tall))set(x+a,h+y,z+c,leaves);
     }

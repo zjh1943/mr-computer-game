@@ -9,7 +9,7 @@ const homeCss = fs.readFileSync('styles.css', 'utf8');
 
 assert(shell.includes('电脑基岩版') && shell.includes('电脑 Java 版'), 'the local voxel game needs both control editions');
 assert(shell.includes("host.dataset.voxelEdition"), 'the selected edition must affect the running game shell');
-assert(shell.includes("edition:w.edition||'bedrock'"), 'older saved worlds need a Bedrock-compatible edition default');
+assert(shell.includes("w.edition==='java'?'java':'bedrock'"), 'older saved worlds need a Bedrock-compatible edition default');
 assert(css.includes('.voxel-edition-badge'), 'the voxel launcher needs a visible edition badge');
 
 assert(apps.includes('characterFrameDuration'), 'character guide animation must use phrase-paced frame timing');

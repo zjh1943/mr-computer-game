@@ -356,3 +356,27 @@
 /* Two clean banks, without the old center divider. */
 .dance-divider{display:none!important}.dance-stage .dance-lanes,.friend-safe-stage .dance-stage .dance-lanes{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:10%;justify-content:space-between}.dance-character-icon{background-size:contain!important;background-repeat:no-repeat!important;background-color:transparent!important}.dance-gray-person{object-fit:contain}.dance-rack[hidden],.dance-rack-help[hidden]{display:none!important}
 @media(max-width:600px){.dance-stage .dance-lanes,.friend-safe-stage .dance-stage .dance-lanes{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:5%}.character-guide-viewer{gap:3px}.character-guide-viewer>button{min-width:38px;padding:2px;font-size:34px}.character-guide-viewer article{padding:6px}.online-video-panel iframe{min-height:180px}}
+
+/* Offline performances change mouth frames on the beat without shaking the whole cast. */
+.offline-video-stage figure,.offline-video-stage figure.video-singing{animation:none!important;transform:none!important}
+.offline-video-stage[data-theme="friend"]{background:#10151f center/cover no-repeat url('./assets/friend-like-you/stage-day.png')}
+.offline-video-stage[data-theme="friend"][data-phase="black"]{background-image:url('./assets/friend-like-you/stage-black.png')}
+.offline-video-stage[data-theme="friend"] figure{width:min(29%,260px);min-width:90px}
+.offline-video-stage[data-theme="friend"] [data-video-character="black"]{transition:opacity .7s ease,translate .7s ease}
+.offline-video-stage[data-theme="friend"][data-phase="day"] [data-video-character="black"]{opacity:0;translate:35% 0}
+.offline-video-stage[data-theme="finale"]{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));align-items:end;gap:2px;padding:5px;box-sizing:border-box}
+.offline-video-stage[data-theme="finale"] figure{animation:none!important;width:100%;min-width:0;align-self:end}
+.offline-video-stage[data-theme="finale"] figure img{height:clamp(70px,14vh,125px)}
+.offline-video-stage[data-theme="finale"] figure figcaption{font-size:8px;padding:1px}
+
+/* The dance host itself becomes the operating-system fullscreen element. */
+.dance-system-fullscreen{position:relative!important;display:grid!important;place-items:center!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;padding:0!important;overflow:hidden!important;background:#000!important;color:#fff!important}
+.dance-system-fullscreen>*{display:none!important}
+.dance-system-fullscreen>.dance-stage{display:grid!important;width:min(100vw,calc(84vh * 16 / 9))!important;height:auto!important;max-height:84vh!important;min-height:0!important;aspect-ratio:16/9;border:0!important;border-radius:0!important;box-shadow:none!important}
+.dance-system-fullscreen>.dance-battle{display:grid!important;position:absolute;z-index:30;top:1.2vh;left:50%;translate:-50% 0;width:min(94vw,1100px);color:#fff;text-shadow:0 2px #000}
+.dance-system-fullscreen>.dance-toolbar{display:block!important;position:absolute;z-index:40;right:10px;top:8px;background:transparent!important}
+.dance-system-fullscreen>.dance-toolbar>*{display:none!important}
+.dance-system-fullscreen>.dance-toolbar>.dance-fullscreen-toggle{display:block!important;background:#111c!important;color:#fff!important;border:2px solid #fff8!important}
+.dance-system-fullscreen>.dance-keys{display:grid!important;position:absolute;z-index:35;left:50%;bottom:2vh;translate:-50% 0;width:min(520px,86vw)}
+.dance-system-fullscreen .dance-battle progress{height:8px;accent-color:#67b7ff}
+@media(max-width:700px){.dance-system-fullscreen>.dance-stage{width:min(100vw,calc(78vh * 16 / 9))!important;max-height:78vh!important}.dance-system-fullscreen>.dance-battle{top:2px;font-size:10px}.dance-system-fullscreen>.dance-keys{bottom:5px}}

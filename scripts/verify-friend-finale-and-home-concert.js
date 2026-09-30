@@ -21,8 +21,8 @@ assert(danceCss.includes('.friend-safe-stage .dance-bank .dance-targets'), 'Frie
 assert(danceCss.includes('height:100%'), 'Mr. Tree must fit the stage without being hidden by the foreground');
 
 assert(app.includes('HOME_LAWN_NIGHT_CONCERT_DURATION = 60000'), 'the lawn night concert must last one minute');
-assert(app.includes('startHomeComputerSong({ loop: true, duration: HOME_LAWN_NIGHT_CONCERT_DURATION })'), 'Mr. Computer must sing during the night concert');
-assert(app.includes('originalComputer?.frames'), 'the home computer song must use the original saved game screen frames');
+assert(!app.includes('startHomeComputerSong({ loop: true, duration: HOME_LAWN_NIGHT_CONCERT_DURATION })'), 'the large home computer must stay quiet during the lawn concert');
+assert(app.includes('["computer", "小电脑先生"]'), 'the small computer must join the night concert instead');
 assert(css.includes('home-night-concert-active'), 'the lawn needs a visible concert state for the full minute');
 
 console.log('One-minute finales, compact arrows, large video-scale characters, entrances, and computer concert song verified.');

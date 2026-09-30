@@ -26,14 +26,15 @@
     {name:'Friend Like You · FNF 演出参考',artist:'Neonight',url:'https://www.youtube.com/watch?v=_bwDYOzbkBY'}
   ];
   const offlineVideoLibrary=[
-    {name:'电脑先生之歌',cast:['computer'],duration:38,theme:'computer'},
-    {name:'草地大合奏',cast:['oren','raddy','clukr','funbot','vineria'],duration:42,theme:'meadow'},
-    {name:'太阳公公音乐会',cast:['mr_sun','mr_tree','simon','pinki'],duration:40,theme:'sunny'},
-    {name:'快乐机器人节拍',cast:['funbot','garnold','clukr','computer'],duration:36,theme:'robot'},
-    {name:'彩虹朋友派对',cast:['wenda','pinki','jevin','durple','sky'],duration:44,theme:'rainbow'},
-    {name:'树林里的歌',cast:['mr_tree','vineria','gray','tunner'],duration:39,theme:'forest'},
-    {name:'双人节奏表演',cast:['oren','simon'],duration:34,theme:'duet'},
-    {name:'二十人离线合唱',cast:['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin'],duration:60,theme:'finale'}
+    {name:'Friend Like You 离线舞台',cast:['mr_tree','computer','black'],duration:150,bpm:120,theme:'friend',soundtrack:'./assets/dance-audio/friend-like-you-safe.wav'},
+    {name:'电脑先生之歌',cast:['computer'],duration:38,bpm:120,theme:'computer'},
+    {name:'草地大合奏',cast:['oren','raddy','clukr','funbot','vineria'],duration:42,bpm:112,theme:'meadow'},
+    {name:'太阳公公音乐会',cast:['mr_sun','mr_tree','simon','pinki'],duration:40,bpm:104,theme:'sunny'},
+    {name:'快乐机器人节拍',cast:['funbot','garnold','clukr','computer'],duration:36,bpm:124,theme:'robot'},
+    {name:'彩虹朋友派对',cast:['wenda','pinki','jevin','durple','sky'],duration:44,bpm:110,theme:'rainbow'},
+    {name:'树林里的歌',cast:['mr_tree','vineria','gray','tunner'],duration:39,bpm:96,theme:'forest'},
+    {name:'双人节奏表演',cast:['oren','simon'],duration:34,bpm:120,theme:'duet'},
+    {name:'二十人离线合唱',cast:['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin','black'],duration:60,bpm:120,theme:'finale'}
   ];
   if(typeof module!=='undefined') { module.exports={catalog,songs,chart,battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,noteTravelY,grade,audioFileAllowed,matchesSong,songSources,leadCharacter}; return; }
   const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('apps-'+key))??fallback;}catch{return fallback;}};
@@ -68,16 +69,17 @@
     tabs.className='video-mode-tabs';online.className='online-video-panel';onlineFrame.title='Friend Like You FNF 原视频';onlineFrame.loading='eager';onlineFrame.allow='autoplay; encrypted-media; picture-in-picture';onlineFrame.allowFullscreen=true;onlineLink.href='https://www.youtube.com/watch?v=_bwDYOzbkBY';onlineLink.target='_blank';onlineLink.rel='noopener noreferrer';
     let selected=offlineVideoLibrary[0],playing=false,startAt=0,elapsed=0,raf=0,audios=[];
     const asset=name=>'./assets/sprunki-kiss-local/assets/'+name;
+    const framesFor=(video,id)=>{const special={mr_tree:'mr-tree',computer:'computer',black:'black'}[id];return video.theme==='friend'&&special?['idle','left','down','up','right'].map(pose=>`./assets/friend-like-you/${special}-${pose}.png`):[window.DanceCast[id].idle,...(window.DanceCast[id].frames||[])].map(asset);};
     function stopSounds(){audios.forEach(audio=>{audio.pause();audio.currentTime=0;});audios=[];}
     function draw(t=0){
-      stage.dataset.theme=selected.theme;stage.replaceChildren();caption.textContent=selected.name;
-      const visible=selected.cast.slice(0,selected.cast.length>8?10:6);
-      visible.forEach((id,index)=>{const art=window.DanceCast?.[id];if(!art)return;const figure=el('figure',undefined,stage),img=el('img',undefined,figure);figure.dataset.videoCharacter=id;figure.style.setProperty('--video-delay',`${-index*.09}s`);img.alt=art.name;const frames=[art.idle,...(art.frames||[])];img.src=asset(frames[Math.floor((t/(selected.duration||1))*frames.length*2+index)%frames.length]);el('figcaption',art.name,figure);});
+      stage.dataset.theme=selected.theme;stage.dataset.phase=selected.theme==='friend'&&t>=55?'black':'day';stage.replaceChildren();caption.textContent=selected.name;
+      const visible=selected.cast;
+      visible.forEach((id,index)=>{const art=window.DanceCast?.[id];if(!art)return;const figure=el('figure',undefined,stage),img=el('img',undefined,figure),frames=framesFor(selected,id);figure.dataset.videoCharacter=id;img.alt=art.name;img.src=frames[index%frames.length];el('figcaption',art.name,figure);});
     }
-    function frame(now){if(!playing)return;elapsed=(now-startAt)/1000;if(elapsed>=selected.duration){startAt=now;elapsed=0;}progress.value=elapsed/selected.duration;const figures=stage.querySelectorAll('[data-video-character]');figures.forEach((figure,index)=>{const art=window.DanceCast?.[figure.dataset.videoCharacter],frames=[art.idle,...(art.frames||[])],frameIndex=Math.floor(elapsed*4+index*2)%frames.length,img=figure.querySelector('img');const src=asset(frames[frameIndex]);if(!img.src.endsWith(frames[frameIndex]))img.src=src;figure.classList.toggle('video-singing',(Math.floor(elapsed*2)+index)%3!==0);});raf=requestAnimationFrame(frame);}
+    function frame(now){if(!playing)return;elapsed=(now-startAt)/1000;if(elapsed>=selected.duration){startAt=now;elapsed=0;}progress.value=elapsed/selected.duration;stage.dataset.phase=selected.theme==='friend'&&elapsed>=55?'black':'day';const beat=Math.floor(elapsed*(selected.bpm||120)/60*2);const figures=stage.querySelectorAll('[data-video-character]');figures.forEach((figure,index)=>{const frames=framesFor(selected,figure.dataset.videoCharacter),frameIndex=(beat+index)%frames.length,img=figure.querySelector('img'),src=frames[frameIndex];if(img.getAttribute('src')!==src)img.src=src;figure.classList.toggle('video-singing',(beat+index)%4!==0);});raf=requestAnimationFrame(frame);}
     function play(fromStart=false){
       if(fromStart)elapsed=0;stopSounds();playing=true;toggle.textContent='暂停';startAt=performance.now()-elapsed*1000;
-      selected.cast.slice(0,6).forEach((id,index)=>{const art=window.DanceCast?.[id];if(!art?.audio||art.silent)return;const audio=new Audio(art.audio.includes('/')?art.audio:`./assets/dance-audio/normal/${id}.wav`);audio.loop=true;audio.volume=.2;audio.currentTime=(index*.11)%Math.max(.2,audio.duration||1);audio.play().catch(()=>{});audios.push(audio);});
+      if(selected.soundtrack){const audio=new Audio(selected.soundtrack);audio.loop=true;audio.volume=.72;audio.currentTime=elapsed;audio.play().catch(()=>{});audios.push(audio);}else selected.cast.forEach(id=>{const art=window.DanceCast?.[id];if(!art?.audio||art.silent)return;const audio=new Audio(art.audio.includes('/')?art.audio:`./assets/dance-audio/normal/${id}.wav`);audio.loop=true;audio.volume=selected.cast.length>8?.1:.2;audio.currentTime=elapsed;audio.play().catch(()=>{});audios.push(audio);});
       cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);
     }
     function pause(){playing=false;toggle.textContent='继续播放';cancelAnimationFrame(raf);stopSounds();}
@@ -109,6 +111,9 @@
     const stage=host.querySelector('.dance-stage');
     const sun=el('img',undefined,stage);sun.className='dance-sky-sun';sun.alt='太阳公公';sun.src='./assets/sprunki-kiss-local/assets/'+window.DanceCast.mr_sun.idle;
     const battle=el('div',undefined);battle.className='dance-battle';battle.innerHTML='<span>对手</span><div class="dance-balance" role="progressbar" aria-label="对战胜负进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55"><i></i><span class="dance-battle-icons"><span class="dance-battle-icon dance-battle-opponent-icon" role="img" aria-label="对手图标"></span><span class="dance-battle-icon dance-battle-player-icon" role="img" aria-label="我方图标"></span></span></div><span>我方 · 得分 <b data-player-score>0</b></span><progress max="1" value="0" aria-label="歌曲进度"></progress>';stage.before(battle);
+    const fullscreenButton=btn(host.querySelector('.dance-toolbar'),'电脑全屏',async()=>{if(window.ComputerExperience?.isDamaged()){status.textContent='屏幕正在花屏，修好后才能进入全屏';return;}try{if(document.fullscreenElement===host)await document.exitFullscreen();else await host.requestFullscreen();}catch{status.textContent='浏览器没有允许全屏，请再点一次全屏按钮';}});fullscreenButton.className='dance-fullscreen-toggle';
+    const syncSystemFullscreen=()=>{const isFullscreen=document.fullscreenElement===host;host.classList.toggle('dance-system-fullscreen',isFullscreen);fullscreenButton.textContent=isFullscreen?'退出全屏':'电脑全屏';resize();};
+    document.addEventListener('fullscreenchange',syncSystemFullscreen);
     const rack=el('div',undefined,host);rack.className='dance-rack';rack.setAttribute('aria-label','拖放角色声部');
     const rackHelp=el('p','拖一个角色到舞台上加入合奏；手机也可点角色加入。再点一次可静音。',host);rackHelp.className='dance-rack-help';
     const loadingStage=el('div',undefined,stage);loadingStage.className='dance-loading-stage';loadingStage.setAttribute('aria-hidden','true');
@@ -206,7 +211,7 @@
       const drawNotes=(list,box,context,automatic=false)=>list.forEach(n=>{if(automatic&&!n.done&&t>=n.time){n.done=true;const target=host.querySelectorAll('.dance-opponent-targets span')[n.lane];if(target){target.dataset.feedback='hit';target.dataset.until=String(now+poseDuration());}}else if(!automatic&&!n.done&&!n.headHit&&t>n.time+.28){n.done=true;combo=0;changePlayerBalance(-4);}if((!n.done||n.headHit)&&n.time-t<=NOTE_TRAVEL_SECONDS){const size=Math.min(52,box.w/4*.72),bottom=box.h+size*.5,y=n.headHit?box.line:noteTravelY(n.time,t,box.line,bottom),x=(n.lane+.5)*box.w/4,endY=noteTravelY(n.time+n.hold,t,box.line,bottom);if(y>-size&&y<=bottom){drawHoldTail(context,n.lane,x,y,endY,size,n.hold);drawArrow(context,n.lane,x,y,size);}}});
       drawNotes(notes,playerBox,playerG);drawNotes(opponentNotes,opponentBox,opponentG,true);
       if(!selected.video&&!selected.imported&&!media&&t>(selected.mix?selected.duration:(notes.at(-1)?.time||selected.duration||0)+1))finish();
-    }frame();return()=>{active=false;stopAudio();cancelAnimationFrame(raf);document.removeEventListener('keydown',key);document.removeEventListener('keyup',keyUp);db?.close();};
+    }frame();return()=>{active=false;stopAudio();cancelAnimationFrame(raf);document.removeEventListener('keydown',key);document.removeEventListener('keyup',keyUp);document.removeEventListener('fullscreenchange',syncSystemFullscreen);if(document.fullscreenElement===host)document.exitFullscreen().catch(()=>{});db?.close();};
   }
   function blocks(host) { return window.VoxelWorld.mount(host); }
   window.ComputerApps={catalog,mount};

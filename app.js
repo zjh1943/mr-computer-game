@@ -9866,6 +9866,10 @@ function stopHomeComputerSong() {
 function setHomeRunnerView(runner, view = "front") {
   const id = runner?.dataset.sprunkiId;
   if (!id) return;
+  if (id === "computer" && window.DanceCast?.computer?.idle) {
+    runner.style.setProperty("--runner-sprite", `url("./assets/sprunki-kiss-local/assets/${window.DanceCast.computer.idle}")`);
+    return;
+  }
   runner.style.setProperty("--runner-sprite", `url("./assets/sprunki-views/${view}/${id}.png")`);
 }
 
@@ -9873,7 +9877,8 @@ const HOME_LAWN_CAST = [
   ["oren", "Oren"], ["raddy", "Raddy"], ["clukr", "Clukr"], ["fun-bot", "Fun Bot"],
   ["vineria", "Vineria"], ["gray", "Gray"], ["brud", "Brud"], ["garnold", "Garnold"],
   ["owakcx", "OWAKCX"], ["sky", "Sky"], ["durple", "Durple"], ["simon", "Simon"],
-  ["tunner", "Tunner"], ["wenda", "Wenda"], ["pinki", "Pinki"], ["jevin", "Jevin"]
+  ["tunner", "Tunner"], ["wenda", "Wenda"], ["pinki", "Pinki"], ["jevin", "Jevin"],
+  ["computer", "小电脑先生"]
 ];
 const HOME_LAWN_COLLISION_CHANCE = 0.05;
 const HOME_LAWN_CHASE_MIN_DELAY = 22000;
@@ -9887,7 +9892,7 @@ const HOME_RUNNER_HAND_COLORS = {
   oren: "#f29135", raddy: "#d64040", clukr: "#9ea8ad", "fun-bot": "#d7dadd",
   vineria: "#4caf68", gray: "#777b82", brud: "#9b6848", garnold: "#d7b22c",
   owakcx: "#a7d543", sky: "#80c9ef", durple: "#7250ad", simon: "#f0d13d",
-  tunner: "#b99162", wenda: "#ece9df", pinki: "#ef8eb3", jevin: "#4655a8"
+  tunner: "#b99162", wenda: "#ece9df", pinki: "#ef8eb3", jevin: "#4655a8", computer: "#c8d0d5"
 };
 // Measured RMS of the bundled normal-mode loops. Web Audio gain brings every
 // singer to the same perceived level without changing the original files.
@@ -10227,7 +10232,9 @@ function createHomeConcertVisitors(runners) {
   if (!world) return [];
   world.querySelectorAll(".home-concert-visitor").forEach(visitor => visitor.remove());
   const visible = new Set(runners.map(runner => runner.dataset.sprunkiId));
-  const guests = HOME_LAWN_CAST.filter(character => !visible.has(character[0])).sort(() => Math.random() - .5).slice(0, 8);
+  const available = HOME_LAWN_CAST.filter(character => !visible.has(character[0]));
+  const smallComputer = available.find(character => character[0] === 'computer');
+  const guests = [smallComputer, ...available.filter(character => character !== smallComputer).sort(() => Math.random() - .5)].filter(Boolean).slice(0, 8);
   return guests.map((character, index) => {
     const visitor = document.createElement("span");
     visitor.className = `beat-runner home-concert-visitor ${index % 2 ? "home-concert-arriving-right" : "home-concert-arriving-left"}`;
@@ -10284,7 +10291,6 @@ function startHomeLawnNightConcert(runners) {
     });
     unlockRhythmAudio();
     playHomeLawnConcertAudio("./assets/dance-reference/colorful-bunch-erect-inst.ogg", .1, { loop: true });
-    startHomeComputerSong({ loop: true, duration: HOME_LAWN_NIGHT_CONCERT_DURATION });
     playHomeLawnConcertVoices(performers);
     let beat = 0;
     homeLawnDanceFrameTimer = window.setInterval(() => {

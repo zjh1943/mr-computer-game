@@ -101,12 +101,18 @@ const server = http.createServer((req, res) => {
           send(res, 500, "Server error", { "Content-Type": "text/plain; charset=utf-8" });
           return;
         }
-        send(res, 200, injectLiveReload(html), { "Content-Type": contentType });
+        send(res, 200, injectLiveReload(html), {
+          "Content-Type": contentType,
+          "Cache-Control": "no-cache, no-store, must-revalidate"
+        });
       });
       return;
     }
 
-    res.writeHead(200, { "Content-Type": contentType });
+    res.writeHead(200, {
+      "Content-Type": contentType,
+      "Cache-Control": "no-cache, no-store, must-revalidate"
+    });
     fs.createReadStream(filePath).pipe(res);
   });
 });

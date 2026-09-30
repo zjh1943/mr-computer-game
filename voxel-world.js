@@ -103,8 +103,8 @@
       const geometry=new T.BoxGeometry(1,1,1),textures=[],materials={};
       function texture(color,kind){
         const files={'grass-side':'grass',dirt:'dirt',wood:'oak-log',planks:'oak-planks',sand:'sand',brick:'bricks',obsidian:'obsidian',endstone:'end-stone',darkplanks:'spruce-planks'};
-        if(files[kind]){const t=new T.TextureLoader().load('./assets/minecraft-blocks/'+files[kind]+'.png');t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.colorSpace=T.SRGBColorSpace;textures.push(t);return t;}
         const canvas=document.createElement('canvas');canvas.width=canvas.height=16;canvas.style.imageRendering='pixelated';const c=canvas.getContext('2d');
+        if(files[kind]){c.fillStyle=color;c.fillRect(0,0,16,16);c.imageSmoothingEnabled=false;const t=new T.CanvasTexture(canvas);t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.colorSpace=T.SRGBColorSpace;textures.push(t);new T.ImageLoader().load('./assets/minecraft-blocks/'+files[kind]+'.png',image=>{c.clearRect(0,0,16,16);c.drawImage(image,0,0,16,16);t.needsUpdate=true;});return t;}
         const palettes={
           'grass-top':['#4f8f35','#65a943','#79b84c','#3d762e'],stone:['#747b7d','#858c8e','#62696c','#9ba0a0'],bedrock:['#303338','#45494f','#1f2226','#5d6268'],
           leaves:['#2f713c','#43854a','#275f35','#5b9854'],redleaves:['#b42f2c','#df4c38','#8e292b','#ef7650'],jungleleaves:['#1d6835','#2f8243','#18562d','#4a9851'],

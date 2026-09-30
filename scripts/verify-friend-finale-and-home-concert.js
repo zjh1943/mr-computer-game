@@ -7,7 +7,7 @@ const danceCss = fs.readFileSync('computer-apps.css', 'utf8');
 const app = fs.readFileSync('app.js', 'utf8');
 const css = fs.readFileSync('styles.css', 'utf8');
 
-assert(dance.includes("t>=90"), 'Friend Like You final chorus must begin with a full minute remaining');
+assert(dance.includes('selected.phases?.finaleStart'), 'Friend Like You final chorus must follow the original video transition');
 assert(dance.includes('friend-opening-phase'), 'Friend Like You needs a timed entrance phase');
 assert(dance.includes("friendOpening=!!selected.friendLikeYou&&t<2.4"), 'Friend Like You entrance must finish quickly');
 assert(music.includes("audioFile:'./assets/dance-audio/friend-like-you-safe.wav'"), 'Friend Like You must start from the bundled offline song');

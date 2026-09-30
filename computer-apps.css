@@ -296,6 +296,10 @@
 .friend-safe-stage .dance-player{z-index:4}
 .friend-safe-stage .dance-player .dance-friend-view{width:min(28vw,310px);height:clamp(170px,34vh,330px);filter:drop-shadow(0 5px 0 #17202a)}
 .friend-safe-stage.friend-night-phase .dance-lanes{z-index:6}
+.friend-safe-stage.friend-night-phase .dance-rival{position:absolute!important;inset:8% 32% 0!important;width:36%!important;height:88%!important;display:grid!important;place-items:end center;margin:0!important;overflow:visible}
+.friend-safe-stage.friend-night-phase .dance-rival>div{width:100%;height:100%;display:grid;place-items:end center}
+.friend-safe-stage.friend-night-phase .dance-rival [data-character="black"] .dance-friend-opponent{width:100%!important;height:100%!important;margin:0}
+@media(max-width:600px){.friend-safe-stage.friend-night-phase .dance-rival{inset:12% 26% 0!important;width:48%!important;height:82%!important}}
 @media(max-width:600px){.friend-safe-stage .dance-player .dance-friend-view{width:38vw;height:clamp(140px,30vh,240px)}.friend-safe-stage .dance-rival .dance-friend-opponent{width:42vw;height:clamp(140px,30vh,240px)!important}}
 
 /* Video-scale Friend Like You staging: large actors, compact receptors and a full concert finale. */
@@ -319,6 +323,10 @@
 .friend-chorus-phase .friend-chorus-crowd{display:grid;grid-template-columns:repeat(5,1fr);inset:auto 8% 1%;height:48%;z-index:1;align-items:end;gap:1%}
 .friend-chorus-crowd>div{width:100%;height:52%;align-self:end}
 .friend-chorus-crowd>div:nth-child(n+6){translate:0 -72%;scale:.78;filter:brightness(.82)}
+.friend-safe-stage.friend-chorus-phase .dance-rival{left:2%;bottom:-4%;width:44%;height:101%}
+.friend-safe-stage.friend-chorus-phase .dance-player{right:5%;bottom:-2%;width:29%;height:75%}
+.friend-safe-stage.friend-chorus-phase .dance-rival .dance-friend-opponent,.friend-safe-stage.friend-chorus-phase .dance-player .dance-friend-view{animation:friend-finale-actor-in .75s cubic-bezier(.16,.84,.28,1) both,friend-video-idle calc(var(--dance-beat,.5s) * 2) .75s ease-in-out infinite}
+@keyframes friend-finale-actor-in{from{opacity:0;translate:0 14%;scale:.88}to{opacity:1;translate:0 0;scale:1}}
 @media(max-width:600px){.friend-safe-stage .dance-stage .dance-lanes{inset-inline:2%;grid-template-columns:46% 4% 46%;gap:2%}.friend-safe-stage .dance-bank .dance-targets{left:1%;right:1%}.friend-safe-stage:not(.friend-night-phase) .dance-rival{left:-14%;width:64%;height:100%}.friend-safe-stage:not(.friend-night-phase) .dance-player{right:-7%;width:48%;height:85%}.friend-chorus-phase .friend-chorus-crowd{inset-inline:2%;grid-template-columns:repeat(5,1fr)}}
 
 /* Local video cabinet: every picture and voice comes from the bundled Sprunki game. */

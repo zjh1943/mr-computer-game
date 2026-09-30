@@ -328,7 +328,7 @@ let nightAwakeUntil = 0;
 let money = 0;
 let computerScreenMode = "desktop";
 let currentComputerApp = "";
-let installedComputerApps = ["chat", "store", "minecraft", "town", "videos"];
+let installedComputerApps = ["chat", "store", "minecraft", "town", "videos", "characters"];
 let computerTown3D = null;
 let computerTownThreePromise = null;
 let computerTownAudio = null;
@@ -1295,8 +1295,8 @@ function loadGameState() {
 
   money = Number.isFinite(saveData.money) ? saveData.money : 0;
   installedComputerApps = Array.isArray(saveData.installedComputerApps)
-    ? Array.from(new Set(["chat", "store", "minecraft", "town", "videos", ...saveData.installedComputerApps.filter((app) => typeof app === "string")]))
-    : ["chat", "store", "minecraft", "town", "videos"];
+    ? Array.from(new Set(["chat", "store", "minecraft", "town", "videos", "characters", ...saveData.installedComputerApps.filter((app) => typeof app === "string")]))
+    : ["chat", "store", "minecraft", "town", "videos", "characters"];
   minedItems = Array.isArray(saveData.minedItems)
     ? saveData.minedItems
         .map((id) => mineralTypes.find((item) => item.id === id))
@@ -8741,6 +8741,7 @@ function setComputerAppWindowContent(app) {
   if (!computerAppTitle || !computerAppContent) return;
   window.ComputerExperience?.stopSoftware();
   stopComputerTown3D();
+  window.dispatchEvent(new CustomEvent('computer-app-audio-focus', { detail: { app } }));
   computerAppTitle.textContent = computerAppNames[app] || "软件";
   computerAppContent.innerHTML = "";
   if (app === "store") {
@@ -8935,6 +8936,7 @@ function openComputerChatApp() {
 
 function openComputerApp(app) {
   if (window.ComputerExperience?.isDamaged()) return;
+  window.dispatchEvent(new CustomEvent('computer-app-audio-focus', { detail: { app } }));
   window.ComputerExperience?.leaveFullscreen();
   if (app === "chat") {
     openComputerChatApp();
@@ -10035,6 +10037,7 @@ function scheduleHomeLawnChase(runners) {
 function startHomeLawnConcert(runners) {
   if (document.body.classList.contains("night-mode")) return startHomeLawnNightConcert(runners);
   if (homeLawnGroupActive || !runners.length) return;
+  stopHomeLawnConcertAudio();
   homeLawnGroupActive = true;
   runners.forEach((runner, index) => {
     runner.classList.add("home-concert");
@@ -10050,19 +10053,9 @@ function startHomeLawnConcert(runners) {
     runners.forEach((runner, index) => setHomeConcertPose(runner, daytimeBeat + index * 2));
     daytimeBeat += 1;
   }, 220);
-  const tune = [262, 330, 392, 523, 392, 330, 294, 392, 494, 587, 494, 392];
-  tune.forEach((frequency, index) => window.setTimeout(() => {
-    playRhythmTone(frequency, .16, index % 3 ? "triangle" : "square", .045);
-    if (index % 4 === 0) playRhythmNoise(.04, .025, 5200);
-  }, index * 170));
+  playHomeLawnConcertVoices(runners);
   window.setTimeout(() => {
-    window.clearInterval(homeLawnDanceFrameTimer);
-    homeLawnDanceFrameTimer = null;
-    runners.forEach(runner => {
-      runner.classList.remove("home-concert", "home-talking");
-      clearHomeConcertPose(runner);
-    });
-    homeLawnGroupActive = false;
+    stopHomeLawnConcertAudio();
   }, 3000);
 }
 
@@ -10125,7 +10118,7 @@ async function playHomeLawnConcertVoices(performers) {
     voiceId: HOME_LAWN_VOICE_IDS[performer.dataset.sprunkiId] || performer.dataset.sprunkiId
   })).filter(voice => window.DanceCast?.[voice.voiceId]?.audio);
   const buffers = await Promise.all(voices.map(voice => loadHomeLawnVoiceBuffer(voice.voiceId)));
-  if (!document.body.classList.contains("night-mode") || !homeLawnGroupActive) return;
+  if (!homeLawnGroupActive) return;
   const startAt = context.currentTime + .08;
   voices.forEach((voice, index) => {
     const buffer = buffers[index];
@@ -10431,11 +10424,21 @@ function setupRainFriendUmbrellas() {
     image.alt = name;
     const umbrella = document.createElement("span");
     umbrella.className = "rain-friend-canopy";
-    friend.append(image, umbrella);
+    const leftHand = document.createElement("i");
+    leftHand.className = "rain-friend-hand rain-friend-hand-left";
+    const rightHand = document.createElement("i");
+    rightHand.className = "rain-friend-hand rain-friend-hand-right";
+    friend.append(image, umbrella, leftHand, rightHand);
     group.append(friend);
   });
   document.body.append(group);
 }
+
+window.addEventListener('computer-app-audio-focus', () => {
+  stopHomeLawnConcertAudio();
+  stopComputerTownConcert();
+  window.speechSynthesis?.cancel();
+});
 
 function isRainFriendUmbrellaActive() {
   return currentWeather === "rain" && !isAtHome && !isPoweredOff && !isTerrorNightActive && Boolean(document.querySelector(".rain-friend-umbrellas"));

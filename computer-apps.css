@@ -380,3 +380,12 @@
 .dance-system-fullscreen>.dance-keys{display:grid!important;position:absolute;z-index:35;left:50%;bottom:2vh;translate:-50% 0;width:min(520px,86vw)}
 .dance-system-fullscreen .dance-battle progress{height:8px;accent-color:#67b7ff}
 @media(max-width:700px){.dance-system-fullscreen>.dance-stage{width:min(100vw,calc(78vh * 16 / 9))!important;max-height:78vh!important}.dance-system-fullscreen>.dance-battle{top:2px;font-size:10px}.dance-system-fullscreen>.dance-keys{bottom:5px}}
+
+/* Character facts stay readable in both wide and narrow app windows. */
+.character-guide-facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:3px 12px;width:min(100%,520px);margin:4px auto;text-align:left;font-size:13px}
+.character-guide-facts dt{font-weight:900;color:#264d70}.character-guide-facts dd{margin:0}.character-guide-source-note{max-width:520px;margin:4px;color:#5a6170}
+.character-guide-app .character-guide-viewer img{height:min(32vh,250px)}
+@media(max-width:600px){.character-guide-facts{font-size:11px;gap:2px 7px}.character-guide-source-note{font-size:9px}.character-guide-app .character-guide-viewer img{height:min(24vh,170px)}}
+
+/* The player reads falling notes at the bottom; the opponent auto-hits rising notes at the top. */
+.dance-player-targets{top:83%!important}.dance-opponent-targets{top:17%!important}

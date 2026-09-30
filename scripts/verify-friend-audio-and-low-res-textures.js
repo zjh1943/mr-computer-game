@@ -5,8 +5,8 @@ const world = fs.readFileSync('voxel-world.js', 'utf8');
 const apps = fs.readFileSync('computer-apps.js', 'utf8');
 const music = fs.readFileSync('dance-music.js', 'utf8');
 
-assert(world.includes("const twoDTextureFiles="), '3D must reuse the existing 2D texture definitions');
-assert(world.includes("new T.TextureLoader().load('./assets/minecraft-blocks/'"), '2D texture files must be loaded without redrawing them');
+assert(world.includes("imageSmoothingEnabled=false"), 'large source textures must use nearest-neighbour reduction');
+assert(world.includes('drawImage(image,0,0,16,16)'), 'every file texture must be reduced to a real 16 by 16 grid');
 assert(apps.includes("await ctx.resume();localTrackSource=ctx.createBufferSource()"), 'local song must resume immediately before playback');
 assert(music.includes("audioRevision:'20261001-song2'"), 'Friend Like You must bypass the old cached soundtrack');
 assert(apps.includes("selected.audioFile+'?v='+encodeURIComponent(selected.audioRevision)"), 'the revised soundtrack must be fetched with its revision');

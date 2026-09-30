@@ -101,12 +101,49 @@
       const renderer=new T.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,survivalPack.LIMITS.pixelRatio));renderer.domElement.style.imageRendering='pixelated';view.prepend(renderer.domElement);
       let viewMode=0;const avatarMaterials=[];
       const geometry=new T.BoxGeometry(1,1,1),textures=[],materials={};
-      const twoDTextureFiles={grass:'grass',dirt:'dirt',stone:'cobblestone',sand:'sand',wood:'oak-log',leaves:'mossy-dirt',water:'blue-ice',lava:'red-sand',bed:'white-wool',bed_head:'white-wool',workbench:'oak-planks',netherrack:'red-sand',endstone:'end-stone',obsidian:'obsidian',bedrock:'bedrock',planks:'oak-planks',brick:'bricks',darkplanks:'spruce-planks',glass:'ice',cactus:'mossy-dirt',redgrass:'red-sand',redwood:'acacia-planks',redleaves:'red-sand',junglewood:'jungle-planks',jungleleaves:'mossy-dirt',sulphur:'sand',sulphurwater:'gold-ore',snowgrass:'snow',coral:'fungus',kelp:'mossy-dirt',farmland:'dirt',crop:'mossy-dirt',ripe:'gold-ore',chest:'oak-planks',furnace:'cobblestone',door:'oak-planks',door_open:'oak-planks',lever:'cobblestone',lever_on:'cobblestone',wire:'red-sand',lamp:'gold-ore',lamp_on:'gold-ore',torch:'gold-ore',portal:'purpur-block'};
-      const twoDTextureFile=kind=>twoDTextureFiles[kind]||(kind.endsWith('ore')?'cobblestone':kind.endsWith('leaves')?'mossy-dirt':kind.endsWith('wood')?'oak-log':'stone-bricks');
-      function texture(kind){const t=new T.TextureLoader().load('./assets/minecraft-blocks/'+twoDTextureFile(kind)+'.png');t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.colorSpace=T.SRGBColorSpace;textures.push(t);return t;}
-      for(const type of Object.keys(types))materials[type]=new T.MeshLambertMaterial({map:texture(type),transparent:['water','sulphurwater','glass'].includes(type),opacity:type==='water'?.62:type==='sulphurwater'?.82:type==='glass'?.38:1});
+      function texture(color,kind){
+        const files={'grass-side':'grass',dirt:'dirt',wood:'oak-log',planks:'oak-planks',sand:'sand',brick:'bricks',obsidian:'obsidian',endstone:'end-stone',darkplanks:'spruce-planks'};
+        const canvas=document.createElement('canvas');canvas.width=canvas.height=16;canvas.style.imageRendering='pixelated';const c=canvas.getContext('2d');
+        if(files[kind]){c.fillStyle=color;c.fillRect(0,0,16,16);c.imageSmoothingEnabled=false;const t=new T.CanvasTexture(canvas);t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.colorSpace=T.SRGBColorSpace;textures.push(t);new T.ImageLoader().load('./assets/minecraft-blocks/'+files[kind]+'.png',image=>{c.clearRect(0,0,16,16);c.drawImage(image,0,0,16,16);t.needsUpdate=true;});return t;}
+        const palettes={
+          'grass-top':['#4f8f35','#65a943','#79b84c','#3d762e'],stone:['#747b7d','#858c8e','#62696c','#9ba0a0'],bedrock:['#303338','#45494f','#1f2226','#5d6268'],
+          leaves:['#2f713c','#43854a','#275f35','#5b9854'],redleaves:['#b42f2c','#df4c38','#8e292b','#ef7650'],jungleleaves:['#1d6835','#2f8243','#18562d','#4a9851'],
+          water:['#2e78b7','#3f91cc','#65b6de','#28669f'],sulphurwater:['#b69f20','#dcc93a','#f2df58','#8d7f16'],glass:['#a9deea','#d8f5f5','#79bccc','#eefeff'],
+          redgrass:['#a93230','#ca493a','#e06046','#84282b'],snowgrass:['#d7e6e8','#f2f7f5','#b9cfd5','#ffffff'],sulphur:['#b99b23','#d5b833','#8f761b','#ead653'],
+          netherrack:['#6f3432','#894640','#542927','#a25b4e'],farmland:['#5c3824','#744b2e','#3e281c','#91613b'],cactus:['#34723b','#498a43','#28602f','#66a250']
+        };
+        const palette=palettes[kind]||(kind.endsWith('leaves')?palettes.leaves:kind.endsWith('grass')?palettes['grass-top']:[color,'#ffffff24','#00000028','#ffffff12']);
+        c.fillStyle=palette[0];c.fillRect(0,0,16,16);
+        let seed=[...kind].reduce((n,ch)=>Math.imul(n^ch.charCodeAt(0),16777619)>>>0,2166136261);const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed;};
+        for(let i=0;i<76;i++){const n=random(),x=(n>>>16)%16,y=(n>>>8)%16;c.fillStyle=palette[1+i%Math.max(1,palette.length-1)];c.fillRect(x,y,i%5===0?2:1,i%7===0?2:1);}
+        if(kind==='grass-top'){for(let i=0;i<26;i++){const n=random();c.fillStyle=i%3?'#76b84b':'#396e2c';c.fillRect((n>>>16)%16,(n>>>8)%16,1,2);}}
+        if(kind==='stone'){c.fillStyle='#a3a7a6';for(const [x,y] of [[2,3],[11,2],[6,8],[13,11],[3,13]])c.fillRect(x,y,2,1);c.fillStyle='#555d60';for(const [x,y] of [[7,2],[1,9],[10,7],[6,14]])c.fillRect(x,y,2,1);}
+        if(kind==='wood-end'){for(let r=1;r<8;r+=2){c.strokeStyle=r%3?'#8e653c':'#d7b576';c.strokeRect(r+.5,r+.5,15-2*r,15-2*r);}}
+        if(kind.endsWith('wood')||kind.endsWith('planks')){c.fillStyle='#44270755';for(let i=0;i<16;i+=4)c.fillRect(kind.endsWith('wood')?i:0,kind.endsWith('wood')?0:i,kind.endsWith('wood')?1:16,kind.endsWith('wood')?16:1);}
+        if(kind==='brick'){c.strokeStyle='#dfbd95';for(let y=0;y<16;y+=4){c.beginPath();c.moveTo(0,y);c.lineTo(16,y);c.stroke();for(let x=(y%8?4:0);x<16;x+=8)c.fillRect(x,y,1,4);}}
+        if(kind.endsWith('ore')){c.fillStyle='#777e80';c.fillRect(0,0,16,16);for(let i=0;i<72;i++){const n=random();c.fillStyle=i%2?'#626a6d':'#929898';c.fillRect((n>>>16)%16,(n>>>8)%16,1,1);}const clusters=[[2,3],[10,2],[6,7],[12,10],[3,12],[8,14]];for(const [x,y] of clusters){c.fillStyle='#20252a';c.fillRect(x,y,3,2);c.fillStyle=color;c.fillRect(x,y,2,2);c.fillStyle='#ffffff88';c.fillRect(x,y,1,1);}}
+        if(kind.endsWith('leaves')){c.fillStyle='#173d2255';for(const [x,y] of [[1,2],[6,1],[12,3],[3,7],[9,6],[14,9],[5,12],[11,14]]){c.fillRect(x,y,2,2);c.clearRect(x+1,y+1,1,1);}}
+        if(kind==='water'||kind==='sulphurwater'){c.fillStyle=palette[2];for(let y=1;y<16;y+=4){const offset=(y*3)%5;c.fillRect(offset,y,7,1);c.fillRect(offset+9,y,5,1);}c.fillStyle='#ffffff55';c.fillRect(2,3,4,1);c.fillRect(9,11,5,1);}
+        if(kind==='bedrock'){c.fillStyle='#17191c';for(const [x,y,w,h] of [[0,2,6,3],[8,0,5,4],[4,7,7,4],[12,6,4,6],[0,12,8,4]])c.fillRect(x,y,w,h);c.fillStyle='#686d72';for(const [x,y] of [[1,1],[7,4],[13,2],[2,10],[10,13]])c.fillRect(x,y,3,2);}
+        if(kind==='glass'){c.clearRect(2,2,12,12);c.strokeStyle='#dffcff';c.strokeRect(.5,.5,15,15);c.fillStyle='#ffffffaa';c.fillRect(2,2,5,1);c.fillRect(2,3,1,4);c.fillRect(11,12,3,1);}
+        if(kind==='chest'){c.strokeStyle='#4f301b';c.strokeRect(.5,.5,15,15);c.fillStyle='#4f301b';c.fillRect(0,6,16,2);c.fillStyle='#e0bf6b';c.fillRect(7,5,2,5);}
+        if(kind==='furnace'){c.fillStyle='#323a42';c.fillRect(3,3,10,4);c.fillRect(3,10,10,4);c.fillStyle='#e07c2b';c.fillRect(5,12,6,1);}
+        if(kind==='workbench'){c.strokeStyle='#553820';for(let n=1;n<16;n+=5){c.beginPath();c.moveTo(n,0);c.lineTo(n,16);c.moveTo(0,n);c.lineTo(16,n);c.stroke();}}
+        if(kind==='wire'){c.fillStyle='#4a1715';c.fillRect(0,0,16,16);c.fillStyle='#cc4130';c.fillRect(6,0,4,16);c.fillRect(0,6,16,4);}
+        if(kind==='crop'||kind==='ripe'){c.fillStyle=kind==='crop'?'#274c22':'#85712a';c.fillRect(0,0,16,16);c.fillStyle=color;for(let n=1;n<16;n+=4)c.fillRect(n,2,2,14);}
+        if(kind==='lava'){c.fillStyle='#a53812';for(let y=1;y<16;y+=4)for(let x=0;x<16;x+=5)c.fillRect((x+y)%16,y,3,2);c.fillStyle='#ffdc45';for(let y=0;y<16;y+=5)c.fillRect((y*3)%12,y,5,2);}
+        if(kind==='obsidian'){c.fillStyle='#181729';for(let y=0;y<16;y+=4)for(let x=0;x<16;x+=5)c.fillRect((x+y)%16,y,4,3);c.fillStyle='#6b487d';c.fillRect(2,4,2,1);c.fillRect(10,12,3,1);}
+        if(kind==='portal'){for(let r=0;r<7;r++){c.strokeStyle=r%2?'#60328c':'#c997ee';c.strokeRect(r+.5,r+.5,15-r*2,15-r*2);}}
+        const t=new T.CanvasTexture(canvas);t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.colorSpace=T.SRGBColorSpace;textures.push(t);return t;
+      }
+      for(const [type,[,color]] of Object.entries(types))materials[type]=new T.MeshLambertMaterial({map:texture(color,type==='grass'?'grass-top':type),transparent:['water','sulphurwater','glass','leaves','redleaves','jungleleaves'].includes(type),opacity:type==='water'?.62:type==='sulphurwater'?.82:type==='glass'?.38:1,alphaTest:type.endsWith('leaves')?.12:0});
       materials.lamp_on.emissive.set('#ffb849');materials.lamp_on.emissiveIntensity=.8;materials.torch.emissive.set('#ffc35a');materials.torch.emissiveIntensity=.7;
       materials.lava.emissive.set('#ff6b00');materials.lava.emissiveIntensity=.7;materials.portal.emissive.set('#9a44cc');materials.portal.emissiveIntensity=.5;
+      const grassTop=materials.grass,grassSide=new T.MeshLambertMaterial({map:texture('#906745','grass-side')}),woodSide=materials.wood,woodEnd=new T.MeshLambertMaterial({map:texture('#c69d65','wood-end')});
+      materials.grass=[grassSide,grassSide,grassTop,materials.dirt,grassSide,grassSide];
+      materials.wood=[woodSide,woodSide,woodEnd,woodEnd,woodSide,woodSide];
+      for(const [type,topColor,sideColor] of [['redgrass','#ba443b','#ad3733'],['snowgrass','#e8f0ee','#d6e4df']]){const side=new T.MeshLambertMaterial({map:texture('#906745','colored-dirt')});const c=side.map.image.getContext('2d');c.fillStyle=sideColor;c.fillRect(0,0,16,4);side.map.needsUpdate=true;const top=materials[type];materials[type]=[side,side,top,materials.dirt,side,side];}
+      for(const type of ['redwood','junglewood']){const side=materials[type],end=new T.MeshLambertMaterial({map:texture(type==='redwood'?'#c77d63':'#a58c59','wood-end')});materials[type]=[side,side,end,end,side,side];}
       const ambient=new T.HemisphereLight(0xeafaff,0x627049,2),sun=new T.DirectionalLight(0xffedc5,2);sun.position.set(-8,22,9);scene.add(ambient,sun);
       const clouds=new T.Group();const cloudMaterial=new T.MeshLambertMaterial({color:0xffffff});for(let i=0;i<9;i++){const c=new T.Mesh(geometry,cloudMaterial);c.position.set((i*13)%35-17,15+i%3,(i*7)%32-16);c.scale.set(5+i%3,.6,2);clouds.add(c);}clouds.visible=dimension==='overworld';scene.add(clouds);
       const bubbleMaterial=new T.MeshBasicMaterial({color:0xfff4a4,transparent:true,opacity:.65}),bubbleMesh=new T.InstancedMesh(geometry,bubbleMaterial,64),bubbleMatrix=new T.Matrix4();bubbleMesh.frustumCulled=false;scene.add(bubbleMesh);let bubbleSources=[];

@@ -247,9 +247,9 @@
 .dance-stage .dance-targets img{display:block;width:100%;height:clamp(32px,4.6vw,58px);object-fit:contain;filter:drop-shadow(0 3px 1px #111)}
 .dance-stage .dance-opponent-targets [data-feedback="hit"] img{filter:brightness(1.55) drop-shadow(0 0 9px #fff)}
 .friend-safe-stage .dance-stage{background:#20dbe6 url('./assets/friend-like-you/stage-day.png') center/cover no-repeat!important;transition:filter 1.2s ease,background-color 1.2s ease}
-.friend-safe-stage.friend-night-phase .dance-stage{background:#120307 url('./assets/friend-like-you/stage-black.png') center/cover no-repeat!important;filter:none;animation:friend-dusk-shift 1.2s ease both}
+.friend-safe-stage.friend-night-phase .dance-stage{background:#120307 url('./assets/friend-like-you/stage-black.png') center/cover no-repeat!important;filter:none;animation:none}
 .friend-safe-stage.friend-night-phase .dance-sky-sun{opacity:0;transition:opacity .8s ease}
-.friend-safe-stage.friend-night-phase .dance-player{visibility:hidden}
+.friend-safe-stage.friend-night-phase .dance-player{display:none!important;visibility:hidden!important;opacity:0!important}
 .friend-safe-stage.friend-night-phase .dance-rival{grid-column:1/4!important;grid-template-columns:1fr;justify-self:center;width:min(34%,260px);z-index:3}
 .friend-safe-stage.friend-single-bank .dance-stage .dance-lanes{grid-template-columns:minmax(0,1fr);inset-inline:31%}
 .friend-safe-stage.friend-single-bank .dance-opponent-bank,.friend-safe-stage.friend-single-bank .dance-divider{display:none}
@@ -388,6 +388,36 @@
 .dance-system-fullscreen>.dance-keys{display:grid!important;position:absolute;z-index:35;left:50%;bottom:2vh;translate:-50% 0;width:min(520px,86vw)}
 .dance-system-fullscreen .dance-battle progress{height:8px;accent-color:#67b7ff}
 @media(max-width:700px){.dance-system-fullscreen>.dance-stage{width:min(100vw,calc(78vh * 16 / 9))!important;max-height:78vh!important}.dance-system-fullscreen>.dance-battle{top:2px;font-size:10px}.dance-system-fullscreen>.dance-keys{bottom:5px}}
+
+/* Friend Like You follows the reference video's FNF stage instead of the shared dance layout. */
+.friend-fnf-hud{display:none}
+.friend-safe-stage>.dance-battle{display:none}
+.friend-safe-stage .friend-fnf-hud{display:grid;position:absolute;inset:0;z-index:12;grid-template-rows:34px 1fr 25px;pointer-events:none;color:#fff;font:900 clamp(8px,1.15vw,13px)/1.1 "Courier New",monospace;text-shadow:2px 2px 0 #000}
+.friend-safe-stage .friend-fnf-top{grid-row:1;position:relative;background:#050505;border-bottom:2px solid #242424;box-shadow:0 4px 8px #0008}
+.friend-safe-stage .friend-fnf-time{position:absolute;left:50%;top:4px;translate:-50% 0;min-width:48px;text-align:center;font-size:clamp(12px,1.6vw,18px)}
+.friend-safe-stage .friend-fnf-health{position:absolute;left:22%;right:22%;bottom:3px;height:5px;background:linear-gradient(90deg,#d6272f 0 50%,#dedede 50%);border:2px solid #111}
+.friend-safe-stage .friend-fnf-health i{display:block;margin-left:calc(var(--friend-health,55%) - 3px);width:6px;height:100%;background:#5df06c;box-shadow:0 0 4px #fff}
+.friend-safe-stage .friend-fnf-bottom{grid-row:3;align-self:end;display:flex;justify-content:center;gap:clamp(8px,3vw,30px);padding:5px 8px;background:#050505;border-top:2px solid #242424;white-space:nowrap}
+.friend-safe-stage .dance-player-targets,.friend-safe-stage .dance-opponent-targets{top:17%!important}
+.friend-safe-stage .dance-stage .dance-lanes{inset:6% 7% 8%;z-index:8}
+.friend-safe-stage .dance-bank>b{display:none}
+.friend-safe-stage.friend-night-phase .dance-rival{z-index:7!important}
+.friend-safe-stage.friend-night-phase .dance-rival>div,.friend-safe-stage.friend-night-phase .dance-friend-actor,.friend-safe-stage.friend-night-phase .dance-friend-layer{visibility:visible!important;opacity:1}
+.friend-safe-stage.friend-night-phase .dance-friend-layer:not(.is-active){opacity:0!important}
+.friend-safe-stage.friend-night-phase .dance-stage::before{content:"";position:absolute;inset:0;z-index:0;background:#120307 url('./assets/friend-like-you/stage-black.png') center/cover no-repeat;pointer-events:none}
+.friend-safe-stage.friend-night-phase .dance-stage::after{content:"";position:absolute;left:35%;right:35%;top:13%;bottom:4%;z-index:7;background:url('./assets/friend-like-you/black-idle.png') center bottom/contain no-repeat;filter:drop-shadow(0 8px 0 #23030a);transform-origin:50% 100%;animation:friend-black-dance 360ms steps(2,jump-none) infinite;pointer-events:none}
+.friend-safe-stage.friend-night-phase .dance-rival{opacity:0!important}
+.friend-safe-stage.friend-night-phase .dance-stage:has(.dance-rival [data-character="black"][data-pose="0"])::after{background-image:url('./assets/friend-like-you/black-left.png')}
+.friend-safe-stage.friend-night-phase .dance-stage:has(.dance-rival [data-character="black"][data-pose="1"])::after{background-image:url('./assets/friend-like-you/black-down.png')}
+.friend-safe-stage.friend-night-phase .dance-stage:has(.dance-rival [data-character="black"][data-pose="2"])::after{background-image:url('./assets/friend-like-you/black-up.png')}
+.friend-safe-stage.friend-night-phase .dance-stage:has(.dance-rival [data-character="black"][data-pose="3"])::after{background-image:url('./assets/friend-like-you/black-right.png')}
+.friend-safe-stage.friend-single-bank .dance-stage .dance-lanes{inset:6% 32% 8%}
+.friend-safe-stage.friend-chorus-phase .dance-rival{z-index:5!important}
+.friend-safe-stage.friend-chorus-phase .dance-player{z-index:6!important}
+.friend-safe-stage.friend-chorus-phase .friend-chorus-crowd{z-index:3;height:43%;inset-inline:4%;grid-template-columns:repeat(5,minmax(0,1fr));gap:2%}
+.friend-safe-stage.friend-chorus-phase .friend-chorus-crowd>div{height:62%}
+.friend-safe-stage.friend-chorus-phase .friend-chorus-crowd>div:nth-child(n+6){translate:0 -66%;scale:.7}
+@media(max-width:600px){.friend-safe-stage .friend-fnf-hud{grid-template-rows:27px 1fr 20px;font-size:7px}.friend-safe-stage .friend-fnf-bottom{gap:7px;padding:4px}.friend-safe-stage .dance-stage .dance-lanes{inset-inline:2%}.friend-safe-stage.friend-single-bank .dance-stage .dance-lanes{inset-inline:23%}}
 
 /* Character facts stay readable in both wide and narrow app windows. */
 .character-guide-facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:3px 12px;width:min(100%,520px);margin:4px auto;text-align:left;font-size:13px}

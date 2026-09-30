@@ -102,11 +102,10 @@
       let viewMode=0;const avatarMaterials=[];
       const geometry=new T.BoxGeometry(1,1,1),textures=[],materials={};
       function texture(color,kind){
-        const files={'grass-side':'grass',dirt:'dirt',wood:'oak-log',planks:'oak-planks',sand:'sand',brick:'bricks',obsidian:'obsidian',endstone:'end-stone',darkplanks:'spruce-planks'};
         const canvas=document.createElement('canvas');canvas.width=canvas.height=16;canvas.style.imageRendering='pixelated';const c=canvas.getContext('2d');
-        if(files[kind]){c.fillStyle=color;c.fillRect(0,0,16,16);c.imageSmoothingEnabled=false;const t=new T.CanvasTexture(canvas);t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.colorSpace=T.SRGBColorSpace;textures.push(t);new T.ImageLoader().load('./assets/minecraft-blocks/'+files[kind]+'.png',image=>{c.clearRect(0,0,16,16);c.drawImage(image,0,0,16,16);t.needsUpdate=true;});return t;}
         const palettes={
-          'grass-top':['#4f8f35','#65a943','#79b84c','#3d762e'],stone:['#747b7d','#858c8e','#62696c','#9ba0a0'],bedrock:['#303338','#45494f','#1f2226','#5d6268'],
+          'grass-top':['#57983d','#69a947','#7db653','#447d33'],'grass-side':['#866043','#9a704c','#6e4c34','#b17c51'],dirt:['#866043','#9a704c','#6e4c34','#b17c51'],stone:['#747b7d','#858c8e','#62696c','#9ba0a0'],bedrock:['#303338','#45494f','#1f2226','#5d6268'],
+          wood:['#86613b','#9d7548','#68472d','#ba8e59'],planks:['#a87a47','#bd8d53','#835d36','#d0a365'],darkplanks:['#66503b','#7d6246','#4e3d30','#967858'],sand:['#d8ca82','#e6d891','#c2b46e','#f0e4a4'],brick:['#9b4d3c','#b75d48','#77382f','#d27a5c'],
           leaves:['#2f713c','#43854a','#275f35','#5b9854'],redleaves:['#b42f2c','#df4c38','#8e292b','#ef7650'],jungleleaves:['#1d6835','#2f8243','#18562d','#4a9851'],
           water:['#2e78b7','#3f91cc','#65b6de','#28669f'],sulphurwater:['#b69f20','#dcc93a','#f2df58','#8d7f16'],glass:['#a9deea','#d8f5f5','#79bccc','#eefeff'],
           redgrass:['#a93230','#ca493a','#e06046','#84282b'],snowgrass:['#d7e6e8','#f2f7f5','#b9cfd5','#ffffff'],sulphur:['#b99b23','#d5b833','#8f761b','#ead653'],
@@ -117,9 +116,12 @@
         let seed=[...kind].reduce((n,ch)=>Math.imul(n^ch.charCodeAt(0),16777619)>>>0,2166136261);const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed;};
         for(let i=0;i<76;i++){const n=random(),x=(n>>>16)%16,y=(n>>>8)%16;c.fillStyle=palette[1+i%Math.max(1,palette.length-1)];c.fillRect(x,y,i%5===0?2:1,i%7===0?2:1);}
         if(kind==='grass-top'){for(let i=0;i<26;i++){const n=random();c.fillStyle=i%3?'#76b84b':'#396e2c';c.fillRect((n>>>16)%16,(n>>>8)%16,1,2);}}
+        if(kind==='grass-side'){c.fillStyle='#5d9c3e';c.fillRect(0,0,16,3);c.fillStyle='#79b64b';for(const [x,h] of [[0,5],[2,4],[4,7],[6,3],[8,5],[10,4],[12,6],[14,3]])c.fillRect(x,2,2,h);}
+        if(kind==='dirt'){c.fillStyle='#5f432f';for(const [x,y] of [[1,2],[7,1],[12,4],[4,8],[10,9],[2,13],[14,12]])c.fillRect(x,y,2,2);c.fillStyle='#b17c51';for(const [x,y] of [[4,3],[9,5],[1,9],[12,14]])c.fillRect(x,y,2,1);}
         if(kind==='stone'){c.fillStyle='#a3a7a6';for(const [x,y] of [[2,3],[11,2],[6,8],[13,11],[3,13]])c.fillRect(x,y,2,1);c.fillStyle='#555d60';for(const [x,y] of [[7,2],[1,9],[10,7],[6,14]])c.fillRect(x,y,2,1);}
         if(kind==='wood-end'){for(let r=1;r<8;r+=2){c.strokeStyle=r%3?'#8e653c':'#d7b576';c.strokeRect(r+.5,r+.5,15-2*r,15-2*r);}}
-        if(kind.endsWith('wood')||kind.endsWith('planks')){c.fillStyle='#44270755';for(let i=0;i<16;i+=4)c.fillRect(kind.endsWith('wood')?i:0,kind.endsWith('wood')?0:i,kind.endsWith('wood')?1:16,kind.endsWith('wood')?16:1);}
+        if(kind.endsWith('wood')){c.fillStyle='#44270766';for(let i=1;i<16;i+=4)c.fillRect(i,0,1,16);}
+        if(kind==='planks'||kind==='darkplanks'){c.fillStyle='#4e321e';for(let y=0;y<16;y+=4)c.fillRect(0,y,16,1);for(let y=0;y<16;y+=8){c.fillRect(5,y,1,4);c.fillRect(12,y+4,1,4);}c.fillStyle='#e0b16b55';for(const [x,y] of [[2,2],[8,6],[3,11],[13,14]])c.fillRect(x,y,3,1);}
         if(kind==='brick'){c.strokeStyle='#dfbd95';for(let y=0;y<16;y+=4){c.beginPath();c.moveTo(0,y);c.lineTo(16,y);c.stroke();for(let x=(y%8?4:0);x<16;x+=8)c.fillRect(x,y,1,4);}}
         if(kind.endsWith('ore')){c.fillStyle='#777e80';c.fillRect(0,0,16,16);for(let i=0;i<72;i++){const n=random();c.fillStyle=i%2?'#626a6d':'#929898';c.fillRect((n>>>16)%16,(n>>>8)%16,1,1);}const clusters=[[2,3],[10,2],[6,7],[12,10],[3,12],[8,14]];for(const [x,y] of clusters){c.fillStyle='#20252a';c.fillRect(x,y,3,2);c.fillStyle=color;c.fillRect(x,y,2,2);c.fillStyle='#ffffff88';c.fillRect(x,y,1,1);}}
         if(kind.endsWith('leaves')){c.fillStyle='#173d2255';for(const [x,y] of [[1,2],[6,1],[12,3],[3,7],[9,6],[14,9],[5,12],[11,14]]){c.fillRect(x,y,2,2);c.clearRect(x+1,y+1,1,1);}}

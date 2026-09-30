@@ -31,8 +31,13 @@
     const storageKey=w=>w.id==='legacy'?'computer-voxel-v2':`voxel-save-${w.id}`;
     function stop(){cleanup();cleanup=()=>{};gameLayer=null;worldInfo=null;paused=false;}
     function page(title,sub){host.replaceChildren();host.classList.remove('voxel-app','voxel-classic-host');delete host.dataset.voxelEdition;const screen=node('section',null,host);screen.className='voxel-menu';const card=node('div',null,screen);card.className='voxel-menu-card';node('h1',title,card);if(sub)node('p',sub,card);return card;}
-    function main(){stop();const c=page('我的世界','电脑先生 · 完整离线方块冒险'),screen=c.parentElement;screen.classList.add('voxel-title-screen');c.classList.add('voxel-title-card');node('div','挖掘！建造！探索无限世界！',c).className='voxel-splash';node('div','电脑基岩版 · 触屏操作　|　电脑 Java 版 · 键鼠操作',c).className='voxel-edition-badge';button(c,'开始游戏',list);button(c,'官方网页版（联网）',classicPage);button(c,'游戏设置',()=>settingsPage(main));button(c,'模组中心',modsPage);button(c,'操作说明',help);const profile=node('aside',null,screen);profile.className='voxel-profile-card';profile.innerHTML='<div class="voxel-profile-avatar" aria-hidden="true"><i></i><b></b><em></em></div><strong>电脑玩家</strong><span>本机离线 · 存档自动保存</span>';node('small','电脑先生方块世界 v2.0 · 不需要外部启动器或服务器',c);}
-    function classicPage(){stop();host.replaceChildren();host.classList.remove('voxel-app');host.classList.add('voxel-classic-host');const shell=node('section',null,host);shell.className='voxel-classic';const bar=node('header',null,shell);bar.className='voxel-classic-bar';button(bar,'← 返回电脑先生方块世界',main);node('strong','Minecraft Classic · 官方网页版',bar);node('span','需要联网与键盘',bar);const loading=node('div','正在连接官方 Minecraft Classic…',shell);loading.className='voxel-classic-loading';const frame=node('iframe',null,shell);frame.className='voxel-classic-frame';frame.title='Minecraft Classic 官方网页版';frame.src='https://classic.minecraft.net/';frame.allow='fullscreen; autoplay; gamepad; clipboard-write';frame.setAttribute('allowfullscreen','');frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-popups');frame.onload=()=>loading.remove();cleanup=()=>{frame.onload=null;frame.src='about:blank';};}
+    function main(){startImmediately();}
+    function startImmediately(){
+      stop();worlds=read('voxel-world-list',worlds);
+      let world=worlds.filter(Boolean).sort((a,b)=>(b.updated||0)-(a.updated||0))[0];
+      if(!world){world={id:'default',name:'方块世界',mode:'creative',terrain:'hills',edition:'bedrock',difficulty:'normal',seed:'mr-computer',terrainSeed:15731,bonusChest:false,keepInventory:true,mods:{},created:Date.now(),updated:Date.now()};worlds=[world];write('voxel-world-list',worlds);}
+      play(world);
+    }
     let selectedMods={};
     function modsPage(){const c=page('模组','为下一次创建的世界选择模组，旧存档不变');for(const [id,[name,description]] of Object.entries(rules.mods)){const row=node('label',name,c),check=node('input',null,row);check.type='checkbox';check.checked=!!selectedMods[id];check.onchange=()=>selectedMods[id]=check.checked;node('p',description,c);}button(c,'创建模组世界',createPage);button(c,'返回',main);}
     function help(){const c=page('操作说明','键盘、鼠标与触屏都可以玩');for(const t of ['WASD 或方向键移动，空格跳跃。','创造模式按 V 切换飞行，空格上升，Shift 下降；也可点按钮。','拖动画面转头，用屏幕中心的准星瞄准。','持续按住挖掘，出现裂纹后破碎；手机轻点放置、长按挖掘。','F5 或视角按钮切换第一人称、背后和正面视角。','数字键选择材料，E 打开背包与合成，P 暂停。','生存模式先采集材料；木板可合成木镐，木镐可挖石头。','挖树叶得苹果，狩猎得肉；食物恢复饱食，吃饱会缓慢回血。','木镐挖煤，石镐挖铁，铁镐挖钻石；先造熔炉再烧炼。','石剑和钻石剑合成后自动用于攻击，铁护甲自动减伤。','羊掉羊毛，可与木板合成床；夜晚有床就能睡到天亮。','F 使用准星对准的方块：耕地、收割、开箱、交易或切换拉杆。','幼苗放在耕地上，生长一分钟后可收割；小麦能合成面包或交易。','连接拉杆、红石线与红石灯，最多传播14格线路。','放置传送门并按 F，可在主世界、下界和末地之间往返。','主世界边走边生成，远处区块卸载；建造修改会保留。','群系地图显示坐标；创造模式可直接前往各群系。','动物与怪物持续刷新；只模拟附近生物，远处会卸载。','硫磺史莱姆会吸收右键放入的方块，身体变成对应材质。','海洋里有珊瑚、海带、鱼和沉船；空格/上升浮起，Shift/下降潜水。'])node('p',t,c);button(c,'返回',main);}
@@ -46,7 +51,7 @@
     function closeOverlay(){overlay?.remove();overlay=null;paused=false;}
     function blockPanel(title,rows){if(paused||dead)return;const c=modal(title);let message='';function render(){c.replaceChildren();node('h2',title,c);if(message)node('p',message,c);for(const row of rows())button(c,row.label,()=>{message=row.action();render();});button(c,'返回游戏',closeOverlay);}render();}
     function modal(title){paused=true;overlay?.remove();overlay=node('div',null,host);overlay.className='voxel-overlay';const c=node('div',null,overlay);c.className='voxel-menu-card';node('h2',title,c);return c;}
-    function pause(){if(paused||dead)return;const c=modal('游戏暂停');button(c,'继续游戏',closeOverlay);button(c,'设置',()=>settingsPage(()=>{closeOverlay();pause();},c));button(c,'保存并返回开始页面',()=>{if(gameLayer?.saveWorld&&!gameLayer.saveWorld()){node('p','保存失败，请先释放本机空间，再重试。',c);return;}closeOverlay();main();});}
+    function pause(){if(paused||dead)return;const c=modal('游戏暂停');button(c,'继续游戏',closeOverlay);button(c,'设置',()=>settingsPage(()=>{closeOverlay();pause();},c));button(c,'保存世界',()=>{if(gameLayer?.saveWorld&&!gameLayer.saveWorld()){node('p','保存失败，请先释放本机空间，再重试。',c);return;}closeOverlay();});button(c,'世界列表',list);button(c,'创建新世界',createPage);button(c,'模组中心',modsPage);button(c,'操作说明',help);}
     function inventoryPanel(inventory,craft,eat,context={}){
       if(paused||dead)return;
       const c=modal(context.station==='workbench'?'工作台 · 九格合成':context.station==='furnace'?'熔炉 · 烧炼':'背包 · 四格合成');c.classList.add('voxel-inventory');
@@ -76,7 +81,7 @@
       function refresh(){const all=inventorySlots(inventory),pages=Math.max(1,Math.ceil(all.length/36));page=Math.max(0,Math.min(page,pages-1));grid.replaceChildren();for(let i=0;i<36;i++){const item=all[page*36+i];const slot=button(grid,'',()=>{selected=item.type;detail.textContent=`${names[selected]||selected} · 总数 ${inventory[selected]}`;equip.disabled=!context.equip;refresh();});slot.className='inventory-slot';slot.disabled=!item;if(item){icon(slot,item.type,item.count);slot.setAttribute('aria-label',`${names[item.type]||item.type} ×${item.count}`);slot.setAttribute('aria-pressed',String(selected===item.type));}else slot.setAttribute('aria-label','空背包格');}pageLabel.textContent=`${page+1} / ${pages}`;prev.disabled=page===0;next.disabled=page===pages-1;recipe();}
       select.onchange=recipe;refresh();
     }
-    main();return()=>{dead=true;stop();};
+    startImmediately();return()=>{dead=true;stop();};
   }
   window.VoxelShell={mount,recipes,canCraft};
 })();

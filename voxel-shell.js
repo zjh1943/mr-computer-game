@@ -1,7 +1,7 @@
 /* Chinese offline menus and local worlds for the original browser sandbox. */
 (() => {
   const rules=typeof module!=='undefined'?require('./voxel-rules.js'):window.VoxelRules;
-  const recipes={planks:{name:'木板 ×4',cost:{wood:1},output:'planks',amount:4},pickaxe:{name:'木镐',cost:{planks:5},output:'pickaxe',amount:1},brick:{name:'石砖 ×4',cost:{stone:4},output:'brick',amount:4},glass:{name:'玻璃 ×2',cost:{sand:4,wood:1},requires:'furnace',output:'glass',amount:2}};
+  const recipes={planks:{name:'木板 ×4',cost:{wood:1},output:'planks',amount:4},stick:{name:'木棒 ×4',cost:{planks:2},output:'stick',amount:4},pickaxe:{name:'木镐',cost:{planks:3,stick:2},output:'pickaxe',amount:1},woodaxe:{name:'木斧',cost:{planks:3,stick:2},output:'woodaxe',amount:1},brick:{name:'石砖 ×4',cost:{cobblestone:4},output:'brick',amount:4},glass:{name:'玻璃 ×2',cost:{sand:4,wood:1},requires:'furnace',output:'glass',amount:2}};
   const pack=typeof module!=='undefined'?require('./voxel-survival.js'):window.VoxelSurvival;
   const stations=typeof module!=='undefined'?require('./voxel-workstations.js'):window.VoxelWorkstations;
   Object.assign(recipes,pack.recipes);
@@ -11,7 +11,7 @@
   function inventorySlots(inventory){const slots=[];for(const [type,value] of Object.entries(inventory)){let count=Number.isFinite(Number(value))?Math.max(0,Math.floor(Number(value))):0;while(count>0){slots.push({type,count:Math.min(64,count)});count-=64;}}return slots;}
   function recipeCells(recipe){
     const ingredients=Object.keys(recipe.cost),a=ingredients[0],b=ingredients[1];
-    const patterns={pickaxe:[a,a,a,null,a,null,null,a,null],stonepickaxe:[a,a,a,null,b,null,null,b,null],ironpickaxe:[a,a,a,null,b,null,null,b,null],diamondpickaxe:[a,a,a,null,b,null,null,b,null],sword:[null,a,null,null,a,null,null,b,null],diamondsword:[null,a,null,null,a,null,null,b,null],furnace:[a,a,a,a,null,a,a,a,a],chest:[a,a,a,a,null,a,a,a,a],armor:[a,null,a,a,a,a,a,a,a],bed:[a,a,a,b,b,b,null,null,null],bread:[null,null,null,a,a,a,null,null,null],workbench:[a,a,null,a,a,null,null,null,null]};
+    const patterns={pickaxe:[a,a,a,null,b,null,null,b,null],woodaxe:[a,a,null,a,b,null,null,b,null],stonepickaxe:[a,a,a,null,b,null,null,b,null],stoneaxe:[a,a,null,a,b,null,null,b,null],ironpickaxe:[a,a,a,null,b,null,null,b,null],diamondpickaxe:[a,a,a,null,b,null,null,b,null],sword:[null,a,null,null,a,null,null,b,null],diamondsword:[null,a,null,null,a,null,null,b,null],furnace:[a,a,a,a,null,a,a,a,a],chest:[a,a,a,a,null,a,a,a,a],armor:[a,null,a,a,a,a,a,a,a],bed:[a,a,a,b,b,b,null,null,null],bread:[null,null,null,a,a,a,null,null,null],workbench:[a,a,null,a,a,null,null,null,null]};
     if(patterns[recipe.output])return patterns[recipe.output].map(type=>type?{type,count:1}:null);
     const cells=Object.entries(recipe.cost).map(([type,count])=>({type,count}));return [...cells,...Array(Math.max(0,9-cells.length)).fill(null)];
   }
@@ -55,7 +55,7 @@
     function inventoryPanel(inventory,craft,eat,context={}){
       if(paused||dead)return;
       const c=modal(context.station==='workbench'?'工作台 · 九格合成':context.station==='furnace'?'熔炉 · 烧炼':'背包 · 四格合成');c.classList.add('voxel-inventory');
-      const types=context.types||{},names={apple:'苹果',pickaxe:'木镐',...pack.items,...stations.items,...Object.fromEntries(Object.entries(types).map(([k,v])=>[k,v[0]]))};
+      const types=context.types||{},names={apple:'苹果',stick:'木棒',pickaxe:'木镐',woodaxe:'木斧',...pack.items,...stations.items,...Object.fromEntries(Object.entries(types).map(([k,v])=>[k,v[0]]))};
       const avatar=node('div',null,c);avatar.className='voxel-avatar';avatar.setAttribute('aria-label','方块人物：蓝绿色上衣、紫色裤子');avatar.innerHTML='<span class="avatar-head"></span><span class="avatar-body"></span><span class="avatar-legs"></span><span class="avatar-pick"></span>';
       const layout=node('div',null,c);layout.className='inventory-layout';
       const bag=node('section',null,layout);node('h3','物品栏',bag);

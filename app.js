@@ -9633,7 +9633,8 @@ function setupDragInteractions() {
 }
 
 function showSubtitle(text, colorful = false) {
-  if (currentComputerApp !== "chat") {
+  const pyramixedScreenSpeech = document.body.dataset.computerVersion === "pyramixed";
+  if (currentComputerApp !== "chat" && !pyramixedScreenSpeech) {
     screenSubtitle.style.display = "none";
     moodPanel.classList.remove("text-mode", "colorful");
     return;
@@ -10653,6 +10654,10 @@ function answerUser(text) {
 
   moodIndex = (moodIndex + 1) % moods.length;
   setMood(moodIndex);
+  if (screenTimer) {
+    window.clearTimeout(screenTimer);
+    screenTimer = null;
+  }
   showSubtitle("滴。我在听。", false);
 
   const flightCommand = getFlightCommand(cleaned);

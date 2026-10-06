@@ -664,10 +664,10 @@ body[data-computer-version="pyramixed"] .hat-assembly {
 
 body[data-computer-version="pyramixed"] .screen-bezel {
   position: absolute;
-  top: 108px;
+  top: 101px;
   left: 50%;
   z-index: 3;
-  width: 150px;
+  width: 160px;
   margin: 0;
   padding: 0;
   box-shadow: none;
@@ -682,9 +682,9 @@ body[data-computer-version="pyramixed"] .screen-bezel::after {
 
 body[data-computer-version="pyramixed"] .mood-panel {
   box-sizing: border-box;
-  width: 150px;
-  min-height: 130px;
-  height: 130px;
+  width: 160px;
+  min-height: 142px;
+  height: 142px;
   padding: 12px 8px 8px;
   border: 0;
   border-radius: 0;
@@ -13612,7 +13612,10 @@ body[data-computer-version="pyramixed"] .mood-panel.face-mode,
 body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open){background:transparent!important}
 body[data-computer-version="pyramixed"] .mood-panel.face-mode .face-display,
 body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .face-display{display:none!important;animation:none!important}
-body[data-computer-version="pyramixed"] .mood-panel.text-mode{background:#050505!important}
+body[data-computer-version="pyramixed"] .mood-panel.text-mode,
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode.text-mode{background:#050505!important;clip-path:none!important}
+body[data-computer-version="pyramixed"] .mood-panel.text-mode::before{content:"";position:absolute;top:-2px;right:-9px;bottom:-2px;left:-12px;z-index:18;background:#050505;pointer-events:none}
+body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.text-mode) .screen-bezel::after{display:none!important}
 body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.face-mode) .screen-bezel::after,
-body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.desktop-mode:not(.app-open)):not(:has(.computer-desktop.pyramixed-apps-open)) .screen-bezel::after{content:"";position:absolute;left:50%;top:66px;z-index:5;display:block;width:28px;height:18px;border:0;border-radius:0;background:linear-gradient(42deg,transparent 0 45%,#fff 46% 53%,transparent 54%) left bottom/52% 100% no-repeat,linear-gradient(-42deg,transparent 0 45%,#fff 46% 53%,transparent 54%) right bottom/52% 100% no-repeat,#050505;color:transparent;font-size:0;transform:translateX(-50%);clip-path:none;animation:pyramixed-only-mouth 1.25s ease-in-out infinite alternate;pointer-events:none}
-body[data-computer-version="pyramixed"] .mood-panel.text-mode .screen-subtitle{position:absolute;inset:34px 9px 8px;z-index:20;display:flex!important;align-content:center;align-items:center;justify-content:center;flex-wrap:wrap;max-width:none;margin:0;overflow:hidden;font-size:11px;line-height:1.42;text-align:center}
+body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.desktop-mode:not(.app-open):not(.text-mode)):not(:has(.computer-desktop.pyramixed-apps-open)) .screen-bezel::after{content:"";position:absolute;left:50%;top:86px;z-index:5;display:block;width:42px;height:40px;border:0;border-radius:0;background:linear-gradient(42deg,transparent 0 46%,#fff 47% 52%,transparent 53%) left top/52% 76% no-repeat,linear-gradient(-42deg,transparent 0 46%,#fff 47% 52%,transparent 53%) right top/52% 76% no-repeat,#050505;color:transparent;font-size:0;transform:translateX(-50%);clip-path:none;animation:pyramixed-only-mouth 1.25s ease-in-out infinite alternate;pointer-events:none}
+body[data-computer-version="pyramixed"] .mood-panel.text-mode #screen-subtitle{position:absolute;inset:18px 9px 8px;z-index:20;display:flex!important;align-content:center;align-items:center;justify-content:center;flex-wrap:wrap;max-width:none;margin:0;overflow:hidden;font-size:12px;line-height:1.42;text-align:center}

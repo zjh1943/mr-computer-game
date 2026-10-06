@@ -416,6 +416,7 @@ let isAtHome = false;
 const ownedShopItems = new Set();
 let customShopItems = [];
 let bornMiniComputers = [];
+let miniComputerFruitBirthUnlocked = false;
 const placedRhythmCharacters = new Map();
 let rhythmAudioContext = null;
 let rhythmLoopTimer = null;
@@ -862,6 +863,7 @@ function saveBornMiniComputer(element) {
 }
 
 function spawnBornMiniComputerNearComputer() {
+  miniComputerFruitBirthUnlocked = true;
   const shellRect = computerShell.getBoundingClientRect();
   const baseLeft = shellRect.left + shellRect.width * (0.52 + Math.random() * 0.18);
   const baseTop = shellRect.top + shellRect.height * 0.72;
@@ -1251,6 +1253,7 @@ function saveGameState() {
       y: shellOffsetY
     },
     bornMiniComputers,
+    miniComputerFruitBirthUnlocked,
     furniture
   };
 
@@ -1449,7 +1452,8 @@ function loadGameState() {
           keywords: item.keywords || item.label
         }))
     : [];
-  bornMiniComputers = Array.isArray(saveData.bornMiniComputers)
+  miniComputerFruitBirthUnlocked = Boolean(saveData.miniComputerFruitBirthUnlocked);
+  bornMiniComputers = miniComputerFruitBirthUnlocked && Array.isArray(saveData.bornMiniComputers)
     ? saveData.bornMiniComputers
         .filter((item) => item?.id && item?.left && item?.top)
         .map((item) => ({
@@ -8886,6 +8890,7 @@ function setComputerAppWindowLayer(app) {
 
 function showComputerAppWindow(app) {
   if (window.ComputerExperience?.isDamaged()) return;
+  if (computerDesktop) computerDesktop.scrollTop = 0;
   computerScreenMode = "app";
   currentComputerApp = app;
   setComputerAppWindowLayer(app);
@@ -8900,6 +8905,10 @@ function showComputerAppWindow(app) {
   if (computerFaceClose) computerFaceClose.hidden = true;
   if (screenSubtitle) screenSubtitle.style.display = "none";
   setComputerAppWindowContent(app);
+  window.requestAnimationFrame(() => {
+    if (computerDesktop) computerDesktop.scrollTop = 0;
+    if (computerAppContent) computerAppContent.scrollTop = 0;
+  });
 }
 
 function showComputerDesktop() {
@@ -8972,7 +8981,7 @@ function openComputerApp(app) {
     return;
   }
   showComputerAppWindow(app);
-  if (app === "music" || app === "blocks3d") window.ComputerExperience?.fullscreen();
+  if (app === "music" || app === "blocks3d" || app === "dance") window.ComputerExperience?.fullscreen();
   saveGameState();
 }
 
@@ -9630,6 +9639,11 @@ function showSubtitle(text, colorful = false) {
     return;
   }
   screenSubtitle.textContent = text;
+  screenSubtitle.classList.remove("pyramixed-speech-writing");
+  if (document.body.dataset.computerVersion === "pyramixed") {
+    void screenSubtitle.offsetWidth;
+    screenSubtitle.classList.add("pyramixed-speech-writing");
+  }
   screenSubtitle.style.display = "block";
   moodPanel.classList.remove("face-mode");
   moodPanel.classList.add("text-mode");
@@ -9708,9 +9722,12 @@ function shouldUseColorfulSubtitle(text) {
 }
 
 function speakAsComputer(text, options = {}) {
-  const duration = Math.min(15000, 900 + text.length * 90);
+  const pyramixedSpeech = document.body.dataset.computerVersion === "pyramixed";
+  const duration = pyramixedSpeech
+    ? Math.min(20000, 2600 + text.length * 180)
+    : Math.min(15000, 900 + text.length * 90);
   const colorful = options.colorful ?? shouldUseColorfulSubtitle(text);
-  const useSubtitle = window.ComputerExperience?.isFullChat() || (options.forceSubtitle ?? Math.random() < 0.82);
+  const useSubtitle = pyramixedSpeech || window.ComputerExperience?.isFullChat() || (options.forceSubtitle ?? Math.random() < 0.82);
 
   if (useSubtitle) {
     showSubtitle(text, colorful);
@@ -9720,7 +9737,12 @@ function speakAsComputer(text, options = {}) {
     moodPanel.classList.toggle("colorful", colorful);
   }
 
-  startMouthTalking(duration);
+  if (pyramixedSpeech) {
+    computerShell?.classList.add("computer-speaking");
+    window.setTimeout(() => computerShell?.classList.remove("computer-speaking"), duration);
+  } else {
+    startMouthTalking(duration);
+  }
   speakReply(text);
   happyRobotReactToComputer(text, duration);
   return duration;
@@ -10335,7 +10357,7 @@ function createHomeConcertVisitors(runners) {
   if (!world) return [];
   world.querySelectorAll(".home-concert-visitor").forEach(visitor => visitor.remove());
   const visible = new Set(runners.map(runner => runner.dataset.sprunkiId));
-  const available = HOME_LAWN_CAST.filter(character => !visible.has(character[0]));
+  const available = HOME_LAWN_CAST.filter(character => !visible.has(character[0]) && (character[0] !== "computer" || miniComputerFruitBirthUnlocked));
   const smallComputer = available.find(character => character[0] === 'computer');
   const guests = [smallComputer, ...available.filter(character => character !== smallComputer).sort(() => Math.random() - .5)].filter(Boolean).slice(0, 8);
   return guests.map((character, index) => {

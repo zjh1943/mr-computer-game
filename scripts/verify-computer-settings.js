@@ -50,8 +50,17 @@ assert.match(app, /getActiveComputerVersion/);
 assert.match(app, /getVersionedRunnerSprite/);
 assert.match(app, /getVersionedConcertVoice/);
 assert.match(app, /pyramixed-apps-open/);
+assert.match(app, /computerDesktop\.scrollTop\s*=\s*0/);
+assert.match(app, /const pyramixedSpeech = document\.body\.dataset\.computerVersion === "pyramixed"/);
+assert.match(app, /if \(pyramixedSpeech\)[\s\S]*computerShell\?\.classList\.add\("computer-speaking"\)/);
+assert.match(css, /pyramixed-speech-writing/);
+assert.match(css, /#ff3b30,#ff9500,#ffe600,#34c759,#25e6da,#168cff,#b94cff/);
+assert.match(css, /\.computer-shell:has\(\.mood-panel\.desktop-mode:not\(\.app-open\)\) > \.pyramixed-apps-toggle/);
+assert.match(css, /body\[data-computer-version="pyramixed"\] \.desk-wrap\s*\{\s*display:\s*none/);
 assert.match(app, /电脑先生家的小电脑/);
 assert.match(app, /home-small-computer-singer/);
+assert.match(app, /miniComputerFruitBirthUnlocked\s*=\s*Boolean\(saveData\.miniComputerFruitBirthUnlocked\)/);
+assert.match(app, /character\[0\] !== "computer" \|\| miniComputerFruitBirthUnlocked/);
 
 console.log('Original and Pyramixed version switching, safe cast and version-aware concert verified.');
 

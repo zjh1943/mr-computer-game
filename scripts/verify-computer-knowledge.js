@@ -17,5 +17,5 @@ for (const question of questions) {
   assert(answer && answer.length >= 12, `${question} should receive a useful answer`);
   assert(!/不知道|不会回答|换个说法/.test(answer), `${question} should not receive the old ignorance fallback: ${answer}`);
 }
-assert(knowledge.facts.length >= 24, 'the offline dialogue library should contain at least 24 knowledge patterns');
+assert(knowledge.facts.length >= 38, 'the offline dialogue library should contain at least 38 knowledge patterns');
 console.log('Expanded offline computer dialogue library verified.');

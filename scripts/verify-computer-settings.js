@@ -39,11 +39,17 @@ const css = fs.readFileSync('styles.css', 'utf8');
 const app = fs.readFileSync('app.js', 'utf8');
 assert.match(html, /id="computer-settings-toggle"/);
 assert.match(html, /id="computer-settings-panel"/);
+assert.match(html, /id="pyramixed-apps-toggle"/);
 assert.match(html, /computer-settings\.js\?v=/);
 assert.match(css, /body\[data-computer-version="pyramixed"\]/);
+assert.match(css, /body\[data-computer-version="pyramixed"\] \.mood-panel\.desktop-mode\s*\{[^}]*background:\s*#0[0-9a-f]{5}/s);
+assert.match(css, /body\[data-computer-version="pyramixed"\] \.mood-panel\.desktop-mode:not\(\.app-open\) \.face-display/s);
+assert.match(css, /body\[data-computer-version="pyramixed"\] \.mouth-triangle\s*\{[^}]*clip-path/s);
+assert.match(css, /body\[data-computer-version="pyramixed"\] \.computer-shell\.computer-speaking \.mouth/s);
 assert.match(app, /getActiveComputerVersion/);
 assert.match(app, /getVersionedRunnerSprite/);
 assert.match(app, /getVersionedConcertVoice/);
+assert.match(app, /pyramixed-apps-open/);
 assert.match(app, /电脑先生家的小电脑/);
 assert.match(app, /home-small-computer-singer/);
 

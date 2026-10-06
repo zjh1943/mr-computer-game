@@ -6,6 +6,7 @@ const screenStatus = document.querySelector("#screen-status");
 const moodPanel = document.querySelector("#mood-panel");
 const screenSubtitle = document.querySelector("#screen-subtitle");
 const computerDesktop = document.querySelector("#computer-desktop");
+const pyramixedAppsToggle = document.querySelector("#pyramixed-apps-toggle");
 const computerAppWindow = document.querySelector("#computer-app-window");
 const computerAppClose = document.querySelector("#computer-app-close");
 const computerAppMinimize = document.querySelector("#computer-app-minimize");
@@ -8921,6 +8922,21 @@ function showComputerDesktop() {
   if (screenSubtitle) screenSubtitle.style.display = "none";
   renderComputerDesktop();
 }
+
+function setPyramixedAppsOpen(open) {
+  computerDesktop?.classList.toggle("pyramixed-apps-open", open);
+  if (!pyramixedAppsToggle) return;
+  pyramixedAppsToggle.setAttribute("aria-expanded", String(open));
+  pyramixedAppsToggle.textContent = open ? "返回笑脸" : "软件";
+}
+
+pyramixedAppsToggle?.addEventListener("click", () => {
+  setPyramixedAppsOpen(!computerDesktop?.classList.contains("pyramixed-apps-open"));
+});
+
+window.addEventListener("mr-computer-settings-change", (event) => {
+  if (event.detail?.version !== "pyramixed") setPyramixedAppsOpen(false);
+});
 
 function openComputerChatApp() {
   if (window.ComputerExperience?.isDamaged()) return;

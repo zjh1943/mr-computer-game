@@ -573,6 +573,131 @@ body.sky-moon-away .sky-moon {
   animation: sun-ray-pulse 1.8s ease-in-out infinite alternate;
 }
 
+/* Pyramixed changes the monitor itself, not only the outside frame. */
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode {
+  background: #050505;
+  box-shadow: inset 0 0 22px rgba(112, 228, 93, .08);
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .face-display {
+  position: absolute;
+  inset: 24px 0 auto;
+  z-index: 1;
+  display: grid;
+  pointer-events: none;
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .computer-desktop {
+  min-height: 150px;
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .desktop-titlebar {
+  display: none;
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .desktop-apps,
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .desktop-installed-apps {
+  display: none;
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .computer-desktop.pyramixed-apps-open .desktop-apps,
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .computer-desktop.pyramixed-apps-open .desktop-installed-apps {
+  display: flex;
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open):has(.pyramixed-apps-open) .face-display {
+  display: none;
+}
+
+.pyramixed-apps-toggle {
+  display: none;
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .pyramixed-apps-toggle {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  z-index: 8;
+  display: block;
+  min-width: 38px;
+  min-height: 20px;
+  padding: 2px 5px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: #050505;
+  color: #fff;
+  font: 900 8px/1 sans-serif;
+  box-shadow: 0 0 0 2px #70e45d;
+}
+
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open) .pyramixed-apps-open .pyramixed-apps-toggle {
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+}
+
+body[data-computer-version="pyramixed"] .face-cheeks {
+  display: none;
+}
+
+body[data-computer-version="pyramixed"] .face-eyes {
+  gap: 38px;
+  animation: pyramixed-eye-float 1.8s ease-in-out infinite alternate;
+}
+
+body[data-computer-version="pyramixed"] .eye {
+  width: 24px;
+  height: 18px;
+  border-radius: 58% 52% 54% 48%;
+  box-shadow: none;
+}
+
+body[data-computer-version="pyramixed"] .battery-widget {
+  display: none;
+}
+
+body[data-computer-version="pyramixed"] .mouth-triangle {
+  position: relative;
+  width: 31px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(0 0, 50% 70%, 100% 0, 100% 18%, 50% 88%, 0 18%);
+  background: #fff;
+  animation: pyramixed-mouth-idle 1.8s ease-in-out infinite alternate;
+}
+
+body[data-computer-version="pyramixed"] .mouth-triangle::before,
+body[data-computer-version="pyramixed"] .mouth-triangle::after {
+  display: none;
+}
+
+body[data-computer-version="pyramixed"] .mouth-open {
+  width: 29px;
+  height: 20px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  clip-path: none;
+  background: transparent;
+}
+
+body[data-computer-version="pyramixed"] .computer-shell.computer-speaking .mouth {
+  animation: pyramixed-talking-mouth 180ms ease-in-out infinite alternate;
+}
+
+@keyframes pyramixed-eye-float {
+  to { transform: translateY(-2px) rotate(-1deg); }
+}
+
+@keyframes pyramixed-mouth-idle {
+  to { transform: translateY(2px) scaleX(1.08); }
+}
+
+@keyframes pyramixed-talking-mouth {
+  from { transform: translateY(1px) scale(.82, .72); }
+  to { transform: translateY(-2px) scale(1.12, 1.2); }
+}
+
 .sun-ray:nth-of-type(even) { animation-delay: -0.9s; }
 
 .sun-ray-1 { transform: rotate(0deg); }

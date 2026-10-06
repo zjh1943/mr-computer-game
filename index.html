@@ -412,6 +412,21 @@
       <div id="money-display" class="money-display" aria-live="polite">钱：0</div>
       <button id="mine-toggle" class="mine-toggle" type="button">挖矿</button>
       <button id="shop-toggle" class="shop-toggle" type="button">商城</button>
+      <button id="computer-settings-toggle" class="computer-settings-toggle" type="button" aria-controls="computer-settings-panel" aria-expanded="false"><span aria-hidden="true">⚙</span> 设置</button>
+      <section id="computer-settings-panel" class="computer-settings-panel" aria-label="电脑先生设置" hidden>
+        <header><strong>电脑先生设置</strong><button id="computer-settings-close" type="button" aria-label="关闭设置">×</button></header>
+        <label>游戏版本<select id="computer-version-select"><option value="original">原版</option><option value="pyramixed">Pyramixed 版本</option></select></label>
+        <strong id="computer-version-name" class="computer-version-name"></strong>
+        <div id="computer-version-preview" class="computer-version-preview" aria-label="角色正面、侧面与背面"></div>
+        <button id="computer-version-voice-preview" type="button">试听这个版本的声音</button>
+        <label>系统音量 <output id="computer-master-volume-value">90%</output><input id="computer-master-volume" type="range" min="0" max="1" step="0.05" value="0.9"></label>
+        <label class="computer-settings-check"><input id="computer-system-sounds" type="checkbox" checked> 系统声音</label>
+        <label class="computer-settings-check"><input id="computer-character-sounds" type="checkbox" checked> 角色声音</label>
+        <label class="computer-settings-check"><input id="computer-horror-enabled" type="checkbox" checked> 显示恐怖之夜</label>
+        <h3>主页按键</h3>
+        <p>按叉可以从主页隐藏，再来这里恢复。设置齿轮永远保留。</p>
+        <div id="computer-control-list" class="computer-control-list"></div>
+      </section>
       <a class="diary-room-link" href="./diary.html" aria-label="进入日记剪纸房">日记剪纸房</a>
       <button id="reset-save-toggle" class="reset-save-toggle" type="button">重置</button>
       <section id="mine-panel" class="mine-panel" aria-label="挖矿面板" hidden>
@@ -539,6 +554,7 @@
 
     <script src="./computer-apps.js?v=20261001-direct1"></script>
     <script src="./computer-knowledge.js?v=20260926-friend4"></script>
+    <script src="./computer-settings.js?v=20261006-settings1"></script>
     <script src="./app.js?v=20261001-direct1"></script>
     <script src="./computer-voice.js?v=20260926-friend4"></script>
     <script src="./computer-experience.js?v=20260926-friend4"></script>

@@ -448,6 +448,7 @@
 /* Character facts stay readable in both wide and narrow app windows. */
 .character-guide-facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:3px 12px;width:min(100%,520px);margin:4px auto;text-align:left;font-size:13px}
 .character-guide-facts dt{font-weight:900;color:#264d70}.character-guide-facts dd{margin:0}.character-guide-source-note{max-width:520px;margin:4px;color:#5a6170}
+.character-guide-directions{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:5px}.character-guide-directions button{border:2px solid #315273;border-radius:8px;background:#e5f5ff;color:#17324b;padding:5px 10px;font-weight:800}
 .character-guide-app .character-guide-viewer img{height:min(32vh,250px)}
 @media(max-width:600px){.character-guide-facts{font-size:11px;gap:2px 7px}.character-guide-source-note{font-size:9px}.character-guide-app .character-guide-viewer img{height:min(24vh,170px)}}
 

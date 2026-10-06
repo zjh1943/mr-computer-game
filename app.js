@@ -6773,6 +6773,10 @@ function getFlightCommand(text) {
 function speakReply(text, voiceSettings = clearVoiceSettings) {
   if (!("speechSynthesis" in window) || !text) return;
 
+  const savedVoice = window.ComputerSettings?.voiceSettings?.();
+  if (savedVoice?.volume === 0) return;
+  voiceSettings = savedVoice ? { ...voiceSettings, ...savedVoice } : voiceSettings;
+
   loadVoices();
   if (window.speechSynthesis.paused) {
     window.speechSynthesis.resume();
@@ -9863,14 +9867,34 @@ function stopHomeComputerSong() {
   if (homeSongStop) homeSongStop();
 }
 
+function getActiveComputerVersion() {
+  return window.ComputerSettings?.get?.().version || "original";
+}
+
+function getVersionedRunnerSprite(id, view = "front") {
+  const version = getActiveComputerVersion();
+  const assetId = id === "computer" ? "mr-fun-computer" : id;
+  if (version === "pyramixed") {
+    return window.ComputerSettings?.characterView?.("pyramixed", assetId, view)
+      || `./assets/sprunki-versions/pyramixed/${view}/${assetId}.png`;
+  }
+  if (id === "computer" && window.DanceCast?.computer?.idle) {
+    return `./assets/sprunki-kiss-local/assets/${window.DanceCast.computer.idle}`;
+  }
+  return `./assets/sprunki-views/${view}/${id}.png`;
+}
+
+function getVersionedConcertVoice() {
+  const version = getActiveComputerVersion();
+  const profile = window.ComputerSettings?.versionProfiles?.[version];
+  return profile?.concert || { rate: 1, detune: 0, filter: 0 };
+}
+
 function setHomeRunnerView(runner, view = "front") {
   const id = runner?.dataset.sprunkiId;
   if (!id) return;
-  if (id === "computer" && window.DanceCast?.computer?.idle) {
-    runner.style.setProperty("--runner-sprite", `url("./assets/sprunki-kiss-local/assets/${window.DanceCast.computer.idle}")`);
-    return;
-  }
-  runner.style.setProperty("--runner-sprite", `url("./assets/sprunki-views/${view}/${id}.png")`);
+  runner.style.setProperty("--runner-sprite", `url("${getVersionedRunnerSprite(id, view)}")`);
+  runner.dataset.computerVersion = getActiveComputerVersion();
 }
 
 const HOME_LAWN_CAST = [
@@ -10136,19 +10160,31 @@ async function playHomeLawnConcertVoices(performers) {
   const buffers = await Promise.all(voices.map(voice => loadHomeLawnVoiceBuffer(voice.voiceId)));
   if (!homeLawnGroupActive) return;
   const startAt = context.currentTime + .08;
+  const versionVoice = getVersionedConcertVoice();
   voices.forEach((voice, index) => {
     const buffer = buffers[index];
     if (!buffer) return;
     const source = context.createBufferSource();
     const gain = context.createGain();
+    const filter = versionVoice.filter ? context.createBiquadFilter() : null;
     source.buffer = buffer;
     source.loop = true;
+    source.playbackRate.value = versionVoice.rate || 1;
+    if (source.detune) source.detune.value = versionVoice.detune || 0;
     gain.gain.value = HOME_LAWN_VOICE_LEVELS[voice.voiceId] || 1;
-    source.connect(gain).connect(rhythmMasterGain);
+    if (filter) {
+      filter.type = "lowpass";
+      filter.frequency.value = versionVoice.filter;
+      filter.Q.value = .7;
+      source.connect(filter).connect(gain).connect(rhythmMasterGain);
+    } else {
+      source.connect(gain).connect(rhythmMasterGain);
+    }
     const handle = {
       stop() {
         try { source.stop(); } catch (error) { /* already stopped */ }
         source.disconnect();
+        filter?.disconnect();
         gain.disconnect();
         homeLawnConcertAudio.delete(handle);
       }
@@ -10169,9 +10205,14 @@ function setHomeConcertPose(runner, frame = 0) {
     pose.alt = "";
     runner.append(pose);
   }
-  const frames = original.frames?.length ? original.frames : [original.idle];
-  const frameName = frames[frame % frames.length] || original.idle;
-  pose.src = `./assets/sprunki-kiss-local/assets/${frameName}`;
+  if (getActiveComputerVersion() === "pyramixed") {
+    const views = ["front", "left", "front", "right"];
+    pose.src = getVersionedRunnerSprite(runner.dataset.sprunkiId, views[frame % views.length]);
+  } else {
+    const frames = original.frames?.length ? original.frames : [original.idle];
+    const frameName = frames[frame % frames.length] || original.idle;
+    pose.src = `./assets/sprunki-kiss-local/assets/${frameName}`;
+  }
   runner.classList.add("home-original-performing");
 }
 
@@ -10243,7 +10284,7 @@ function createHomeSmallComputerSinger() {
   visitor.className = "beat-runner home-concert-visitor home-small-computer-singer";
   visitor.dataset.sprunkiId = "computer";
   visitor.dataset.sprunkiName = "电脑先生家的小电脑";
-  visitor.setAttribute("aria-label", "电脑先生家的小电脑使用原版造型参加演奏");
+  visitor.setAttribute("aria-label", "电脑先生生出来的小电脑正在跟随当前版本参加演奏");
   const bubble = document.createElement("span");
   bubble.className = "beat-runner-bubble";
   bubble.textContent = "COME AND SING!";
@@ -10457,6 +10498,10 @@ function setupHomeLawnCast() {
   homeLawnConcertTimer = window.setInterval(() => startHomeLawnConcert(runners), 22000);
   homeLawnArrivalTimer = window.setInterval(() => sendHomeRunnerBeyondScreen(runners), 11800);
   new MutationObserver(() => syncHomeLawnNight(runners)).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  window.addEventListener("mr-computer-settings-change", () => {
+    runners.forEach(runner => setHomeRunnerView(runner, "front"));
+    document.querySelectorAll(".home-small-computer-singer").forEach(runner => setHomeRunnerView(runner, "front"));
+  });
   syncHomeLawnNight(runners);
 }
 

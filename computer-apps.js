@@ -98,17 +98,38 @@
     return()=>{playing=false;cancelAnimationFrame(raf);stopSounds();onlineFrame.removeAttribute('src');};
   }
 
+  const guideProfileToCast={"fun-bot":"funbot",owakcx:"lime","mr-sun":"mr_sun","mr-tree":"mr_tree","mr-fun-computer":"computer"};
+  const guideCastToProfile={funbot:"fun-bot",lime:"owakcx",mr_sun:"mr-sun",mr_tree:"mr-tree",computer:"mr-fun-computer"};
+  function getGuideIdsForVersion(){
+    const version=window.ComputerSettings?.get?.().version||'original';
+    if(version!=='pyramixed')return Object.keys(window.DanceCast||{});
+    return (window.ComputerSettings?.versionProfiles?.pyramixed?.characters||[])
+      .map(character=>guideProfileToCast[character.id]||character.id)
+      .filter(id=>id!=='black'&&window.DanceCast?.[id]);
+  }
+  function getGuideImage(id,view='front'){
+    const version=window.ComputerSettings?.get?.().version||'original';
+    if(version==='pyramixed'){
+      const profileId=guideCastToProfile[id]||id;
+      return window.ComputerSettings?.characterView?.('pyramixed',profileId,view)||`./assets/sprunki-versions/pyramixed/${view}/${profileId}.png`;
+    }
+    const art=window.DanceCast?.[id];
+    return art?`./assets/sprunki-kiss-local/assets/${art.idle}`:'';
+  }
   function characters(host){
     host.classList.add('character-guide-app');
-    const ids=Object.keys(window.DanceCast||{}),title=el('h2','节奏盒子角色介绍',host),viewer=el('section',undefined,host),prev=btn(viewer,'‹',()=>show(index-1)),card=el('article',undefined,viewer),next=btn(viewer,'›',()=>show(index+1)),image=el('img',undefined,card),name=el('h3','',card),description=el('p','',card),facts=el('dl',undefined,card),sourceNote=el('small','年龄资料没有统一的官方数字；没有可靠资料的项目会标成“未公开”。',card),soundButton=btn(card,'播放角色声音',()=>playSound());
+    let ids=getGuideIdsForVersion();const title=el('h2','节奏盒子角色介绍',host),viewer=el('section',undefined,host),prev=btn(viewer,'‹',()=>show(index-1)),card=el('article',undefined,viewer),next=btn(viewer,'›',()=>show(index+1)),image=el('img',undefined,card),name=el('h3','',card),description=el('p','',card),facts=el('dl',undefined,card),sourceNote=el('small','年龄资料没有统一的官方数字；没有可靠资料的项目会标成“未公开”。',card),soundButton=btn(card,'播放角色声音',()=>playSound());
     facts.className='character-guide-facts';sourceNote.className='character-guide-source-note';
     prev.className='character-guide-prev';next.className='character-guide-next';soundButton.className='character-guide-sound';viewer.className='character-guide-viewer';image.alt='';let index=0,audio=null,frameTimer=0,frame=0;
     const asset=file=>'./assets/sprunki-kiss-local/assets/'+file;
     function stop(){clearInterval(frameTimer);frameTimer=0;if(audio){audio.pause();audio.currentTime=0;audio=null;}}
-    function animate(art){clearInterval(frameTimer);frame=0;const frames=art.frames?.length?art.frames:[art.idle],frameMs=characterFrameDuration(frames.length);frameTimer=setInterval(()=>{if(image.isConnected)image.src=asset(frames[frame++%frames.length]);},frameMs);}
-    function playSound(){stop();const id=ids[index],art=window.DanceCast[id];animate(art);if(art.audio&&!art.silent){audio=new Audio(art.audio.includes('/')?art.audio:`./assets/dance-audio/normal/${id}.wav`);audio.volume=Math.min(.7,Math.max(.25,(art.gain||.17)*2.4));audio.play().catch(()=>{});audio.addEventListener('ended',()=>{clearInterval(frameTimer);image.src=asset(art.idle);},{once:true});}}
-    function show(nextIndex){stop();index=(nextIndex+ids.length)%ids.length;const id=ids[index],art=window.DanceCast[id],profile=characterProfiles[id]||characterProfile('未公开','未公开','未公开','正常模式角色。');image.src=asset(art.idle);image.alt=art.name;name.textContent=`${index+1} / ${ids.length} · ${art.name}`;description.textContent=profile.description;facts.replaceChildren();for(const [label,value] of [['年龄',profile.age],['生日',profile.birthday],['音乐分类',profile.group],['声音或乐器',profile.sound],['代表颜色',profile.color]]){el('dt',label,facts);el('dd',value,facts);}soundButton.disabled=art.silent||!art.audio;soundButton.textContent=soundButton.disabled?'这个角色没有普通声音':'播放角色声音';if(!soundButton.disabled)playSound();}
-    title.tabIndex=-1;show(0);return stop;
+    const directionBar=el('div',undefined,card);directionBar.className='character-guide-directions';directionBar.setAttribute('aria-label','角色方向');
+    for(const [view,label] of [['front','正面'],['left','左侧'],['right','右侧'],['back','背面']])btn(directionBar,label,()=>{stop();image.src=getGuideImage(ids[index],view);});
+    function animate(art){clearInterval(frameTimer);frame=0;if((window.ComputerSettings?.get?.().version||'original')==='pyramixed'){const views=['front','left','front','right','back','front'];frameTimer=setInterval(()=>{if(image.isConnected)image.src=getGuideImage(ids[index],views[frame++%views.length]);},170);return;}const frames=art.frames?.length?art.frames:[art.idle],frameMs=characterFrameDuration(frames.length);frameTimer=setInterval(()=>{if(image.isConnected)image.src=asset(frames[frame++%frames.length]);},frameMs);}
+    function playSound(){stop();const id=ids[index],art=window.DanceCast[id];animate(art);if(art.audio&&!art.silent){audio=new Audio(art.audio.includes('/')?art.audio:`./assets/dance-audio/normal/${id}.wav`);audio.volume=Math.min(.7,Math.max(.25,(art.gain||.17)*2.4));audio.playbackRate=window.ComputerSettings?.versionProfiles?.[window.ComputerSettings?.get?.().version]?.concert?.rate||1;audio.play().catch(()=>{});audio.addEventListener('ended',()=>{clearInterval(frameTimer);image.src=getGuideImage(id);},{once:true});}}
+    function show(nextIndex){stop();ids=getGuideIdsForVersion();index=(nextIndex+ids.length)%ids.length;const id=ids[index],art=window.DanceCast[id],profile=characterProfiles[id]||characterProfile('未公开','未公开','未公开','正常模式角色。');image.src=getGuideImage(id);image.alt=art.name;name.textContent=`${index+1} / ${ids.length} · ${art.name}`;description.textContent=profile.description;facts.replaceChildren();for(const [label,value] of [['年龄',profile.age],['生日',profile.birthday],['音乐分类',profile.group],['声音或乐器',profile.sound],['代表颜色',profile.color]]){el('dt',label,facts);el('dd',value,facts);}soundButton.disabled=art.silent||!art.audio;soundButton.textContent=soundButton.disabled?'这个角色没有普通声音':'播放角色声音';if(!soundButton.disabled)playSound();}
+    const onVersionChange=()=>show(Math.min(index,getGuideIdsForVersion().length-1));window.addEventListener('mr-computer-settings-change',onVersionChange);
+    title.tabIndex=-1;show(0);return()=>{stop();window.removeEventListener('mr-computer-settings-change',onVersionChange);};
   }
   function dance(host){
     host.innerHTML='<div class="dance-toolbar"><label>歌曲 <select aria-label="选择歌曲"></select></label></div><p class="dance-status" role="status">上方左边是对手，右边是我方；长音要一直按住</p><div class="dance-stage"><div class="dance-player"><div class="dance-monitor"><div class="dance-face"><span class="dance-eyes"><i></i><i></i></span><span class="dance-mouth"></span></div></div><small>电脑先生</small></div><div class="dance-lanes"><div class="dance-bank dance-opponent-bank"><b>对手</b><canvas aria-label="对手四方向音符"></canvas><div class="dance-targets dance-opponent-targets" aria-label="对手四方向落点"></div></div><i class="dance-divider" aria-hidden="true"></i><div class="dance-bank dance-player-bank"><b>我方</b><canvas aria-label="我方四方向音符"></canvas><div class="dance-targets dance-player-targets" aria-label="我方四方向落点"></div></div></div><div class="dance-rival"><img alt="对战角色"><small></small></div></div>';

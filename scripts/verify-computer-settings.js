@@ -1,0 +1,44 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+
+const settings = require('../computer-settings.js');
+
+assert.deepEqual(Object.keys(settings.versionProfiles), ['original', 'pyramixed']);
+assert.equal(settings.normalizeSettings({version:'unknown'}).version, 'original');
+assert.equal(settings.normalizeSettings({version:'pyramixed'}).version, 'pyramixed');
+assert.equal(settings.normalizeSettings({masterVolume:4}).masterVolume, 1);
+assert.equal(settings.normalizeSettings({masterVolume:-2}).masterVolume, 0);
+assert.equal(settings.normalizeSettings({hiddenControls:['settings','mine','mine']}).hiddenControls.includes('settings'), false);
+assert.deepEqual(settings.normalizeSettings({hiddenControls:['settings','mine','mine']}).hiddenControls, ['mine']);
+assert(settings.versionProfiles.original.nameZh.includes('原版'));
+assert(settings.versionProfiles.pyramixed.nameZh.includes('Pyramixed'));
+assert.equal(settings.versionProfiles.pyramixed.hostSprite, 'mr-fun-computer');
+assert.equal(settings.versionProfiles.pyramixed.characters.length, 19);
+assert.equal(settings.versionProfiles.pyramixed.characters.some(character => character.id === 'black'), false);
+assert(settings.versionProfiles.pyramixed.characters.some(character => character.id === 'raddy' && character.nameZh === '瑞迪'));
+assert(settings.versionProfiles.pyramixed.characters.some(character => character.id === 'brud' && character.nameZh === '布鲁德'));
+assert(settings.versionProfiles.pyramixed.characters.some(character => character.id === 'durple' && character.nameZh === '德普勒'));
+assert(settings.versionProfiles.pyramixed.views.front.includes('/pyramixed/'));
+assert(settings.versionProfiles.pyramixed.views.left && settings.versionProfiles.pyramixed.views.right && settings.versionProfiles.pyramixed.views.back);
+assert.notEqual(settings.versionProfiles.pyramixed.concert.rate, settings.versionProfiles.original.concert.rate);
+
+const html = fs.readFileSync('index.html', 'utf8');
+const css = fs.readFileSync('styles.css', 'utf8');
+const app = fs.readFileSync('app.js', 'utf8');
+assert.match(html, /id="computer-settings-toggle"/);
+assert.match(html, /id="computer-settings-panel"/);
+assert.match(html, /computer-settings\.js\?v=/);
+assert.match(css, /body\[data-computer-version="pyramixed"\]/);
+assert.match(app, /getActiveComputerVersion/);
+assert.match(app, /getVersionedRunnerSprite/);
+assert.match(app, /getVersionedConcertVoice/);
+assert.match(app, /电脑先生家的小电脑/);
+assert.match(app, /home-small-computer-singer/);
+
+console.log('Original and Pyramixed version switching, safe cast and version-aware concert verified.');
+
+const apps = fs.readFileSync('computer-apps.js', 'utf8');
+assert.match(apps, /getGuideIdsForVersion/);
+assert.match(apps, /getGuideImage/);
+assert.match(apps, /pyramixed.*black/s);
+assert.match(apps, /角色方向/);

@@ -19,8 +19,20 @@ assert(settings.versionProfiles.pyramixed.characters.some(character => character
 assert(settings.versionProfiles.pyramixed.characters.some(character => character.id === 'brud' && character.nameZh === '布鲁德'));
 assert(settings.versionProfiles.pyramixed.characters.some(character => character.id === 'durple' && character.nameZh === '德普勒'));
 assert(settings.versionProfiles.pyramixed.views.front.includes('/pyramixed/'));
+assert.match(settings.versionProfiles.pyramixed.views.front, /\.svg$/);
 assert(settings.versionProfiles.pyramixed.views.left && settings.versionProfiles.pyramixed.views.right && settings.versionProfiles.pyramixed.views.back);
 assert.notEqual(settings.versionProfiles.pyramixed.concert.rate, settings.versionProfiles.original.concert.rate);
+assert.match(settings.characterAudio('pyramixed', 'oren'), /pyramixed\/audio\/oren\.wav$/);
+for (const character of settings.versionProfiles.pyramixed.characters) {
+  for (const view of ['front', 'left', 'right', 'back']) {
+    assert(fs.existsSync(settings.characterView('pyramixed', character.id, view).replace(/^\.\//, '')));
+  }
+  assert(fs.existsSync(settings.characterAudio('pyramixed', character.id).replace(/^\.\//, '')));
+}
+assert.notEqual(
+  fs.readFileSync(settings.characterView('pyramixed', 'oren', 'front').replace(/^\.\//, ''), 'utf8'),
+  fs.readFileSync('assets/sprunki-views/front/oren.png').toString('base64')
+);
 
 const html = fs.readFileSync('index.html', 'utf8');
 const css = fs.readFileSync('styles.css', 'utf8');

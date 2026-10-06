@@ -11,7 +11,8 @@
     ['wenda','温达','Wenda'],['pinki','平琪','Pinki'],['jevin','杰文','Jevin']
   ].map(([id,nameZh,nameEn])=>({id,nameZh,nameEn}));
   const originalComputer='./assets/sprunki-kiss-local/assets/a08bbafe2167b837995fd8bf79f5a27f.svg';
-  const pyramixedView=(view,id)=>`./assets/sprunki-versions/pyramixed/${view}/${id}.png`;
+  const pyramixedView=(view,id)=>`./assets/sprunki-versions/pyramixed/${view}/${id}.svg`;
+  const pyramixedAudio=id=>`./assets/sprunki-versions/pyramixed/audio/${id}.wav`;
   const versionProfiles={
     original:{
       nameZh:'原版',nameEn:'Original',hostSprite:'mr-fun-computer',voice:'./assets/dance-audio/normal/computer.wav',
@@ -20,7 +21,7 @@
       concert:{rate:1,detune:0,filter:0}
     },
     pyramixed:{
-      nameZh:'Pyramixed 版本',nameEn:'Sprunki Pyramixed',hostSprite:'mr-fun-computer',voice:'./assets/dance-audio/normal/computer.wav',
+      nameZh:'Pyramixed 版本',nameEn:'Sprunki Pyramixed',hostSprite:'mr-fun-computer',voice:pyramixedAudio('mr-fun-computer'),
       pitch:1.18,rate:1.18,accent:'#70e45d',characters:safeCharacters,
       views:Object.fromEntries(['front','left','right','back'].map(view=>[view,pyramixedView(view,'mr-fun-computer')])),
       concert:{rate:1.06,detune:-90,filter:1350}
@@ -38,7 +39,8 @@
     if(version==='pyramixed')return pyramixedView(['front','left','right','back'].includes(view)?view:'front',id);
     return null;
   }
-  const api={STORAGE_KEY,controlNames,controlSelectors,versionProfiles,defaults,normalizeSettings,voiceSettings,characterView};
+  function characterAudio(version,id){return version==='pyramixed'?pyramixedAudio(id):null;}
+  const api={STORAGE_KEY,controlNames,controlSelectors,versionProfiles,defaults,normalizeSettings,voiceSettings,characterView,characterAudio};
   if(typeof module!=='undefined'){module.exports=api;return;}
   let state;
   try{state=normalizeSettings(JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'));}catch{state=normalizeSettings();}

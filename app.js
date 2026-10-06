@@ -9876,7 +9876,7 @@ function getVersionedRunnerSprite(id, view = "front") {
   const assetId = id === "computer" ? "mr-fun-computer" : id;
   if (version === "pyramixed") {
     return window.ComputerSettings?.characterView?.("pyramixed", assetId, view)
-      || `./assets/sprunki-versions/pyramixed/${view}/${assetId}.png`;
+      || `./assets/sprunki-versions/pyramixed/${view}/${assetId}.svg`;
   }
   if (id === "computer" && window.DanceCast?.computer?.idle) {
     return `./assets/sprunki-kiss-local/assets/${window.DanceCast.computer.idle}`;
@@ -10129,20 +10129,24 @@ function playHomeLawnConcertAudio(source, volume = .18, options = {}) {
 }
 
 async function loadHomeLawnVoiceBuffer(voiceId) {
-  if (homeLawnVoiceBuffers.has(voiceId)) return homeLawnVoiceBuffers.get(voiceId);
+  const version = getActiveComputerVersion();
+  const cacheKey = `${version}:${voiceId}`;
+  if (homeLawnVoiceBuffers.has(cacheKey)) return homeLawnVoiceBuffers.get(cacheKey);
   const context = getRhythmAudioContext();
   if (!context) return null;
-  const loading = fetch(`./assets/dance-audio/normal/${voiceId}.wav`)
+  const profileId = voiceId === "funbot" ? "fun-bot" : voiceId === "lime" ? "owakcx" : voiceId === "mr_sun" ? "mr-sun" : voiceId === "mr_tree" ? "mr-tree" : voiceId === "computer" ? "mr-fun-computer" : voiceId;
+  const source = window.ComputerSettings?.characterAudio?.(version, profileId) || `./assets/dance-audio/normal/${voiceId}.wav`;
+  const loading = fetch(source)
     .then(response => {
       if (!response.ok) throw new Error(`voice ${voiceId} unavailable`);
       return response.arrayBuffer();
     })
     .then(data => context.decodeAudioData(data));
-  homeLawnVoiceBuffers.set(voiceId, loading);
+  homeLawnVoiceBuffers.set(cacheKey, loading);
   try {
     return await loading;
   } catch (error) {
-    homeLawnVoiceBuffers.delete(voiceId);
+    homeLawnVoiceBuffers.delete(cacheKey);
     return null;
   }
 }

@@ -2,4 +2,5 @@
 .superpowers/
 .DS_Store
 dist/
+public/
 assets/minecraft-audio/minecraft-background.mp3

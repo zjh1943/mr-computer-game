@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>电脑先生 · Mr Computer</title>
+    <link rel="stylesheet" href="./styles.css?v=20261011-source1" />
+  <script src="./game-runtime.js?v=20260926-friend4" defer></script>
+</head>
+  <body><div id="game-boot" role="status" aria-live="polite"><div class="loading-computer">● ●<br>▽</div><p>电脑先生正在开机…</p></div><style>#game-boot{position:fixed;inset:0;background:#142237;color:#fff;display:grid;place-content:center;text-align:center;z-index:99999} .loading-computer{display:inline-block;background:#080b10;color:#fff;border:6px solid #9daebd;border-radius:12px;padding:18px;font-size:26px;animation:game-bob .7s ease-in-out infinite alternate}@keyframes game-bob{to{transform:translateY(-10px)}}@media(prefers-reduced-motion:reduce){.loading-computer{animation:none}}</style>
+    <script>setTimeout(()=>{const boot=document.getElementById('game-boot');if(!boot)return;boot.querySelector('p').textContent='网络有点慢，可以重新试试。';const retry=document.createElement('button');retry.textContent='重新加载';retry.onclick=()=>location.reload();boot.append(retry);},20000);</script>
+    <div class="sky-scene" aria-hidden="true">
+      <div id="sky-sun" class="sky-sun active">
+        <span class="sun-core">
+          <span class="sun-eye sun-eye-left"></span>
+          <span class="sun-eye sun-eye-right"></span>
+          <span class="sun-mouth"></span>
+        </span>
+        <span class="sun-ray sun-ray-1"></span>
+        <span class="sun-ray sun-ray-2"></span>
+        <span class="sun-ray sun-ray-3"></span>
+        <span class="sun-ray sun-ray-4"></span>
+        <span class="sun-ray sun-ray-5"></span>
+        <span class="sun-ray sun-ray-6"></span>
+        <span class="sun-ray sun-ray-7"></span>
+        <span class="sun-ray sun-ray-8"></span>
+        <span class="sky-bubble" aria-hidden="true"></span>
+      </div>
+      <div id="sky-moon" class="sky-moon moon-round">
+        <span class="moon-face">
+          <span class="moon-eye moon-eye-left"></span>
+          <span class="moon-eye moon-eye-right"></span>
+          <span class="moon-mouth"></span>
+        </span>
+        <span class="sky-bubble" aria-hidden="true"></span>
+      </div>
+      <span class="cloud cloud-one"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <span class="cloud cloud-two"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <span class="cloud cloud-three"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <span class="cloud cloud-four"><span class="cloud-eye left-eye"></span><span class="cloud-eye right-eye"></span></span>
+      <div class="rain-field" aria-hidden="true"></div>
+      <div class="snow-field" aria-hidden="true"></div>
+    </div>
+    <main class="stage">
+      <div class="beatbox-runners" aria-label="在草地上玩耍的节奏盒子成员">
+        <button class="home-song-button" type="button" aria-label="请电脑先生唱电脑先生之歌">♪ 电脑先生之歌</button>
+        <span class="beat-runner runner-one" data-sprunki-id="oren" data-sprunki-name="Oren">
+          <span class="beat-runner-bubble">咚咚咚</span>
+          <span class="beat-head"><span class="beat-face"></span></span>
+          <span class="beat-body"></span>
+          <span class="beat-arm arm-left"></span>
+          <span class="beat-arm arm-right"></span>
+          <span class="beat-leg leg-left"></span>
+          <span class="beat-leg leg-right"></span>
+        </span>
+        <span class="beat-runner runner-two" data-sprunki-id="raddy" data-sprunki-name="Raddy">
+          <span class="beat-runner-bubble">换个拍子</span>
+          <span class="beat-head"><span class="beat-face"></span></span>
+          <span class="beat-body"></span>
+          <span class="beat-arm arm-left"></span>
+          <span class="beat-arm arm-right"></span>
+          <span class="beat-leg leg-left"></span>
+          <span class="beat-leg leg-right"></span>
+        </span>
+        <span class="beat-runner runner-three" data-sprunki-id="clukr" data-sprunki-name="Clukr">
+          <span class="beat-runner-bubble">嘿嘿</span>
+          <span class="beat-head"><span class="beat-face"></span></span>
+          <span class="beat-body"></span>
+          <span class="beat-arm arm-left"></span>
+          <span class="beat-arm arm-right"></span>
+          <span class="beat-leg leg-left"></span>
+          <span class="beat-leg leg-right"></span>
+        </span>
+        <span class="beat-runner runner-four" data-sprunki-id="fun-bot" data-sprunki-name="Fun Bot">
+          <span class="beat-runner-bubble">我来和声</span>
+          <span class="beat-head"><span class="beat-face"></span></span>
+          <span class="beat-body"></span>
+          <span class="beat-arm arm-left"></span>
+          <span class="beat-arm arm-right"></span>
+          <span class="beat-leg leg-left"></span>
+          <span class="beat-leg leg-right"></span>
+        </span>
+        <span class="beat-runner runner-five" data-sprunki-id="vineria" data-sprunki-name="Vineria">
+          <span class="beat-runner-bubble">跑快点</span>
+          <span class="beat-head"><span class="beat-face"></span></span>
+          <span class="beat-body"></span>
+          <span class="beat-arm arm-left"></span>
+          <span class="beat-arm arm-right"></span>
+          <span class="beat-leg leg-left"></span>
+          <span class="beat-leg leg-right"></span>
+        </span>
+        <span class="beat-runner runner-six" data-sprunki-id="pinki" data-sprunki-name="Pinki">
+          <span class="beat-runner-bubble">叭叭叭</span>
+          <span class="beat-head"><span class="beat-face"></span></span>
+          <span class="beat-body"></span>
+          <span class="beat-arm arm-left"></span>
+          <span class="beat-arm arm-right"></span>
+          <span class="beat-leg leg-left"></span>
+          <span class="beat-leg leg-right"></span>
+        </span>
+      </div>
+      <section class="computer-shell grounded" aria-label="电脑先生">
+        <div class="pyramixed-host-art" aria-hidden="true">
+          <img src="./assets/sprunki-versions/pyramixed/front/mr-fun-computer.svg" alt="" />
+        </div>
+        <div id="back-plug" class="back-plug" aria-hidden="true">
+          <span class="plug-head"></span>
+          <span class="plug-prong prong-left"></span>
+          <span class="plug-prong prong-right"></span>
+        </div>
+        <div class="hat-assembly" aria-hidden="true">
+          <div class="bamboo-copter">
+            <span class="copter-stick"></span>
+            <span class="copter-blade blade-left"></span>
+            <span class="copter-blade blade-right"></span>
+          </div>
+          <div class="head-hat">
+            <span class="hat-ball"></span>
+            <span class="hat-top"></span>
+            <span class="hat-brim"></span>
+          </div>
+        </div>
+        <div class="speaker speaker-left" aria-hidden="true"></div>
+        <div class="speaker speaker-right" aria-hidden="true"></div>
+
+        <div class="screen-bezel">
+          <div class="screen-body">
+            <div id="mood-panel" class="mood-panel" aria-live="polite">
+              <div class="battery-widget" aria-hidden="true">
+                <span id="battery-label" class="battery-label">100%</span>
+                <span class="battery-shell">
+                  <span id="battery-level" class="battery-level"></span>
+                </span>
+              </div>
+              <div class="rain-error-code" aria-hidden="true">
+                <span>ERR_RAIN_WATER_X_X</span>
+                <span>取消 取消 取消 X X X</span>
+                <span>while(rain){ error++; }</span>
+                <span>0xSUN_OFFLINE ××××××</span>
+              </div>
+              <div id="face-display" class="face-display">
+                <div class="face-eyes" aria-hidden="true">
+                  <span class="eye"></span>
+                  <span class="eye"></span>
+                </div>
+                <div class="face-cheeks" aria-hidden="true">
+                  <span class="cheek cheek-left"></span>
+                  <span class="cheek cheek-right"></span>
+                </div>
+                <div id="mouth" class="mouth mouth-triangle" aria-hidden="true"></div>
+                <div id="rainbow-vomit" class="rainbow-vomit" aria-hidden="true"></div>
+                <div class="terror-mask" aria-hidden="true">
+                  <span class="terror-mask-eye terror-mask-eye-left"></span>
+                  <span class="terror-mask-eye terror-mask-eye-right"></span>
+                  <span class="terror-mask-mouth"></span>
+                </div>
+              </div>
+              <div id="computer-desktop" class="computer-desktop" aria-label="电脑桌面">
+                <div class="desktop-window desktop-titlebar">电脑先生</div>
+                <div class="desktop-apps" aria-label="软件">
+                  <button class="desktop-app desktop-app-chat" type="button" data-computer-app="chat">
+                    <span>聊</span>
+                    聊天
+                  </button>
+                  <button class="desktop-app desktop-app-store" type="button" data-computer-app="store">
+                    <span>店</span>
+                    应用商店
+                  </button>
+                  <button class="desktop-app desktop-app-minecraft" type="button" data-computer-app="minecraft">
+                    <span>方</span>
+                    我的世界<br>2D
+                  </button>
+                  <button class="desktop-app desktop-app-town" type="button" data-computer-app="town">
+                    <span>镇</span>
+                    小镇
+                  </button>
+                </div>
+                <div id="computer-app-window" class="computer-app-window" hidden>
+                  <div class="computer-app-titlebar">
+                    <button id="computer-app-close" class="computer-app-close" type="button" aria-label="退出软件">×</button>
+                    <button id="computer-app-minimize" class="computer-app-minimize" type="button" aria-label="缩小小镇" hidden>−</button>
+                    <strong id="computer-app-title">软件</strong>
+                  </div>
+                  <div id="computer-app-content" class="computer-app-content"></div>
+                </div>
+                <div id="desktop-store" class="desktop-store" hidden>
+                  <button type="button" data-download-app="paint">下载画画</button>
+                  <button type="button" data-download-app="music">下载音乐</button>
+                  <button type="button" data-download-app="clock">下载时钟</button>
+                </div>
+                <div id="desktop-installed-apps" class="desktop-installed-apps" aria-label="已安装软件"></div>
+              </div>
+              <button id="computer-face-close" class="computer-app-close computer-face-close" type="button" aria-label="退出聊天" hidden>×</button>
+              <p id="screen-subtitle" class="screen-subtitle">滴。我在听。</p>
+            </div>
+          </div>
+        </div>
+        <button id="pyramixed-apps-toggle" class="pyramixed-apps-toggle" type="button" aria-expanded="false">软件</button>
+      </section>
+
+      <div class="desk-wrap" aria-hidden="true">
+        <div class="desk">
+          <span class="desk-leg leg-left"></span>
+          <span class="desk-leg leg-right"></span>
+        </div>
+        <div id="floor-outlet" class="floor-outlet">
+          <span class="outlet-hole"></span>
+          <span class="outlet-hole"></span>
+        </div>
+      </div>
+
+      <div class="cables" aria-hidden="true">
+        <span class="cable cable-left"></span>
+        <span class="cable cable-center"></span>
+        <span class="cable cable-right"></span>
+      </div>
+
+      <form id="chat-form" class="keyboard-dock">
+        <div class="keyboard-shell">
+          <div class="keyboard-top">
+            <label class="voice-box" for="message-input">
+              <span class="voice-title">键盘输入</span>
+              <span id="voice-hint" class="voice-hint">支持语音识别；也可以直接在这里输入</span>
+              <input
+                id="message-input"
+                name="message"
+                type="text"
+                autocomplete="off"
+                placeholder="对电脑先生说点什么……"
+              />
+            </label>
+            <div class="keyboard-actions">
+              <button id="mic-button" class="mic-button" type="button">开始语音</button>
+              <button class="send-button" type="submit">发送</button>
+            </div>
+          </div>
+          <div class="key-grid" aria-hidden="true">
+            <span class="key wide"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key wide"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key"></span>
+            <span class="key wide"></span>
+            <span class="key extra-wide"></span>
+          </div>
+        </div>
+      </form>
+      <div class="trees" aria-hidden="true">
+        <span class="tree tree-left"></span>
+        <span class="tree tree-left-mid tree-small"></span>
+        <span class="tree tree-mid tree-large"></span>
+        <span class="tree tree-right-mid tree-small"></span>
+        <span class="tree tree-right"></span>
+      </div>
+      <div id="computer-house" class="computer-house" aria-hidden="true">
+        <span class="house-roof"></span>
+        <span class="house-body"></span>
+        <span class="house-door"></span>
+        <span class="house-window"></span>
+        <span class="house-computer"></span>
+        <span class="house-item house-bed"></span>
+        <span class="house-item house-lamp"></span>
+        <span class="house-item house-sofa"></span>
+        <span class="house-item house-table"></span>
+      </div>
+      <div class="grass" aria-hidden="true"></div>
+      <div class="home-window-view" aria-hidden="true">
+        <span class="home-window-sun">
+          <span class="window-sun-eye eye-left"></span>
+          <span class="window-sun-eye eye-right"></span>
+          <span class="window-sun-mouth"></span>
+        </span>
+        <span class="home-window-moon">
+          <span class="window-moon-eye eye-left"></span>
+          <span class="window-moon-eye eye-right"></span>
+          <span class="window-moon-mouth"></span>
+        </span>
+        <span class="home-window-cloud"></span>
+        <span class="home-window-rain"></span>
+        <span class="home-window-snow"></span>
+      </div>
+      <div id="home-outlet" class="home-outlet" aria-hidden="true">
+        <span class="outlet-hole"></span>
+        <span class="outlet-hole"></span>
+      </div>
+      <section class="food-zone" aria-label="食物区">
+        <p class="food-title">食物区</p>
+        <div id="food-tray" class="food-tray">
+          <button class="food-option food-apple" type="button" data-food-type="apple" aria-label="苹果"></button>
+          <button class="food-option food-banana" type="button" data-food-type="banana" aria-label="香蕉"></button>
+          <button class="food-option food-orange" type="button" data-food-type="orange" aria-label="橘子"></button>
+          <button class="food-option food-cookie" type="button" data-food-type="cookie" aria-label="饼干"></button>
+        </div>
+      </section>
+      <section id="sales-basket" class="sales-basket" aria-label="销售篮">
+        <p class="sales-title">销售篮</p>
+        <div class="basket-bowl" aria-hidden="true"></div>
+      </section>
+      <section id="rhythm-box" class="rhythm-box" aria-label="节奏盒子">
+        <div class="rhythm-header">
+          <strong>节奏盒子</strong>
+          <span id="rhythm-status">拖上快乐机器人</span>
+          <label class="rhythm-volume" aria-label="节奏音量">
+            <span>音量</span>
+            <input id="rhythm-volume" type="range" min="0" max="100" value="85" />
+          </label>
+        </div>
+        <div class="character-tray" aria-label="角色盘">
+          <button id="happy-robot-picker" class="happy-robot-picker" type="button" aria-label="拖动快乐机器人">
+            <span class="happy-robot-icon" aria-hidden="true">
+              <span class="happy-robot-antenna antenna-left"></span>
+              <span class="happy-robot-antenna antenna-right"></span>
+              <span class="happy-robot-speaker speaker-left"></span>
+              <span class="happy-robot-speaker speaker-right"></span>
+              <span class="happy-robot-head">
+                <span class="happy-robot-eye eye-left"></span>
+                <span class="happy-robot-eye eye-right"></span>
+                <span class="happy-robot-mouth"></span>
+              </span>
+              <span class="happy-robot-neck"></span>
+            </span>
+            <span class="happy-robot-name">快乐机器人</span>
+          </button>
+          <button id="gallod-picker" class="happy-robot-picker gallod-picker" type="button" aria-label="拖动加洛德">
+            <span class="happy-robot-icon gallod-icon" aria-hidden="true">
+              <span class="gallod-dome"></span>
+              <span class="happy-robot-head gallod-head">
+                <span class="gallod-screen"></span>
+              </span>
+              <span class="gallod-mouth"></span>
+              <span class="happy-robot-hand hand-left"></span>
+              <span class="happy-robot-hand hand-right"></span>
+              <span class="happy-robot-neck gallod-neck"></span>
+            </span>
+            <span class="happy-robot-name">加洛德</span>
+          </button>
+          <button id="simon-picker" class="happy-robot-picker simon-picker" type="button" aria-label="拖动西蒙">
+            <span class="happy-robot-icon simon-icon" aria-hidden="true">
+              <span class="simon-antenna antenna-left"></span>
+              <span class="simon-antenna antenna-right"></span>
+              <span class="simon-hair hair-one"></span>
+              <span class="simon-hair hair-two"></span>
+              <span class="simon-hair hair-three"></span>
+              <span class="simon-head">
+                <span class="simon-eye eye-left"></span>
+                <span class="simon-eye eye-right"></span>
+                <span class="simon-mouth"></span>
+              </span>
+              <span class="simon-neck"></span>
+            </span>
+            <span class="happy-robot-name">西蒙</span>
+          </button>
+          <button id="music-box-picker" class="happy-robot-picker music-box-picker" type="button" aria-label="拖动小天">
+            <span class="happy-robot-icon music-box-icon" aria-hidden="true">
+              <span class="music-box-ear ear-left"></span>
+              <span class="music-box-ear ear-right"></span>
+              <span class="music-box-hair"></span>
+              <span class="music-box-head">
+                <span class="music-box-eye eye-left"><span></span></span>
+                <span class="music-box-eye eye-right"><span></span></span>
+                <span class="music-box-mouth"></span>
+              </span>
+              <span class="music-box-neck"></span>
+            </span>
+            <span class="happy-robot-name">小天</span>
+          </button>
+          <button id="sun-picker" class="happy-robot-picker sun-picker" type="button" aria-label="拖动太阳公公">
+            <span class="happy-robot-icon sun-icon" aria-hidden="true">
+              <span class="sun-character-rays"></span>
+              <span class="sun-character-face">
+                <span class="sun-character-eye eye-left"></span>
+                <span class="sun-character-eye eye-right"></span>
+                <span class="sun-character-mouth"></span>
+              </span>
+            </span>
+            <span class="happy-robot-name">太阳公公</span>
+          </button>
+          <button id="moon-picker" class="happy-robot-picker moon-picker" type="button" aria-label="拖动月亮公公">
+            <span class="happy-robot-icon moon-icon" aria-hidden="true">
+              <span class="moon-character-face">
+                <span class="moon-character-eye eye-left"></span>
+                <span class="moon-character-eye eye-right"></span>
+                <span class="moon-character-mouth"></span>
+              </span>
+            </span>
+            <span class="happy-robot-name">月亮公公</span>
+          </button>
+        </div>
+        <div id="rhythm-stage" class="rhythm-stage" aria-label="音乐角色槽">
+          <button class="rhythm-slot" type="button" data-slot-index="0" aria-label="节奏槽 1"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="1" aria-label="节奏槽 2"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="2" aria-label="节奏槽 3"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="3" aria-label="节奏槽 4"></button>
+          <button class="rhythm-slot" type="button" data-slot-index="4" aria-label="节奏槽 5"></button>
+        </div>
+      </section>
+      <button id="terror-toggle" class="terror-toggle" type="button">开启恐怖之夜</button>
+      <button id="day-night-toggle" class="day-night-toggle" type="button">切到夜晚</button>
+      <button id="weather-toggle" class="weather-toggle" type="button">切到多云</button>
+      <button id="light-toggle" class="light-toggle" type="button">开灯</button>
+      <button id="yard-toggle" class="yard-toggle" type="button">回草坪</button>
+      <button id="home-toggle" class="home-toggle" type="button">回家</button>
+      <button id="call-back-toggle" class="call-back-toggle" type="button" hidden>叫回来</button>
+      <div id="money-display" class="money-display" aria-live="polite">钱：0</div>
+      <button id="mine-toggle" class="mine-toggle" type="button">挖矿</button>
+      <button id="shop-toggle" class="shop-toggle" type="button">商城</button>
+      <button id="computer-settings-toggle" class="computer-settings-toggle" type="button" aria-controls="computer-settings-panel" aria-expanded="false"><span aria-hidden="true">⚙</span> 设置</button>
+      <section id="computer-settings-panel" class="computer-settings-panel" aria-label="电脑先生设置" hidden>
+        <header><strong>电脑先生设置</strong><button id="computer-settings-close" type="button" aria-label="关闭设置">×</button></header>
+        <label>游戏版本<select id="computer-version-select"><option value="original">原版</option><option value="pyramixed">Pyramixed 版本</option></select></label>
+        <strong id="computer-version-name" class="computer-version-name"></strong>
+        <div id="computer-version-preview" class="computer-version-preview" aria-label="角色正面、侧面与背面"></div>
+        <button id="computer-version-voice-preview" type="button">试听这个版本的声音</button>
+        <label>系统音量 <output id="computer-master-volume-value">90%</output><input id="computer-master-volume" type="range" min="0" max="1" step="0.05" value="0.9"></label>
+        <label class="computer-settings-check"><input id="computer-system-sounds" type="checkbox" checked> 系统声音</label>
+        <label class="computer-settings-check"><input id="computer-character-sounds" type="checkbox" checked> 角色声音</label>
+        <label class="computer-settings-check"><input id="computer-horror-enabled" type="checkbox" checked> 显示恐怖之夜</label>
+        <h3>主页按键</h3>
+        <p>按叉可以从主页隐藏，再来这里恢复。设置齿轮永远保留。</p>
+        <div id="computer-control-list" class="computer-control-list"></div>
+      </section>
+      <a class="diary-room-link" href="/games/diary" aria-label="进入日记剪纸房">日记剪纸房</a>
+      <button id="reset-save-toggle" class="reset-save-toggle" type="button">重置</button>
+      <section id="mine-panel" class="mine-panel" aria-label="挖矿面板" hidden>
+        <div class="mine-toolbar">
+          <strong>方块矿洞</strong>
+          <button id="sell-minerals" class="sell-minerals" type="button">销售</button>
+        </div>
+        <div id="mine-grid" class="mine-grid" aria-label="矿洞格子"></div>
+        <div class="bag-toolbar">
+          <span>背包</span>
+          <button id="buy-house" class="buy-house" type="button" hidden>买房子</button>
+        </div>
+        <div id="inventory-grid" class="inventory-grid" aria-label="背包格子"></div>
+      </section>
+      <section id="shop-panel" class="shop-panel" aria-label="商城面板" hidden>
+        <div class="shop-toolbar">
+          <strong>电脑先生商城</strong>
+          <button id="move-home" class="move-home" type="button" hidden>入住</button>
+        </div>
+        <label class="shop-search-wrap">
+          <span>搜索</span>
+          <input id="shop-search" class="shop-search" type="search" placeholder="想买什么都可以搜" autocomplete="off" />
+        </label>
+        <div id="shop-grid" class="shop-grid" aria-label="商城商品"></div>
+      </section>
+      <section id="minecraft-panel" class="minecraft-panel" aria-label="我的世界 2D" hidden>
+        <div class="minecraft-toolbar">
+          <button id="minecraft-close" class="minecraft-close" type="button" aria-label="退出我的世界">×</button>
+          <strong>我的世界 2D</strong>
+        </div>
+        <audio id="minecraft-background-music" src="./assets/minecraft-audio/minecraft-background.mp3" preload="auto" loop></audio>
+        <div id="minecraft-status" class="minecraft-status">先用镐子挖方块，背包有方块之后才能放。</div>
+        <div id="minecraft-world" class="minecraft-world" aria-label="方块世界"></div>
+        <div id="minecraft-map" class="minecraft-map" aria-label="彩色地图"></div>
+        <div id="minecraft-backpack-panel" class="minecraft-side-backpack-panel" hidden>
+          <div class="minecraft-side-backpack-head">
+            <strong>背包</strong>
+            <button id="minecraft-backpack-close" class="minecraft-side-backpack-close" type="button" aria-label="关闭背包">×</button>
+          </div>
+          <div class="minecraft-side-backpack-workspace">
+            <div class="minecraft-side-player-preview" aria-label="史蒂夫预览">
+              <span class="minecraft-side-player-preview-armor"></span>
+            </div>
+            <div class="minecraft-side-pocket-crafting" aria-label="随身合成">
+              <div id="minecraft-pocket-crafting-grid" class="minecraft-pocket-crafting-grid" aria-label="2x2 合成格"></div>
+              <span class="minecraft-pocket-crafting-arrow" aria-hidden="true"></span>
+              <button id="minecraft-pocket-crafting-output" class="minecraft-pocket-crafting-output" type="button" aria-label="随身合成输出"></button>
+            </div>
+          </div>
+          <div id="minecraft-backpack-grid" class="minecraft-side-backpack-grid" aria-label="背包物品"></div>
+          <div id="minecraft-backpack-hotbar" class="minecraft-side-backpack-hotbar" aria-label="快捷栏"></div>
+        </div>
+        <div id="minecraft-crafting-panel" class="minecraft-crafting-panel" hidden>
+          <div class="minecraft-crafting-head">
+            <strong>工作台</strong>
+            <button id="minecraft-crafting-close" class="minecraft-crafting-close" type="button">×</button>
+          </div>
+          <div class="minecraft-crafting-body">
+            <div id="minecraft-crafting-grid" class="minecraft-crafting-grid" aria-label="工作台九宫格"></div>
+            <div class="minecraft-crafting-flow" aria-label="合成结果">
+              <span class="minecraft-crafting-arrow" aria-hidden="true"></span>
+              <button id="minecraft-crafting-output" class="minecraft-crafting-output" type="button" aria-label="合成输出"></button>
+            </div>
+            <div class="minecraft-crafting-recipes" aria-label="配方">
+              <button class="minecraft-recipe" type="button" data-minecraft-recipe="sticks">
+                <span class="recipe-grid recipe-sticks"><i></i><i></i><i></i><i></i><b>木</b><i></i><i></i><i></i><i></i></span>
+                木棍
+              </button>
+              <button class="minecraft-recipe" type="button" data-minecraft-recipe="torch">
+                <span class="recipe-grid recipe-torch"><b>煤</b><i></i><i></i><b>棍</b><i></i><i></i><i></i><i></i><i></i></span>
+                火把
+              </button>
+              <button class="minecraft-recipe" type="button" data-minecraft-recipe="bucket">
+                <span class="recipe-grid recipe-bucket"><i></i><i></i><i></i><b>铁</b><i></i><b>铁</b><i></i><b>铁</b><i></i></span>
+                铁桶
+              </button>
+            </div>
+          </div>
+          <div id="minecraft-crafting-inventory" class="minecraft-crafting-inventory" aria-label="物品栏材料"></div>
+          <button id="minecraft-crafting-make" class="minecraft-crafting-make" type="button">按九宫格合成</button>
+          <div id="minecraft-crafting-status" class="minecraft-crafting-status">点格子选择材料。</div>
+        </div>
+        <div class="minecraft-tools" aria-label="方块工具">
+          <button class="minecraft-tool" type="button" data-minecraft-tool="grass">草<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="dirt">土<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="stone">石<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="wood">木<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="leaves">叶<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="water">水<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="bed">床<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="crafting_table">台<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="torch">火<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="bucket">桶<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="water_bucket">水桶<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="lava_bucket">岩桶<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="obsidian">黑曜<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="meteor">银<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="ender_pearl">珍珠<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="ender_eye">末眼<span>0</span></button>
+          <button class="minecraft-tool" type="button" data-minecraft-tool="diamond_sword">剑<span>0</span></button>
+          <button class="minecraft-tool active" type="button" data-minecraft-tool="pickaxe">镐</button>
+          <button id="minecraft-backpack-toggle" class="minecraft-side-backpack-toggle" type="button" aria-label="打开背包">•••</button>
+        </div>
+        <div class="minecraft-controls" aria-label="移动和视角">
+          <div id="minecraft-joystick" class="minecraft-joystick" role="application" aria-label="移动摇杆">
+            <span id="minecraft-joystick-handle" class="minecraft-joystick-handle"></span>
+          </div>
+          <button id="minecraft-jump-up" class="minecraft-jump-up minecraft-side-action-jump" type="button" aria-label="跳跃"></button>
+          <button id="minecraft-dig-down" class="minecraft-dig-down" type="button">向下挖</button>
+          <button id="minecraft-view" class="minecraft-view" type="button">切换视角</button>
+        </div>
+      </section>
+    </main>
+
+    <link rel="stylesheet" href="./computer-apps.css?v=20261011-source1">
+
+
+
+
+
+
+
+    <script src="./dance-cast.js?v=20260926-friend4"></script>
+    <script src="./arcade-games.js?v=20260926-friend4"></script>
+
+    <script src="./computer-apps.js?v=20261011-source1"></script>
+    <script src="./computer-knowledge.js?v=20261011-source1"></script>
+    <script src="./computer-settings.js?v=20261011-source1"></script>
+    <script src="./app.js?v=20261011-source1"></script>
+    <script src="./computer-voice.js?v=20260926-friend4"></script>
+    <script src="./computer-experience.js?v=20260926-friend4"></script>
+  <script src="./home-data.js"></script><script src="./computer-portal.js"></script></body>
+</html>

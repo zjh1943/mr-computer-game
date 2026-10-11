@@ -1,0 +1,209 @@
+{
+  "buildCommand": "node scripts/build-vercel-static.cjs",
+  "outputDirectory": "public",
+  "installCommand": "",
+  "rewrites": [
+    {
+      "source": "/games/computer",
+      "destination": "/games/computer.html"
+    },
+    {
+      "source": "/games/sprunki-world",
+      "destination": "/games/sprunki-world.html"
+    },
+    {
+      "source": "/games/minecraft",
+      "destination": "/games/minecraft.html"
+    },
+    {
+      "source": "/games/minecraft3d",
+      "destination": "/games/minecraft3d.html"
+    },
+    {
+      "source": "/games/sprunki",
+      "destination": "/games/sprunki.html"
+    },
+    {
+      "source": "/games/town",
+      "destination": "/games/town.html"
+    },
+    {
+      "source": "/games/diary",
+      "destination": "/games/diary.html"
+    },
+    {
+      "source": "/games/snake",
+      "destination": "/games/snake.html"
+    },
+    {
+      "source": "/games/2048",
+      "destination": "/games/2048.html"
+    },
+    {
+      "source": "/games/tictactoe",
+      "destination": "/games/tictactoe.html"
+    },
+    {
+      "source": "/games/memory",
+      "destination": "/games/memory.html"
+    },
+    {
+      "source": "/games/piano",
+      "destination": "/games/piano.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/game-cache.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "computer.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/computer",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "sprunki-world.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/sprunki-world",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "minecraft.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/minecraft",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "minecraft3d.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/minecraft3d",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "sprunki.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/sprunki",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "town.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/town",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "diary.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/diary",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "snake.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/snake",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "2048.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/2048",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "tictactoe.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/tictactoe",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "memory.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/memory",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "piano.zhumohan.com"
+        }
+      ],
+      "destination": "https://zhumohan.com/games/piano",
+      "permanent": true
+    }
+  ]
+}

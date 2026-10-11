@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="330" viewBox="0 0 1440 330" shape-rendering="crispEdges">
+<defs>
+<pattern id="dirt" width="32" height="32" patternUnits="userSpaceOnUse"><rect width="32" height="32" fill="#98643c"/><path d="M0 0h12v8H0zM20 12h12v8H20zM8 24h8v8H8z" fill="#b88450"/><path d="M12 8h8v8h-8zM0 20h8v8H0zM24 0h8v4h-8z" fill="#754a32"/></pattern>
+<pattern id="leaves" width="32" height="32" patternUnits="userSpaceOnUse"><rect width="32" height="32" fill="#44932f"/><path d="M0 0h16v8H0zM16 16h16v8H16zM0 24h8v8H0z" fill="#67b943"/><path d="M8 8h8v8H8zM24 0h8v12h-8z" fill="#327b2c"/></pattern>
+<pattern id="grass" width="40" height="24" patternUnits="userSpaceOnUse"><rect width="40" height="24" fill="#77bd35"/><path d="M0 0h16v8H0zM24 16h16v8H24z" fill="#99d94b"/><path d="M16 8h8v8h-8z" fill="#5ca42e"/></pattern>
+<g id="cube"><path d="M0 22 48 0 96 22 48 46Z" fill="#91ce42"/><path d="M0 22 48 46V104L0 80Z" fill="url(#dirt)"/><path d="M48 46 96 22V80L48 104Z" fill="#765034"/><path d="M0 22 48 46V62L32 54V60L16 52V46L0 38Z" fill="#60a82b"/><path d="M48 46 96 22V38L80 46V52L64 60V54L48 62Z" fill="#488928"/><path d="M24 18 48 7 71 18 47 30Z" fill="#a5dd53"/><path d="M8 57h8v8H8zM28 72h9v9h-9z" fill="#c5965e"/><path d="M64 69h8v8h-8zM82 49h8v8h-8z" fill="#98623d"/></g>
+<g id="tree"><path d="M51 70h22v105H51z" fill="#6e4328"/><path d="M51 70h8v105h-8z" fill="#a67542"/><path d="M-4 18 52-8 120 18 64 44Z" fill="#82c64d"/><path d="M-4 18 64 44v70L-4 88Z" fill="url(#leaves)"/><path d="M64 44 120 18v70L64 114Z" fill="#2b7429"/><path d="M17-1 51-18 99-1 65 17Z" fill="#93d451"/><path d="M17-1 65 17v38L17 37Z" fill="url(#leaves)"/><path d="M65 17 99-1v38L65 55Z" fill="#368632"/></g>
+<g id="pinktree"><path d="M48 66h19v100H48z" fill="#765036"/><path d="M-10 23 49-5 123 23 64 50Z" fill="#ffc6dd"/><path d="M-10 23 64 50v60L-10 84Z" fill="#ef91b9"/><path d="M64 50 123 23v61L64 110Z" fill="#d576a3"/><path d="M10 2 48-16 101 3 63 21Z" fill="#ffd7e7"/><path d="M10 2 63 21v29L10 31Z" fill="#f7afcd"/><path d="M15 45h14v10H15zM41 71h13v10H41z" fill="#ffd6e7"/></g>
+<g id="flower"><path d="M10 20h5v28h-5zM1 30h10v5H1z" fill="#2e802d"/><path d="M5 3h15v5H5zM0 8h25v10H0zM5 18h15v5H5z" fill="#ffdd5a"/><path d="M10 8h5v10h-5z" fill="#d89225"/></g>
+</defs>
+<path d="M0 169h110v-29h88v40h95v-62h118v41h152v-25h110v40h125v-56h113v49h128v-25h160v32h121v-35h120v191H0Z" fill="#62a63a"/>
+<path d="M0 218h160v-35h127v46h197v-40h180v31h203v-37h165v42h176v-42h232v147H0Z" fill="url(#grass)"/>
+<path d="M0 282h1440v48H0Z" fill="url(#dirt)"/>
+<use href="#tree" x="28" y="76"/><use href="#tree" x="176" y="17"/><use href="#pinktree" x="362" y="72"/><use href="#tree" x="928" y="47"/><use href="#tree" x="1250" y="17"/>
+<use href="#cube" x="545" y="192"/><use href="#cube" x="641" y="192"/><use href="#cube" x="593" y="145"/><use href="#cube" x="1105" y="191"/><use href="#cube" x="1201" y="237"/><use href="#flower" x="297" y="214"/><use href="#flower" x="832" y="220"/><use href="#flower" x="1040" y="218"/>
+<path d="M769 242h8v-22h8v30h8v-39h8v47h-32zM451 256h8v-22h8v30h8v-39h8v47h-32z" fill="#347e2c"/>
+</svg>

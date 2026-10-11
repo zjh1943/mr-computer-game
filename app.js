@@ -6962,7 +6962,8 @@ function ensureComputerTownAudio() {
       context: new AudioContext(),
       concertTimer: null,
       concertSpeechTimer: null,
-      concertOn: false
+      concertOn: false,
+      sourceVoices: new Set()
     };
   }
   if (computerTownAudio.context.state === "suspended") {
@@ -7005,11 +7006,37 @@ function playComputerTownSongNote(program, step, layer = 0) {
   playComputerTownTone(frequency, layer === 0 ? 0.22 : 0.14, voices[layer % voices.length], volume);
 }
 
+function townSourceVoiceId(name) {
+  const normalized = String(name || "").toLowerCase();
+  const aliases = {
+    "fun bot": "funbot", owakcx: "lime", "mr. sun": "mr_sun", "太阳公公": "mr_sun",
+    "mr. tree": "mr_tree", "mr. fun computer": "computer", "电脑先生": "computer"
+  };
+  return aliases[normalized] || aliases[name] || normalized.replace(/[^a-z_]/g, "");
+}
+
+function playComputerTownSourceVoice(name, volume = .2) {
+  const voiceId = townSourceVoiceId(name);
+  if (!window.DanceCast?.[voiceId]?.audio) return null;
+  const version = getActiveComputerVersion();
+  const profileId = voiceId === "funbot" ? "fun-bot" : voiceId === "lime" ? "owakcx" : voiceId === "mr_sun" ? "mr-sun" : voiceId === "mr_tree" ? "mr-tree" : voiceId === "computer" ? "mr-fun-computer" : voiceId;
+  const sourcePath = window.ComputerSettings?.characterAudio?.(version, profileId) || window.DanceCast[voiceId].audio;
+  const source = new Audio(sourcePath);
+  source.volume = volume;
+  computerTownAudio?.sourceVoices?.add(source);
+  source.addEventListener("ended", () => computerTownAudio?.sourceVoices?.delete(source), { once: true });
+  source.play().catch(() => computerTownAudio?.sourceVoices?.delete(source));
+  return source;
+}
+
 function performTownConcertSong(program, step) {
-  playComputerTownBeatLayer(program, step);
-  playComputerTownSongNote(program, step, 0);
-  if (step % 2 === 0) playComputerTownSongNote(program, step + 4, 1);
-  if (step % 4 === 0) playComputerTownSongNote(program, step, -1);
+  if (step % 17 !== 0) return;
+  const ensembles = {
+    "beat-start": ["Oren", "Raddy", "Clukr", "Mr. Fun Computer"],
+    "leaf-pop": ["Vineria", "Mr. Tree", "Pinki", "Wenda"],
+    "night-bass": ["Gray", "Garnold", "Durple", "Jevin"]
+  };
+  (ensembles[program?.id] || ensembles["beat-start"]).forEach(name => playComputerTownSourceVoice(name, .22));
 }
 
 function getTownConcertProgram(elapsed) {
@@ -7023,23 +7050,7 @@ function getTownSpeakerLabel(speaker) {
 }
 
 function playComputerTownVoice(name) {
-  const character = townSprunkiCharacters.find((item) => item.name === name || item.zh === name);
-  const profiles = {
-    boy: { base: [196, 247, 294], type: "triangle", volume: 0.07 },
-    girl: { base: [330, 392, 523], type: "sine", volume: 0.065 },
-    bot: { base: [262, 330, 392], type: "square", volume: 0.052 },
-    sun: { base: [392, 494, 659], type: "sine", volume: 0.075 },
-    tree: { base: [147, 196, 247], type: "triangle", volume: 0.06 },
-    shadow: { base: [98, 123, 147], type: "sawtooth", volume: 0.045 }
-  };
-  const voiceProfile = profiles[character?.gender] || profiles.boy;
-  const rhythmOffset = Math.abs(String(character?.voice || name).split("").reduce((total, char) => total + char.charCodeAt(0), 0)) % 5;
-  const tones = voiceProfile.base.map((tone) => tone + rhythmOffset * 11);
-  if (name === "太阳公公") tones.splice(0, tones.length, 330, 440, 554);
-  tones.forEach((tone, index) => window.setTimeout(
-    () => playComputerTownTone(tone, 0.13, index % 2 ? voiceProfile.type : "sine", voiceProfile.volume),
-    index * 120
-  ));
+  playComputerTownSourceVoice(name, .28);
 }
 
 function getComputerTownSpeakerObject(speaker) {
@@ -7208,6 +7219,11 @@ function stopComputerTownConcert() {
     window.clearTimeout(computerTownAudio.concertSpeechTimer);
     computerTownAudio.concertSpeechTimer = null;
   }
+  computerTownAudio.sourceVoices?.forEach(source => {
+    source.pause();
+    source.currentTime = 0;
+  });
+  computerTownAudio.sourceVoices?.clear();
 }
 
 function showComputerTownSpeech(host, speaker, text, targetSpeaker = "") {
@@ -9910,6 +9926,11 @@ function getActiveComputerVersion() {
   return window.ComputerSettings?.get?.().version || "original";
 }
 
+function getVersionedConcertVoice() {
+  // Source performances keep their recorded speed and pitch in every version.
+  return { rate: 1, detune: 0, filter: 0 };
+}
+
 function getVersionedRunnerSprite(id, view = "front") {
   const version = getActiveComputerVersion();
   const assetId = id === "computer" ? "mr-fun-computer" : id;
@@ -9921,12 +9942,6 @@ function getVersionedRunnerSprite(id, view = "front") {
     return `./assets/sprunki-kiss-local/assets/${window.DanceCast.computer.idle}`;
   }
   return `./assets/sprunki-views/${view}/${id}.png`;
-}
-
-function getVersionedConcertVoice() {
-  const version = getActiveComputerVersion();
-  const profile = window.ComputerSettings?.versionProfiles?.[version];
-  return profile?.concert || { rate: 1, detune: 0, filter: 0 };
 }
 
 function setHomeRunnerView(runner, view = "front") {
@@ -10107,28 +10122,30 @@ function startHomeLawnConcert(runners) {
   if (homeLawnGroupActive || !runners.length) return;
   stopHomeLawnConcertAudio();
   homeLawnGroupActive = true;
-  const smallComputer = createHomeSmallComputerSinger();
-  document.querySelector(".beatbox-runners")?.append(smallComputer);
-  smallComputer.dataset.lawnX = "62";
-  smallComputer.style.setProperty("--runner-x", "62vw");
-  smallComputer.classList.add("home-concert", "home-talking");
+  const smallComputer = miniComputerFruitBirthUnlocked ? createHomeSmallComputerSinger() : null;
+  if (smallComputer) {
+    document.querySelector(".beatbox-runners")?.append(smallComputer);
+    smallComputer.dataset.lawnX = "62";
+    smallComputer.style.setProperty("--runner-x", "62vw");
+    smallComputer.classList.add("home-concert", "home-talking");
+  }
   startHomeSunConcert();
-  const daytimePerformers = [...runners, smallComputer];
+  const daytimePerformers = [...runners, ...(smallComputer ? [smallComputer] : [])];
   daytimePerformers.forEach((runner, index) => {
     runner.classList.add("home-concert");
-    setHomeConcertPose(runner, index * 2);
+    setHomeConcertPose(runner, index * 120);
     const bubble = runner.querySelector(".beat-runner-bubble");
     if (bubble) bubble.textContent = ["咚", "啪", "叮", "哒", "呜", "啦"][index % 6];
     window.setTimeout(() => runner.classList.add("home-talking"), index * 120);
   });
   unlockRhythmAudio();
-  let daytimeBeat = 0;
+  const concertStartedAt = performance.now();
   window.clearInterval(homeLawnDanceFrameTimer);
   homeLawnDanceFrameTimer = window.setInterval(() => {
-    daytimePerformers.forEach((runner, index) => setHomeConcertPose(runner, daytimeBeat + index * 2));
-    daytimeBeat += 1;
-  }, 220);
-  playHomeLawnConcertVoices(runners, { includeSun: true, extraPerformers: [smallComputer] });
+    const elapsedMs = performance.now() - concertStartedAt;
+    daytimePerformers.forEach((runner, index) => setHomeConcertPose(runner, elapsedMs + index * 120));
+  }, 50);
+  playHomeLawnConcertVoices(runners, { includeSun: true, extraPerformers: smallComputer ? [smallComputer] : [] });
   window.setTimeout(() => {
     stopHomeLawnConcertAudio();
   }, 3000);
@@ -10203,31 +10220,21 @@ async function playHomeLawnConcertVoices(performers) {
   const buffers = await Promise.all(voices.map(voice => loadHomeLawnVoiceBuffer(voice.voiceId)));
   if (!homeLawnGroupActive) return;
   const startAt = context.currentTime + .08;
-  const versionVoice = getVersionedConcertVoice();
   voices.forEach((voice, index) => {
     const buffer = buffers[index];
     if (!buffer) return;
     const source = context.createBufferSource();
     const gain = context.createGain();
-    const filter = versionVoice.filter ? context.createBiquadFilter() : null;
     source.buffer = buffer;
     source.loop = true;
-    source.playbackRate.value = versionVoice.rate || 1;
-    if (source.detune) source.detune.value = versionVoice.detune || 0;
+    source.playbackRate.value = 1;
+    if (source.detune) source.detune.value = 0;
     gain.gain.value = HOME_LAWN_VOICE_LEVELS[voice.voiceId] || 1;
-    if (filter) {
-      filter.type = "lowpass";
-      filter.frequency.value = versionVoice.filter;
-      filter.Q.value = .7;
-      source.connect(filter).connect(gain).connect(rhythmMasterGain);
-    } else {
-      source.connect(gain).connect(rhythmMasterGain);
-    }
+    source.connect(gain).connect(rhythmMasterGain);
     const handle = {
       stop() {
         try { source.stop(); } catch (error) { /* already stopped */ }
         source.disconnect();
-        filter?.disconnect();
         gain.disconnect();
         homeLawnConcertAudio.delete(handle);
       }
@@ -10237,7 +10244,19 @@ async function playHomeLawnConcertVoices(performers) {
   });
 }
 
-function setHomeConcertPose(runner, frame = 0) {
+function getSourcePerformanceCue(voiceId, elapsedMs = 0) {
+  const performanceData = window.SprunkiSourcePerformance?.[voiceId];
+  if (!performanceData?.cues?.length) return null;
+  const phase = ((Math.max(0, elapsedMs) / 1000) % performanceData.duration + performanceData.duration) % performanceData.duration;
+  let cueIndex = 0;
+  for (let index = 0; index < performanceData.cues.length; index += 1) {
+    if (phase < performanceData.cues[index][0]) break;
+    cueIndex = index;
+  }
+  return { asset: performanceData.cues[cueIndex][1], cueIndex };
+}
+
+function setHomeConcertPose(runner, elapsedMs = 0) {
   const voiceId = HOME_LAWN_VOICE_IDS[runner.dataset.sprunkiId] || runner.dataset.sprunkiId;
   const original = window.DanceCast?.[voiceId];
   if (!original) return;
@@ -10248,12 +10267,14 @@ function setHomeConcertPose(runner, frame = 0) {
     pose.alt = "";
     runner.append(pose);
   }
+  const sourceCue = getSourcePerformanceCue(voiceId, elapsedMs);
   if (getActiveComputerVersion() === "pyramixed") {
     const views = ["front", "left", "front", "right"];
-    pose.src = getVersionedRunnerSprite(runner.dataset.sprunkiId, views[frame % views.length]);
+    pose.src = getVersionedRunnerSprite(runner.dataset.sprunkiId, views[(sourceCue?.cueIndex || 0) % views.length]);
   } else {
     const frames = original.frames?.length ? original.frames : [original.idle];
-    const frameName = frames[frame % frames.length] || original.idle;
+    const fallbackIndex = Math.floor(Math.max(0, elapsedMs) / 180) % frames.length;
+    const frameName = sourceCue?.asset || frames[fallbackIndex] || original.idle;
     pose.src = `./assets/sprunki-kiss-local/assets/${frameName}`;
   }
   runner.classList.add("home-original-performing");
@@ -10419,11 +10440,11 @@ function startHomeLawnNightConcert(runners) {
     unlockRhythmAudio();
     playHomeLawnConcertAudio("./assets/dance-reference/colorful-bunch-erect-inst.ogg", .1, { loop: true });
     playHomeLawnConcertVoices(performers, { includeSun: true });
-    let beat = 0;
+    const concertStartedAt = performance.now();
     homeLawnDanceFrameTimer = window.setInterval(() => {
-      performers.forEach((performer, index) => setHomeConcertPose(performer, beat + index * 2));
-      beat += 1;
-    }, 240);
+      const elapsedMs = performance.now() - concertStartedAt;
+      performers.forEach((performer, index) => setHomeConcertPose(performer, elapsedMs + index * 120));
+    }, 50);
     homeLawnConcertEndTimer = window.setTimeout(() => {
       homeLawnConcertAudio.forEach(audio => typeof audio.stop === "function" ? audio.stop() : (audio.pause(), audio.currentTime = 0));
       homeLawnConcertAudio.clear();

@@ -13619,3 +13619,20 @@ body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.text-mod
 body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.face-mode) .screen-bezel::after,
 body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.desktop-mode:not(.app-open):not(.text-mode)):not(:has(.computer-desktop.pyramixed-apps-open)) .screen-bezel::after{content:"";position:absolute;left:50%;top:86px;z-index:5;display:block;width:42px;height:40px;border:0;border-radius:0;background:linear-gradient(42deg,transparent 0 46%,#fff 47% 52%,transparent 53%) left top/52% 76% no-repeat,linear-gradient(-42deg,transparent 0 46%,#fff 47% 52%,transparent 53%) right top/52% 76% no-repeat,#050505;color:transparent;font-size:0;transform:translateX(-50%);clip-path:none;animation:pyramixed-only-mouth 1.25s ease-in-out infinite alternate;pointer-events:none}
 body[data-computer-version="pyramixed"] .mood-panel.text-mode #screen-subtitle{position:absolute;inset:18px 9px 8px;z-index:20;display:flex!important;align-content:center;align-items:center;justify-content:center;flex-wrap:wrap;max-width:none;margin:0;overflow:hidden;font-size:12px;line-height:1.42;text-align:center}
+
+/* The Pyramixed chassis keeps its source silhouette, while Mr. Computer's own
+   DOM face covers the printed screen so eye tracking and expressions still work. */
+body[data-computer-version="pyramixed"] .mood-panel.face-mode,
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open):not(.text-mode){background:#050505!important}
+body[data-computer-version="pyramixed"] .mood-panel.face-mode .face-display,
+body[data-computer-version="pyramixed"] .mood-panel.desktop-mode:not(.app-open):not(:has(.pyramixed-apps-open)) .face-display{
+  position:absolute!important;inset:17px 0 auto!important;z-index:9!important;display:grid!important;width:100%!important;margin:0!important;gap:8px!important;
+  animation:float-face 2.6s ease-in-out infinite!important;pointer-events:none
+}
+body[data-computer-version="pyramixed"] .face-cheeks{display:flex!important;width:104px!important}
+body[data-computer-version="pyramixed"] .face-eyes{gap:38px!important}
+body[data-computer-version="pyramixed"] .eye{width:20px!important;height:20px!important;border-radius:50%!important}
+body[data-computer-version="pyramixed"] .mouth-triangle{width:38px!important;height:35px!important;clip-path:polygon(0 0,100% 0,58% 82%,50% 94%,42% 82%)!important}
+body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.face-mode) .screen-bezel::after,
+body[data-computer-version="pyramixed"] .computer-shell:has(.mood-panel.desktop-mode:not(.app-open):not(.text-mode)) .screen-bezel::after{display:none!important;content:none!important}
+body[data-computer-version="pyramixed"] .mood-panel.text-mode .face-display{display:none!important}

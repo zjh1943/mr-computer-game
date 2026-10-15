@@ -4,6 +4,11 @@ const music = require('../dance-music.js');
 
 const friend = music.tracks.find(track => track.id === 'friend-like-you');
 assert(friend, 'Friend Like You local level is missing');
+assert.equal(friend.video, '_bwDYOzbkBY', 'Friend Like You must use the linked video as its original-song source');
+assert.equal(friend.audioFile, undefined, 'Friend Like You must not replace the video original with the old local arrangement');
+assert.equal(friend.chartOffset, 2, 'the playable progress starts after the visual count-in');
+assert.equal(friend.chartDuration, 148, 'the playable progress needs its own duration');
+assert.equal(friend.pixelClockDuration, 150, 'the pixel timer needs its own source-song duration');
 assert.deepEqual(friend.phases, { dayStart: 0, nightStart: 55, finaleStart: 115, end: 150 });
 assert.deepEqual(friend.events.map(({time, character}) => [time, character]), [[55, 'black'], [115, 'mr_tree']]);
 
@@ -24,6 +29,8 @@ assert(apps.includes("noteTravelBounds(side,h,0,!!selected?.friendLikeYou)"), 'F
 assert(apps.includes("noteTravelBounds(box.side,box.h,size,!!selected?.friendLikeYou)"), 'Friend Like You notes must follow their own side');
 assert(apps.includes('friend-fnf-hud'), 'Friend Like You needs the in-stage FNF timer and score HUD');
 assert(apps.includes('friend-fnf-time'), 'Friend Like You timer must update during playback');
+assert(apps.includes('selected?.chartOffset'), 'the song progress must use its own chart offset');
+assert(apps.includes('selected?.pixelClockDuration'), 'the pixel timer must use its own clock duration');
 assert(apps.includes('notes.filter(note=>note.missed).length'), 'the FNF HUD must count only missed notes');
 assert(css.includes('.friend-chorus-phase .dance-player'), 'the finale must resize Mr. Fun Computer like the video');
 assert(css.includes('.friend-chorus-phase .dance-rival'), 'the finale must resize Mr. Tree like the video');

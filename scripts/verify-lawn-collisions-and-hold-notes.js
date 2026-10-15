@@ -33,7 +33,7 @@ assert(dance.includes('animateOriginal'), 'colored characters need directional f
 
 const music = fs.readFileSync('dance-music.js', 'utf8');
 assert(music.includes("id:'friend-like-you'"), 'the local Friend Like You stage must be selectable');
-assert(music.includes("audioFile:'./assets/dance-audio/friend-like-you-safe.wav'"), 'the bundled Friend Like You audio must start without an online connection');
+assert(music.includes("friendLikeYou:true,video:'_bwDYOzbkBY'"), 'Friend Like You must start from the linked original-song video');
 assert(music.includes("name:'Friend Like You'"), 'the song card must use the requested Friend Like You title');
 assert(music.includes("initial:{player:'computer',dad:'mr_tree'}"), 'the opening must contain only Mr. Tree and Mr. Fun Computer');
 assert(dance.includes("host.classList.toggle('friend-chorus-phase'"), 'the final chorus must bring background dancers onto the stage');

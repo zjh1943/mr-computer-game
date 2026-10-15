@@ -1,5 +1,5 @@
 (()=>{
-const loaded=new Map(),revision='20261015-rhythm6';
+const loaded=new Map(),revision='20261015-friend-video1';
 function load(src){if(!loaded.has(src))loaded.set(src,new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='./'+src+'?v='+revision;s.onload=resolve;s.onerror=()=>{loaded.delete(src);s.remove();reject(Error('加载失败，请再试一次'));};document.head.append(s);}));return loaded.get(src);}
 const groups={blocks3d:['voxel-rules.js','voxel-terrain.js','voxel-workstations.js','voxel-audio.js','voxel-survival.js','voxel-shell.js','voxel-world.js'],dance:['source-performance-data.js','dance-reference-data.js','dance-reference.js','dance-music.js'],music:['source-performance-data.js','dance-reference-data.js','dance-reference.js','dance-music.js']};
 const original=openComputerApp;let request=0;

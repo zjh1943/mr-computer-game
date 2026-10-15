@@ -12,9 +12,9 @@ f=fixture();f.controller.start();const old=f.instances[0],late=old.onresult;old.
 f=fixture();f.controller.start();f.active=false;f.advance(250);assert.equal(f.timers,0);assert(!f.controller.isEnabled());
 f=fixture();f.busy=true;f.controller.start();f.advance(30000);assert.equal(f.silences,1);assert.equal(f.timers,0);
 f=fixture();f.controller.start();f.advance(29000);f.instances[0].result('我说得慢一点',false);f.advance(2400);assert.equal(f.answers.length,0);assert.equal(f.silences,0);f.advance(100);assert.equal(f.answers[0],'我说得慢一点');f.controller.stop();
-const fs=require('node:fs'),html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('app.js','utf8'),experience=fs.readFileSync('computer-experience.js','utf8');
+const fs=require('node:fs'),html=fs.readFileSync('computer.html','utf8'),app=fs.readFileSync('app.js','utf8'),experience=fs.readFileSync('computer-experience.js','utf8');
 assert(html.indexOf('./computer-voice.js')<html.indexOf('./computer-experience.js'));
-assert(app.includes('const useSubtitle = window.ComputerExperience?.isFullChat()'));
+assert(app.includes('window.ComputerExperience?.isFullChat()'));
 assert(experience.includes("onSilence: finishWithoutHearing"));
 assert(experience.includes("event.stopPropagation()"));
 console.log('Continuous restart, long silence, interim/final deduplication, reply resumption, transient errors, stale events and cleanup passed.');

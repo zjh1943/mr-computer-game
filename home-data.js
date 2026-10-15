@@ -14,6 +14,6 @@ const games=[
 ['piano','小钢琴','Little Piano','piano','music','我的音乐角','按下琴键，让自己的小旋律在这里响起来。']
 ].map(([id,name,english,domain,icon,tag,description])=>({id,name,english,domain,icon,tag,description}));
 function ageAt(day){const [y,m,d]=day.split('-').map(Number);return y-2018-Number(m<2||(m===2&&d<23));}
-function gameUrl(game){return '/games/'+game.domain;}
+function gameUrl(game){return game.id==='computer'?'./computer.html':'/games/'+game.domain;}
 const data={games,ageAt,gameUrl};if(typeof module!=='undefined')module.exports=data;else root.HomeData=data;
 })(typeof window!=='undefined'?window:globalThis);

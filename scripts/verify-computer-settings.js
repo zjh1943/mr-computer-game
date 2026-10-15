@@ -34,7 +34,7 @@ assert.notEqual(
   fs.readFileSync('assets/sprunki-views/front/oren.png').toString('base64')
 );
 
-const html = fs.readFileSync('index.html', 'utf8');
+const html = fs.readFileSync('computer.html', 'utf8');
 const css = fs.readFileSync('styles.css', 'utf8');
 const app = fs.readFileSync('app.js', 'utf8');
 assert.match(html, /id="computer-settings-toggle"/);

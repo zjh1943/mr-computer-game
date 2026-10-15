@@ -20,7 +20,7 @@ assert(apps.tutorialLevels.every((level, index, levels) => !index || level.bpm >
 
 const source = fs.readFileSync('computer-apps.js', 'utf8');
 const css = fs.readFileSync('computer-apps.css', 'utf8');
-const html = fs.readFileSync('index.html', 'utf8');
+const html = fs.readFileSync('computer.html', 'utf8');
 const mainCss = fs.readFileSync('styles.css', 'utf8');
 assert(source.includes('dance-tutorial-panel'));
 assert(source.includes('dance-tutorial-character'));

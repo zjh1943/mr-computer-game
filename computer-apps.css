@@ -147,7 +147,9 @@
 .dance-targets button path{fill:var(--arrow-color);stroke:#161221;stroke-width:9;stroke-linejoin:round;paint-order:stroke fill}
 .dance-targets button:nth-child(1){--arrow-color:#c66bea}.dance-targets button:nth-child(2){--arrow-color:#43dced}.dance-targets button:nth-child(3){--arrow-color:#78e65a}.dance-targets button:nth-child(4){--arrow-color:#ff626e}
 .dance-targets button[data-feedback="hit"]{filter:drop-shadow(0 0 12px var(--arrow-color)) brightness(1.35);transform:scale(1.13)}
+.dance-targets button[data-feedback="holding"]{filter:drop-shadow(0 0 16px var(--arrow-color)) brightness(1.5);transform:scale(1.18);animation:dance-hold-pulse .32s infinite alternate}
 .dance-targets button[data-feedback="miss"]{filter:brightness(.65);transform:scale(.94)}
+@keyframes dance-hold-pulse{to{filter:drop-shadow(0 0 23px var(--arrow-color)) brightness(1.8);transform:scale(1.26)}}
 .dance-targets button:focus-visible{outline:3px solid white;border-radius:12px}
 .dance-pose,.dance-rival img,.dance-lead-character{transform-origin:50% 100%;transition:transform .09s ease-out}
 .dance-player[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] img,.dance-player[data-pose="-1"] .dance-lead-character{animation:fnf-idle .6s infinite ease-in-out}
@@ -160,6 +162,8 @@
 
 /* Tempo-linked idle movement between anticipation / singing / recoil poses. */
 .dance-player[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] .dance-pose,.dance-rival>div[data-pose="-1"] img,.dance-player[data-pose="-1"] .dance-lead-character{animation-duration:var(--dance-beat,.6s)}
+.dance-tutorial-front{display:block;width:min(100%,220px);height:clamp(132px,26vh,250px);margin:auto;background-repeat:no-repeat;background-position:center bottom;background-size:contain;image-rendering:auto;transform-origin:50% 100%;animation:fnf-idle var(--dance-beat,.6s) infinite ease-in-out}
+.dance-tutorial-front[data-character="computer"]{width:min(100%,250px);height:clamp(145px,29vh,270px);background-size:auto 100%}
 @keyframes fnf-idle{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}30%{transform:translateY(3px) rotate(0deg) scale(1.025,.965)}65%{transform:translateY(-2px) rotate(1deg) scale(.99,1.015)}}
 /* Right-hand player, one or two opponents, and an unobscured outdoor stage. */
 .dance-stage .dance-player{grid-column:3!important;grid-row:1!important}

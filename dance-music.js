@@ -10,7 +10,16 @@
   const reference=typeof module!=='undefined'?require('./dance-reference-data.js'):window.DanceReferenceData;
   const custom={...previousMixes[0],id:'mix-sunny',name:'原版 SPRUNKI 合奏',artist:'拖入角色 · 原版正常音色',cast:['oren','raddy'],duration:78.8,originalMix:true,captionLoop:9.6,captions:[{time:0,text:'HELLO!'},{time:.9,text:'WOULD YOU LIKE'},{time:2.2,text:'TO HAVE SOME FUN'},{time:3.2,text:'WITH US RIGHT NOW?'},{time:7.7,text:'COME AND SING!'}]};
   const order=[...previousMixes[0].mix.map(s=>s.id),...Object.keys(cast).filter(id=>!previousMixes[0].mix.some(s=>s.id===id)&&!cast[id].silent)];
-  custom.mix=order.map(id=>({id,audio:cast[id].audio,beats:cast[id].beats,gain:cast[id].gain}));
+  // Mr. Tree and Mr. Computer keep their untouched, single-phrase source clips.
+  // The old nine-second export joined two phrases and made their entrances feel late.
+  const originalStem=id=>{
+    const source=cast[id];
+    if(['mr_tree','computer'].includes(id)&&source.sourceSounds?.[0]){
+      return {id,audio:'./assets/sprunki-kiss-local/assets/'+source.sourceSounds[0],beats:8,gain:source.gain};
+    }
+    return {id,audio:source.audio,beats:source.beats,gain:source.gain};
+  };
+  custom.mix=order.map(originalStem);
   const friendBeat=60/120,friendNotes=[],friendPhases={dayStart:0,nightStart:55,finaleStart:115,end:150};
   const addFriendNote=(time,lane,side,hold=0)=>friendNotes.push({time:Number(time.toFixed(5)),lane,side,hit:side==='player',hold,animate:true});
   const dayPattern=[[0,0],[.5,2],[1,1],[1.5,3],[2.5,0],[3,1],[3.5,2]];

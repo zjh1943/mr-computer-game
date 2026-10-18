@@ -3,21 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colorful Bunch · 完整原曲</title>
+  <title>Colorful Bunch · 原版角色五线谱</title>
   <style>
-    :root{font-family:system-ui,"Noto Sans SC",sans-serif;color:#201b16;background:#d7d1c5}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;background:radial-gradient(circle at 22% 14%,#fff1bb 0 8%,transparent 28%),linear-gradient(135deg,#d7e3fa,#e8cfab)}main{width:min(760px,100%);box-sizing:border-box;padding:clamp(24px,6vw,64px);border-radius:28px;background:#fffdf8;box-shadow:0 24px 70px #4d3a2660;text-align:center}h1{margin:0;font-family:Georgia,"Noto Serif SC",serif;font-size:clamp(32px,6vw,56px)}.subtitle{margin:16px auto 30px;max-width:34rem;color:#665a4d;font-size:clamp(16px,2.5vw,20px);line-height:1.7}.player{padding:22px;border:1px solid #d6b77f;border-radius:18px;background:#fff1d7;text-align:left}.player strong{display:block;margin-bottom:12px;color:#8e362c;font-size:18px}.player audio{display:block;width:100%}.duration{display:inline-block;margin-top:24px;padding:8px 14px;border-radius:999px;background:#e9efff;color:#334e9d;font-weight:700}.note{margin:28px 0 0;color:#766a5c;line-height:1.7;font-size:14px}
+    :root{font-family:system-ui,"Noto Sans SC",sans-serif;color:#211a14;background:#d7d0c3}body{margin:0;padding:24px;box-sizing:border-box;background:linear-gradient(135deg,#d4e1f5,#e9cfac)}main{margin:auto;max-width:1040px;padding:clamp(20px,5vw,58px);background:#fffdf7;box-shadow:0 20px 70px #47372166}h1{margin:0;text-align:center;font-family:Georgia,"Noto Serif SC",serif;font-size:clamp(30px,5vw,52px)}.subtitle{max-width:44rem;margin:14px auto 24px;text-align:center;line-height:1.7;color:#665a4d}.player{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:16px 18px;border:1px solid #d6b77f;background:#fff1d7}.player strong{color:#8e362c}.player audio{width:100%}.legend{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0}.tag{padding:5px 10px;border-radius:999px;background:#e8efff;color:#244b9f;font-size:14px}.tag.opponent{background:#ffe5d8;color:#a4401d}.tag.gf{background:#f5e5ff;color:#75418d}.tip{padding:12px 15px;border-left:5px solid #c84f42;background:#fff4df;line-height:1.65}.system{break-inside:avoid;margin:30px 0}.system-head{display:flex;justify-content:space-between;gap:16px;margin:0 7px 6px;font-size:14px}.system-head b{color:#5d4432}.score{display:block;width:100%;height:auto;overflow:visible}.staff{fill:none;stroke:#211a14;stroke-width:1.35}.bar{stroke:#211a14;stroke-width:1.3}.note{stroke:#211a14;stroke-width:.7}.player-note{fill:#315dbc}.opponent-note{fill:#c6562c}.gf-note{fill:#9a5ead}.stem{stroke:#211a14;stroke-width:1.5}.hold{stroke-width:5;stroke-linecap:round;opacity:.8}.clef{font:54px Georgia,serif}.footer{margin-top:34px;padding-top:16px;border-top:1px solid #d7cabc;color:#665a4d;line-height:1.65;font-size:14px}@media print{body{padding:0;background:#fff}main{box-shadow:none;max-width:none}.player{display:none}.system{page-break-inside:avoid}}
   </style>
 </head>
 <body>
   <main data-duration="262" data-full-track="true">
-    <h1>Colorful Bunch · 完整原曲</h1>
-    <p class="subtitle">完整原曲，不剪短。这里直接播放整首《Colorful Bunch》，不再用我生成的音符假装原来的旋律。</p>
-    <section class="player" aria-label="Colorful Bunch 完整原曲播放器">
-      <strong>原曲播放</strong>
-      <audio controls preload="metadata" src="./assets/dance-reference/colorful-bunch.ogg">你的浏览器不能播放音频。</audio>
-    </section>
-    <span class="duration">完整时长：4 分 22 秒</span>
-    <p class="note">播放时可跟着西蒙和奥伦的演唱段落练习；音频保持完整，不把原曲截成短段。</p>
+    <h1>Colorful Bunch · 原版角色五线谱</h1>
+    <p class="subtitle">原版谱面转换：完整保留 4 分 22 秒的原曲播放，并按原版 FNF 谱面里的角色、时间、方向和长按绘制五线谱。</p>
+    <section class="player" aria-label="Colorful Bunch 完整原曲播放器"><strong>完整原曲</strong><audio controls preload="metadata" src="./assets/dance-reference/colorful-bunch.ogg">你的浏览器不能播放音频。</audio></section>
+    <div class="legend"><span class="tag">蓝色：西蒙</span><span class="tag opponent">橙色：对手角色</span><span class="tag gf">紫色：合唱角色</span></div>
+    <p class="tip">五线谱不是随机音符：每一颗音符都来自原版关卡的实际落点；横向位置是原曲时间，竖向位置对应原版四方向演唱音位，粗线表示原版长按。</p>
+    <section id="score" aria-label="Colorful Bunch 完整原版角色五线谱"></section>
+    <p class="footer">完整原曲，不剪短。谱面只保留角色演唱和接拍内容，不另外添加背景伴奏音符。</p>
   </main>
+  <script src="dance-reference-data.js"></script>
+  <script>
+    const track=window.DanceReferenceData.tracks.find(item=>item.id==='reference-colorful-bunch');
+    const score=document.querySelector('#score'),duration=track.duration,bpm=track.bpm,barSeconds=60/bpm*4,barsPerSystem=4;
+    const laneY=[90,76,62,48],roles={player:['西蒙','player-note'],dad:['对手角色','opponent-note'],gf:['合唱角色','gf-note']};
+    const minutes=value=>`${Math.floor(value/60)}:${String(Math.floor(value%60)).padStart(2,'0')}`;
+    for(let start=0,system=0;start<duration;start+=barSeconds*barsPerSystem,system++){
+      const end=Math.min(duration,start+barSeconds*barsPerSystem),notes=track.notes.filter(note=>note.time>=start&&note.time<end&&note.animate!==false);
+      const section=document.createElement('section');section.className='system';section.innerHTML=`<div class="system-head"><b>第 ${system+1} 段 · ${Math.round((end-start)/barSeconds)} 小节</b><span>${minutes(start)} – ${minutes(end)}</span></div>`;
+      const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','score');svg.setAttribute('viewBox','0 0 960 140');svg.setAttribute('role','img');svg.setAttribute('aria-label',`第 ${system+1} 段原版角色谱面`);
+      const staff=document.createElementNS(svg.namespaceURI,'path');staff.setAttribute('class','staff');staff.setAttribute('d','M62 46H930M62 60H930M62 74H930M62 88H930M62 102H930');svg.append(staff);
+      const clef=document.createElementNS(svg.namespaceURI,'text');clef.setAttribute('class','clef');clef.setAttribute('x','10');clef.setAttribute('y','102');clef.textContent='𝄞';svg.append(clef);
+      for(let bar=0;bar<=barsPerSystem;bar++){const line=document.createElementNS(svg.namespaceURI,'line');const x=62+bar*217;line.setAttribute('class','bar');line.setAttribute('x1',x);line.setAttribute('x2',x);line.setAttribute('y1','46');line.setAttribute('y2','102');svg.append(line)}
+      for(const note of notes){const x=62+(note.time-start)/(end-start)*868,lane=Math.abs(note.lane)%4,role=roles[note.side]||roles.dad,y=laneY[lane];if(note.hold>0){const hold=document.createElementNS(svg.namespaceURI,'line');hold.setAttribute('class','hold '+role[1]);hold.setAttribute('x1',x+6);hold.setAttribute('x2',Math.min(928,x+note.hold/(end-start)*868));hold.setAttribute('y1',y);hold.setAttribute('y2',y);svg.append(hold)}const head=document.createElementNS(svg.namespaceURI,'ellipse');head.setAttribute('class','note '+role[1]);head.setAttribute('cx',x);head.setAttribute('cy',y);head.setAttribute('rx','6');head.setAttribute('ry','4.4');head.setAttribute('transform',`rotate(-18 ${x} ${y})`);svg.append(head);const stem=document.createElementNS(svg.namespaceURI,'line');stem.setAttribute('class','stem');stem.setAttribute('x1',x+5);stem.setAttribute('x2',x+5);stem.setAttribute('y1',y);stem.setAttribute('y2',y-29);svg.append(stem)}
+      section.append(svg);score.append(section);
+    }
+  </script>
 </body>
 </html>

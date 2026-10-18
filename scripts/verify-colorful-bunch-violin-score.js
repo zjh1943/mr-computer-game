@@ -14,6 +14,6 @@ assert(staticBuilder.includes('"colorful-bunch-violin-practice.html"'), 'the dep
 assert(score.includes('data-duration="262"'), 'the player needs the complete 262-second performance length');
 assert(score.includes('colorful-bunch.ogg'), 'the original song needs a playable audio control');
 assert(score.includes("setAttribute('class','staff')"), 'page needs real five-line staves');
-assert(score.includes("setAttribute('class','note '+role[1])"), 'page needs chart-derived notes');
+assert(score.includes("setAttribute('class','note player-note')"), 'page needs chart-derived Simon notes');
 
 console.log('Colorful Bunch original-chart score verified.');

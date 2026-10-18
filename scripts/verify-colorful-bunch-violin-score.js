@@ -13,6 +13,7 @@ assert(score.includes('avoidBarline'), 'notes must be moved away from barlines')
 assert(score.includes('staccato'), 'short notes need visible point articulation');
 assert(score.includes('data-full-track="true"'), 'page needs to retain the complete-track player');
 assert(staticBuilder.includes('"colorful-bunch-violin-practice.html"'), 'the deployment build must include the score page');
+assert(staticBuilder.includes('"output/pdf/colorful-bunch-simon-violin-score.pdf"'), 'the deployment build must include the shareable PDF');
 assert(score.includes('data-duration="262"'), 'the player needs the complete 262-second performance length');
 assert(score.includes('colorful-bunch.ogg'), 'the original song needs a playable audio control');
 assert(score.includes("setAttribute('class','staff')"), 'page needs real five-line staves');

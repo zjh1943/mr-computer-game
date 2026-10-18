@@ -9,6 +9,8 @@ assert(score.includes('DanceReferenceData'), 'score must render from the saved o
 assert(score.includes('track.notes'), 'score must use the source note timings rather than invented notes');
 assert(score.includes("note=>note.side==='player'&&note.hit===true"), 'the preview score must render only Simon\'s playable notes');
 assert(score.includes('role-cue'), 'other singers need name cues instead of their notes');
+assert(score.includes('avoidBarline'), 'notes must be moved away from barlines');
+assert(score.includes('staccato'), 'short notes need visible point articulation');
 assert(score.includes('data-full-track="true"'), 'page needs to retain the complete-track player');
 assert(staticBuilder.includes('"colorful-bunch-violin-practice.html"'), 'the deployment build must include the score page');
 assert(score.includes('data-duration="262"'), 'the player needs the complete 262-second performance length');

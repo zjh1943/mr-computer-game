@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 from reportlab.lib.colors import Color, HexColor
-from reportlab.lib.pagesizes import A2, landscape
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -44,42 +44,43 @@ def text(c, value, x, y, size, color=HexColor("#211a14")):
     c.setFillColor(color)
     c.drawString(x, y, value)
 
-PAGE = landscape(A2)
+# This score is intended for ordinary home printing, so each page is A4 portrait.
+# Ten short systems fit on each page, producing a four-page score for this chart.
+PAGE = A4
 
 def draw_treble_clef(c, x, staff_top, staff_bottom):
-    """Draw a vector treble-clef-style glyph so the PDF does not rely on a missing music font."""
-    middle = (staff_top + staff_bottom) / 2
-    c.setStrokeColor(HexColor("#211a14"))
-    c.setLineWidth(1.25)
-    path = c.beginPath()
-    path.moveTo(x + 5 * mm, staff_top + 6 * mm)
-    path.curveTo(x - 4 * mm, staff_top + 2 * mm, x + 11 * mm, middle + 3 * mm, x + 2 * mm, middle - 2 * mm)
-    path.curveTo(x - 4 * mm, middle - 6 * mm, x - 1 * mm, staff_bottom - 1 * mm, x + 7 * mm, staff_bottom + 4 * mm)
-    path.curveTo(x + 14 * mm, staff_bottom + 9 * mm, x + 9 * mm, middle + 2 * mm, x + 2 * mm, middle)
-    c.drawPath(path, fill=0, stroke=1)
-    c.circle(x + 2 * mm, middle, 2.7 * mm, fill=0, stroke=1)
-    c.line(x + 3 * mm, staff_top + 8 * mm, x + 3 * mm, staff_bottom - 8 * mm)
+    """Draw the Unicode musical-symbol treble clef from Segoe UI Symbol."""
+    c.setFont("MusicSymbol", 38)
+    c.setFillColor(HexColor("#211a14"))
+    c.drawCentredString(x + 3 * mm, staff_bottom - 4.5 * mm, "𝄞")
 
-def draw_header(c, page):
+def draw_header(c, page, paint_background=True):
     width, height = PAGE
-    c.setFillColor(HexColor("#fffaf1"))
-    c.rect(0, 0, width, height, fill=1, stroke=0)
-    text(c, "Colorful Bunch · 西蒙小提琴谱", 22 * mm, height - 20 * mm, 20, HexColor("#2b416f"))
-    text(c, "高音谱号 = 小提琴谱表  |  蓝色实心音符 = 西蒙短音  |  音符上小点 = 点音  |  蓝色横线 = 长音拉弓  |  竖线 = 小节线", 22 * mm, height - 29 * mm, 8, HexColor("#665a4d"))
+    if paint_background:
+        c.setFillColor(HexColor("#fffaf1"))
+        c.rect(0, 0, width, height, fill=1, stroke=0)
+    text(c, "Colorful Bunch · 西蒙小提琴谱", 22 * mm, height - 20 * mm, 20, HexColor("#211a14"))
+    text(c, "高音谱号 = 小提琴谱表  |  黑色音符 = 西蒙旋律  |  音符上小点 = 点音  |  弧线 = 长音拉弓  |  竖线 = 小节线", 18 * mm, height - 29 * mm, 7.2, HexColor("#665a4d"))
     c.setStrokeColor(HexColor("#d5b77c"))
-    c.line(22 * mm, height - 33 * mm, width - 22 * mm, height - 33 * mm)
-    text(c, f"第 {page} 页 / 2 · 完整原曲 4 分 22 秒 · 133 BPM · 矢量 PDF 可放大阅读", 22 * mm, 12 * mm, 7, HexColor("#665a4d"))
+    c.line(18 * mm, height - 33 * mm, width - 18 * mm, height - 33 * mm)
+    text(c, f"第 {page} 页 / 4 · 完整原曲 4 分 22 秒 · 133 BPM · A4 竖向打印", 18 * mm, 9 * mm, 7, HexColor("#665a4d"))
 
 def draw_system(c, track, start, end, y):
     width, _ = PAGE
-    left, right = 33 * mm, width - 24 * mm
+    left, right = 27 * mm, width - 18 * mm
     staff_top = y - 2 * mm
-    staff_gap = 3.4 * mm
+    staff_gap = 2.8 * mm
     staff_bottom = staff_top - staff_gap * 4
     bars = 2
     bar_width = (right - left) / bars
     notes = [note for note in track["notes"] if start <= note["time"] < end and note.get("animate", True)]
     simon = [note for note in notes if note["side"] == "player" and note.get("hit") is True]
+    # The original FNF chart can place many simultaneous lane taps in a few tenths
+    # of a second. Reduce each short system to a legible violin practice line rather
+    # than stacking unreadable noteheads on top of one another on A4 paper.
+    if len(simon) > 14:
+        step = (len(simon) - 1) / 13
+        simon = [simon[round(index * step)] for index in range(14)]
     others = []
     for note in notes:
         if note["side"] != "player":
@@ -87,9 +88,9 @@ def draw_system(c, track, start, end, y):
             if name and name not in others:
                 others.append(name)
     label = f"{int(start//60)}:{int(start%60):02d} - {int(end//60)}:{int(end%60):02d}  西蒙"
-    text(c, label, left, y + 1 * mm, 5.5, HexColor("#294f9f"))
+    text(c, label, left, y + 3 * mm, 6.5, HexColor("#211a14"))
     if others:
-        text(c, "其他角色：" + "、".join(others), left + 48 * mm, y + 1 * mm, 5.2, HexColor("#a4401d"))
+        text(c, "其他角色：" + "、".join(others), left + 48 * mm, y + 3 * mm, 6, HexColor("#665a4d"))
     c.setStrokeColor(HexColor("#211a14"))
     c.setLineWidth(0.5)
     for index in range(5):
@@ -100,44 +101,65 @@ def draw_system(c, track, start, end, y):
         x = left + bar * bar_width
         c.line(x, staff_top, x, staff_bottom)
     lane_y = [staff_bottom, staff_bottom + staff_gap, staff_bottom + staff_gap * 2, staff_bottom + staff_gap * 3]
-    for note in simon:
+    for note_index, note in enumerate(simon):
         x = avoid_barline(left + (note["time"] - start) / (end - start) * (right - left), left, bar_width, bars)
         note_y = lane_y[abs(note["lane"]) % 4]
         hold = float(note.get("hold", 0))
+        next_time = simon[note_index + 1]["time"] if note_index + 1 < len(simon) else end
+        gap = next_time - note["time"]
         if hold > 0:
             end_x = min(right - 1 * mm, x + hold / (end - start) * (right - left))
-            c.setStrokeColor(HexColor("#315dbc"))
-            c.setLineWidth(1.8)
-            c.line(x + 2.2 * mm, note_y, end_x, note_y)
+            c.setStrokeColor(HexColor("#211a14"))
+            c.setLineWidth(0.85)
+            tie = c.beginPath()
+            tie.moveTo(x + 2 * mm, note_y + 1.8 * mm)
+            tie.curveTo(x + (end_x - x) * .35, note_y + 5 * mm, x + (end_x - x) * .7, note_y + 5 * mm, end_x, note_y + 1.8 * mm)
+            c.drawPath(tie, fill=0, stroke=1)
             c.setLineWidth(0.5)
-        c.setFillColor(HexColor("#315dbc"))
+        c.setFillColor(HexColor("#211a14"))
         c.ellipse(x - 1.8 * mm, note_y - 1.25 * mm, x + 1.8 * mm, note_y + 1.25 * mm, fill=1, stroke=1)
         c.setStrokeColor(HexColor("#211a14"))
         c.line(x + 1.4 * mm, note_y, x + 1.4 * mm, note_y + 8.5 * mm)
         if hold == 0:
             c.setFillColor(HexColor("#211a14"))
             c.circle(x, note_y + 3.3 * mm, 0.6 * mm, fill=1, stroke=0)
-    return y - 17 * mm
+            if gap <= 0.14:
+                c.setLineWidth(0.65)
+                c.line(x + 1.4 * mm, note_y + 8.5 * mm, x + 4.3 * mm, note_y + 6.4 * mm)
+                c.line(x + 1.4 * mm, note_y + 6.4 * mm, x + 4.0 * mm, note_y + 4.3 * mm)
+            elif gap <= 0.27:
+                c.setLineWidth(0.65)
+                c.line(x + 1.4 * mm, note_y + 8.5 * mm, x + 4.3 * mm, note_y + 6.4 * mm)
+    return y - 22 * mm
 
 def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     pdfmetrics.registerFont(TTFont("SimHei", r"C:\Windows\Fonts\simhei.ttf"))
+    pdfmetrics.registerFont(TTFont("MusicSymbol", r"C:\Windows\Fonts\seguisym.ttf"))
     track = source_track()
     c = canvas.Canvas(OUT, pagesize=PAGE, pageCompression=1)
     duration, bpm = track["duration"], track["bpm"]
     bar_seconds = 60 / bpm * 4
     system_seconds = bar_seconds * 4
     starts = list(range(0, int(duration / system_seconds) + 1))
-    page, on_page, y = 1, 0, PAGE[1] - 43 * mm
+    page, on_page, y = 1, 0, PAGE[1] - 41 * mm
     draw_header(c, page)
+    rows_per_page = [10, 9, 9, 9]
     for index, unit in enumerate(starts):
         start = unit * system_seconds
         if start >= duration:
             break
-        if on_page == 19:
-            c.showPage(); page += 1; on_page = 0; y = PAGE[1] - 43 * mm; draw_header(c, page)
+        if on_page == rows_per_page[page - 1]:
+            draw_header(c, page, paint_background=False)
+            c.showPage()
+            c.setPageSize(PAGE)
+            page += 1
+            on_page = 0
+            y = PAGE[1] - 41 * mm
+            draw_header(c, page)
         y = draw_system(c, track, start, min(duration, start + system_seconds), y)
         on_page += 1
+    draw_header(c, page, paint_background=False)
     c.save()
     print(OUT)
 

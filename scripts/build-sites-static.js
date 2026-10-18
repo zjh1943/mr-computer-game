@@ -7,6 +7,7 @@ const serverDir = path.join(dist, "server");
 
 const includeFiles = [
   "index.html",
+  "colorful-bunch-violin-practice.html",
   "game-runtime.js",
   "game-cache.js",
   "styles.css",

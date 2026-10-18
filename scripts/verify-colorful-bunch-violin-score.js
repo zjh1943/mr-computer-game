@@ -7,7 +7,7 @@ assert(score.includes('Colorful Bunch · 原版角色五线谱'), 'page needs to
 assert(score.includes('西蒙独奏预览'), 'page must identify the Simon-only score preview');
 assert(score.includes('DanceReferenceData'), 'score must render from the saved original chart data');
 assert(score.includes('track.notes'), 'score must use the source note timings rather than invented notes');
-assert(score.includes("note=>note.side==='player'"), 'the preview score must render Simon only');
+assert(score.includes("note=>note.side==='player'&&note.hit===true"), 'the preview score must render only Simon\'s playable notes');
 assert(score.includes('role-cue'), 'other singers need name cues instead of their notes');
 assert(score.includes('data-full-track="true"'), 'page needs to retain the complete-track player');
 assert(staticBuilder.includes('"colorful-bunch-violin-practice.html"'), 'the deployment build must include the score page');

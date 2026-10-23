@@ -11,9 +11,10 @@ assert(js.includes('搬来角色'), 'loading animation needs characters carrying
 assert(js.includes('铺开彩色地板'), 'loading animation needs a carried colorful floor');
 assert(js.includes('装好天空'), 'loading animation needs a sky decoration step');
 assert(js.includes('playerBalance'), 'the player must lose through the battle progress bar');
-assert(js.includes('playerBalance<=0'), 'failure must wait until the player side reaches zero');
+assert(js.includes('battleOutcome(playerBalance)'), 'the battle bar must check both player and opponent ends');
 assert(js.includes('dance-failure-scene'), 'failure needs a dedicated scene');
-assert(js.includes('playPlayerDefeat'), 'only the player needs the full defeat scene');
+assert(js.includes('playPlayerDefeat'), 'the player needs a defeat scene at their end of the bar');
+assert(js.includes('playOpponentDefeat'), 'the opponent needs a defeat scene at their end of the bar');
 assert(js.includes('playOpponentIconSwap'), 'opponent role changes need a quick icon swap');
 assert(fs.existsSync(iconSheet), 'the supplied twenty-role icon sheet must be bundled');
 assert(fs.existsSync(grayPerson), 'the supplied gray person must be bundled');
@@ -22,7 +23,7 @@ assert(js.includes("'simon'"), 'Simon must have his own yellow antenna icon mapp
 assert(js.includes('dance-battle-opponent-icon') && js.includes('dance-battle-player-icon'), 'the battle bar needs the current opponent and player icons');
 assert(js.includes('referenceEntrances'), 'an incoming reference character must receive the opening singing motion');
 assert(!js.includes('下次一定好好唱'), 'the unwanted promise line must be removed');
-assert(!js.includes('rival.querySelectorAll(\':scope > div\')];if(!figures.length'), 'opponents must never be selected for defeat');
+assert(js.includes("rival.classList.add('dance-role-lost')"), 'the opponent must visibly lose when pushed to their end');
 assert(css.includes('.dance-player.dance-role-lost'), 'the player becomes the small gray defeated character');
 assert(css.includes('.dance-opponent-swap'), 'opponent swaps need a separate fast animation');
 assert(css.includes('.dance-failure-icon'), 'the dragged role icon must visibly leave and return');

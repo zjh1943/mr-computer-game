@@ -39,7 +39,7 @@
     {name:'Friend Like You · FNF 演出参考',artist:'Neonight',url:'https://www.youtube.com/watch?v=_bwDYOzbkBY'}
   ];
   const offlineVideoLibrary=[
-    {name:'Friend Like You 离线舞台',cast:['mr_tree','computer','black'],duration:150,bpm:120,theme:'friend',soundtrack:'./assets/dance-audio/friend-like-you-safe.wav'},
+    {name:'Friend Like You 正常离线舞台',cast:['mr_tree','computer','simon'],duration:150,bpm:120,theme:'meadow',soundtrack:'./assets/dance-audio/friend-like-you-safe.wav'},
     {name:'电脑先生之歌',cast:['computer'],duration:38,bpm:120,theme:'computer'},
     {name:'草地大合奏',cast:['oren','raddy','clukr','funbot','vineria'],duration:42,bpm:112,theme:'meadow'},
     {name:'太阳公公音乐会',cast:['mr_sun','mr_tree','simon','pinki'],duration:40,bpm:104,theme:'sunny'},
@@ -47,7 +47,10 @@
     {name:'彩虹朋友派对',cast:['wenda','pinki','jevin','durple','sky'],duration:44,bpm:110,theme:'rainbow'},
     {name:'树林里的歌',cast:['mr_tree','vineria','gray','tunner'],duration:39,bpm:96,theme:'forest'},
     {name:'双人节奏表演',cast:['oren','simon'],duration:34,bpm:120,theme:'duet'},
-    {name:'二十人离线合唱',cast:['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin','black'],duration:60,bpm:120,theme:'finale'}
+    {name:'白云草地排练',cast:['oren','vineria','lime','simon','wenda'],duration:48,bpm:108,theme:'meadow'},
+    {name:'电脑先生朋友合奏',cast:['computer','funbot','garnold','clukr','mr_sun'],duration:52,bpm:118,theme:'robot'},
+    {name:'星光彩色地板演唱会',cast:['pinki','durple','jevin','sky','tunner','mr_tree'],duration:60,bpm:102,theme:'rainbow'},
+    {name:'十九人离线合唱',cast:['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin'],duration:60,bpm:120,theme:'finale'}
   ];
   if(typeof module!=='undefined') { module.exports={catalog,characterProfiles,songs,tutorialLevels,collapseHoldOverlaps,chart,battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,characterFrameDuration,stageSunVisible,noteTravelY,noteTravelBounds,grade,audioFileAllowed,matchesSong,songSources,leadCharacter}; return; }
   const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('apps-'+key))??fallback;}catch{return fallback;}};

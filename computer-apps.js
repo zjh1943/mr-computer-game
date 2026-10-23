@@ -81,15 +81,8 @@
   function mixbox(host){
     host.classList.add('mixbox-app');
     const safeIds=['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin'];
-    const presets=[
-      {name:'原版快乐合奏',detail:'五个基础节拍声部',ids:['oren','raddy','clukr','funbot','vineria']},
-      {name:'阳光草地模组',detail:'太阳公公、莱姆和西蒙',ids:['mr_sun','lime','simon','vineria']},
-      {name:'电脑先生朋友团',detail:'电脑先生、快乐机器人与加诺德',ids:['computer','funbot','garnold','clukr']},
-      {name:'彩虹人声模组',detail:'温达、平吉、杰文与德普勒',ids:['wenda','pinki','jevin','durple']},
-      {name:'树林旋律模组',detail:'大树先生、图纳与灰灰',ids:['mr_tree','tunner','gray','sky']}
-    ];
-    const heading=el('h2','节奏盒子音乐台',host),note=el('p','从下方拿起一个彩色图标，拖到上面的灰色小人身上。角色会开始唱自己的声部；点小人可以拿走角色。',host),presetBar=el('div',undefined,host),status=el('p','先把角色图标拖到灰色小人上，做出你的合奏。',host),stage=el('div',undefined,host),tray=el('div',undefined,host),controls=el('div',undefined,host);
-    heading.className='mixbox-title';note.className='mixbox-note';presetBar.className='mixbox-presets';status.className='mixbox-status';stage.className='mixbox-stage';tray.className='mixbox-tray';controls.className='mixbox-controls';
+    const heading=el('h2','节奏盒子音乐台',host),note=el('p','把底下的角色图标拖到上面灰色人物身上。点击舞台中的角色可拿下来。',host),status=el('p','拖一个图标开始合奏。',host),stage=el('div',undefined,host),tray=el('div',undefined,host),controls=el('div',undefined,host);
+    heading.className='mixbox-title';note.className='mixbox-note';status.className='mixbox-status';stage.className='mixbox-stage';tray.className='mixbox-tray';controls.className='mixbox-controls';
     const lineup=Array(7).fill(null);let audio=[];let animationTimer=0;let draggedId=null;
     const asset=file=>'./assets/sprunki-kiss-local/assets/'+file;
     const ids=()=>lineup.filter(Boolean);
@@ -97,8 +90,7 @@
     const play=()=>{stop();const active=ids();if(!active.length){status.textContent='先拖一个图标到灰色小人身上。';return;}audio=active.map(id=>{const art=window.DanceCast?.[id],clip=new Audio(art.audio);clip.loop=true;clip.volume=Math.min(.3,Math.max(.1,(art.gain||.16)*1.3));clip.play().catch(()=>{status.textContent='浏览器还没有允许声音，请再点一次“播放合奏”。';});return clip;});status.textContent=`正在本地合奏：${active.map(id=>window.DanceCast[id].name).join('、')}`;let frame=0;animationTimer=setInterval(()=>{stage.querySelectorAll('.mixbox-slot[data-id]').forEach(card=>{const art=window.DanceCast?.[card.dataset.id];if(!art)return;card.classList.add('is-playing');const image=card.querySelector('img'),frames=[art.idle,...(art.frames||[])],src=asset(frames[frame%frames.length]);if(image.src!==src)image.src=src;});frame++;},210);};
     const add=(id,slot)=>{if(!id||!window.DanceCast?.[id])return;const previous=lineup.indexOf(id);if(previous>=0)lineup[previous]=null;lineup[slot]=id;render();play();};
     const render=()=>{stage.replaceChildren();lineup.forEach((id,slot)=>{const card=btn(stage,id?window.DanceCast[id].name:'灰色小人',()=>{if(id){lineup[slot]=null;render();play();status.textContent='已取下角色，把新的图标拖进这个位置。';}});card.className='mixbox-slot';card.dataset.slot=slot;if(id){card.dataset.id=id;const img=el('img',undefined,card),art=window.DanceCast[id];img.src=asset(art.idle);img.alt=art.name;el('span',art.name,card);}else{const person=el('span','●',card);person.className='mixbox-gray-person';el('small','拖到这里',card);}card.addEventListener('dragover',event=>event.preventDefault());card.addEventListener('drop',event=>{event.preventDefault();add(event.dataTransfer.getData('text/plain')||draggedId,slot);draggedId=null;});});tray.replaceChildren();safeIds.forEach(id=>{const art=window.DanceCast?.[id];if(!art)return;const used=lineup.includes(id),card=btn(tray,art.name,()=>{const empty=lineup.indexOf(null);if(empty<0){status.textContent='灰色小人都站满了，先点一个角色拿下来。';return;}add(id,empty);});card.className='mixbox-icon';card.draggable=true;card.disabled=used;card.setAttribute('aria-label',(used?'已在合奏中：':'拖动角色：')+art.name);const img=el('img',undefined,card);img.src=asset(art.idle);img.alt='';el('span',art.name,card);card.addEventListener('dragstart',event=>{draggedId=id;event.dataTransfer.setData('text/plain',id);});});};
-    presets.forEach(preset=>btn(presetBar,preset.name,()=>{lineup.fill(null);preset.ids.slice(0,lineup.length).forEach((id,index)=>lineup[index]=id);render();play();status.textContent=`已摆好“${preset.name}”：${preset.detail}`;}));
-    btn(controls,'▶ 播放合奏',play);btn(controls,'■ 停止',()=>{stop();status.textContent='合奏已停止。';});btn(controls,'清空小人',()=>{lineup.fill(null);stop();render();status.textContent='灰色小人已经空出来了。';});btn(controls,'打开节奏音乐跳舞游戏',()=>{window.dispatchEvent(new CustomEvent('computer-open-app',{detail:{app:'dance'}}));});
+    btn(controls,'清空舞台',()=>{lineup.fill(null);stop();render();status.textContent='灰色人物已经空出来了。';});btn(controls,'打开节奏音乐跳舞游戏',()=>{window.dispatchEvent(new CustomEvent('computer-open-app',{detail:{app:'dance'}}));});
     render();return stop;
   }
 

@@ -27,6 +27,7 @@
 @keyframes voxel-panorama{from{translate:-2% 0}to{translate:2% 0}}@keyframes voxel-splash-pulse{50%{scale:1.07}}
 @media(max-width:760px){.voxel-title-card{width:94%;margin:0;padding:22px 16px}.voxel-title-card h1{font-size:42px!important}.voxel-profile-card{display:none}.voxel-splash{right:8px;top:56px;font-size:11px}.voxel-world-row{grid-template-columns:82px 1fr!important}.voxel-world-preview{width:82px;height:58px}.voxel-world-actions{grid-column:1/-1;flex-direction:row!important}.voxel-create-card{grid-template-columns:1fr}}
 .voxel-shell[data-voxel-edition="java"] .voxel-joystick{display:none!important}
+.voxel-shell[data-voxel-edition="java"] .voxel-view canvas{cursor:crosshair}
 .voxel-shell[data-voxel-edition="bedrock"] .voxel-bottom{background:#294638}
 .voxel-menu-card.voxel-inventory{width:min(980px,100%);text-align:left;padding:16px;background:#c6c6bc;color:#202820;border-color:#eee}
 .voxel-menu-card.voxel-inventory h2{color:#253924}

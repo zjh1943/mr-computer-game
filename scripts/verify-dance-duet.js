@@ -1,11 +1,14 @@
 const assert=require('node:assert/strict');
 const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,noteTravelY,grade}=require('../computer-apps.js');
 const {tracks}=require('../dance-reference-data.js');
-for(const song of tracks){const b=battleChart(song);assert.equal(b.player.length+b.opponent.length,song.notes.length);assert(b.player.length>100&&b.opponent.length>100);assert(b.player.every(n=>n.hit??n.side==='player'));assert(b.opponent.every(n=>!(n.hit??n.side==='player')));assert(b.opponent.every(n=>n.done===false));}
+const assertNoLaneOverlap=list=>{const laneEnds=new Map();for(const note of [...list].sort((a,b)=>a.time-b.time)){const end=laneEnds.get(note.lane)||-Infinity;assert(note.time>end+.035,'one lane cannot show a new arrow during its long note');laneEnds.set(note.lane,Math.max(end,note.time+(note.hold||0)));}};
+for(const song of tracks){const b=battleChart(song);assert(b.player.length>100&&b.opponent.length>100);assert(b.player.every(n=>n.side==='player'),'only the player character may receive player arrows');assert(b.opponent.every(n=>n.side!=='player'),'non-player character notes stay automatic');assert(b.opponent.every(n=>n.done===false));assertNoLaneOverlap(b.player);assertNoLaneOverlap(b.opponent);}
 assert(soloChart(tracks[0]).length>100);
 assert(soloChart(tracks[0]).every(n=>n.hit===true));
+assert(soloChart(tracks[0]).every(n=>n.side==='player'),'solo practice only includes the player character');
 assert(soloChart(tracks[1]).length>100);
 assert(soloChart(tracks[1]).every(n=>n.hit===true));
+assert(soloChart(tracks[1]).every(n=>n.side==='player'),'solo practice only includes the player character');
 assert(notesForMode(tracks[0],'play').length>100);
 assert.equal(notesForMode(tracks[0],'watch').length,0);
 assert.equal(singAnimationFor(['idle','singLEFT'],2),'singLEFT');
@@ -17,9 +20,9 @@ assert.deepEqual([0,1,2,3].map(lane=>orientedLane('opponent',lane)),[0,1,2,3]);
 assert.deepEqual([0,1,2,3].map(lane=>orientedLane('player',lane)),[3,1,2,0]);
 assert.equal(grade(.24),60);
 assert.equal(grade(.29),0);
-assert(Math.abs(noteTravelY(12.2,10,34,300)-300)<1e-9,'a note enters at the bottom edge');
-assert.equal(noteTravelY(10,10,34,300),34,'a note reaches the top receptor on its beat');
-assert(noteTravelY(11,10,34,300)>34&&noteTravelY(11,10,34,300)<300,'a note crosses the full lane between bottom and top');
+assert(Math.abs(noteTravelY(12.2,10,34,300)-34)<1e-9,'a player note enters at the top edge');
+assert.equal(noteTravelY(10,10,34,300),300,'a player note reaches the bottom receptor on its beat');
+assert(noteTravelY(11,10,34,300)>34&&noteTravelY(11,10,34,300)<300,'a player note crosses the full lane from top to bottom');
 assert(require('node:fs').readFileSync('computer-apps.js','utf8').includes('n.time>=NOTE_TRAVEL_SECONDS'),'reference songs need a full-lane opening before judging notes');
 assert.equal(stageSunVisible(['oren','raddy']),true);
 assert.equal(stageSunVisible(['oren','mr_sun']),false);

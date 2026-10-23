@@ -24,7 +24,7 @@ assert(app.includes('长音保持中'), 'a held note needs a visible holding sta
 assert(app.includes('changePlayerBalance(1)'), 'holding a long note needs to push the player progress forward');
 assert(css.includes('[data-feedback="holding"]'), 'a held target needs a distinct visual state');
 assert(css.includes('.dance-tutorial-character .dance-character-icon'), 'training characters need their front-facing original icon style');
-assert(page.includes('computer-apps.js?v=20261015-friend-video1'), 'the game must request the changed rhythm code, not an old browser copy');
+assert(page.includes('computer-apps.js?v=20261023-arrows1'), 'the game must request the changed rhythm code, not an old browser copy');
 assert(portal.includes("'?v='+revision"), 'the dance engine must request the matching current source files');
 
 console.log('Original Mr. Tree and Mr. Computer voices, held-note status, progress boost, and front training icons verified.');

@@ -12,15 +12,15 @@
   const songs = [{name:'芯片起舞',bpm:96,scale:[0,4,7,12,7,4,2,7]},{name:'霓虹对决',bpm:120,scale:[0,3,7,10,12,10,7,3]},{name:'月光律动',bpm:84,scale:[0,5,9,12,9,7,5,2]},{name:'像素冲刺',bpm:140,scale:[0,7,12,7,3,10,15,10]},{name:'彩虹派对',bpm:110,scale:[0,2,4,7,9,7,4,2]}];
   const tutorialPatterns=[[0,1,2,3,0,1,2,3],[0,0,1,1,2,2,3,3],[0,2,1,3,0,1,3,2],[0,1,0,2,1,3,2,3],[0,3,1,2,3,0,2,1]];
   const tutorialLevels=[72,84,96,108,120].map((bpm,index)=>{const beat=60/bpm,pattern=tutorialPatterns[index],holdEvery=Math.max(4,7-index),notes=Array.from({length:16+index*4},(_,i)=>({time:2+i*beat,lane:pattern[i%pattern.length],hold:index>0&&i%holdEvery===3?beat*1.45:0,hit:true,side:'player',animate:true}));return {id:`tutorial-${index+1}`,name:`新手第${index+1}关`,artist:'电脑先生训练营',bpm,duration:notes.at(-1).time+2.5,scale:[0,4,7,12,7,4,2,7],tutorial:true,tutorialIndex:index,minimumScore:Math.round(notes.length*52),lead:'simon',cast:['oren'],notes};});
-  const collapseHoldOverlaps=list=>{const ends=new Map();return [...list].sort((a,b)=>a.time-b.time).filter(note=>{const end=ends.get(note.lane)||-Infinity;if(note.time<=end+.035)return false;if((note.hold||0)>.02)ends.set(note.lane,note.time+note.hold);return true;}).map(note=>({...note}));};
-  const chart = song => {if(song.tutorial)return collapseHoldOverlaps(song.notes).map(n=>({...n,done:false}));if(song.reference)return collapseHoldOverlaps(song.notes.filter(n=>n.hit??n.side==='player')).map(n=>({...n,done:false}));const bpm=Math.max(40,Math.min(240,Number(song.bpm)||120)),length=song.duration?Math.max(0,Math.floor((Math.min(900,song.duration)-3)*bpm/60)+1):64;return Array.from({length},(_,i)=>({time:2+i*60/bpm,lane:(i*3+Math.floor(i/4))%4,done:false})).filter(n=>!song.vocalWindows||song.vocalWindows.some(([from,to])=>n.time>=from+1.8&&n.time<=to));};
+  const collapseHoldOverlaps=list=>{const ends=new Map();return [...list].sort((a,b)=>a.time-b.time).filter(note=>{const end=ends.get(note.lane)||-Infinity;if(note.time<=end+.035)return false;ends.set(note.lane,Math.max(end,note.time+(note.hold||0)));return true;}).map(note=>({...note}));};
+  const chart = song => {if(song.tutorial)return collapseHoldOverlaps(song.notes).map(n=>({...n,done:false}));if(song.reference)return collapseHoldOverlaps(song.notes.filter(n=>n.side==='player')).map(n=>({...n,done:false}));const bpm=Math.max(40,Math.min(240,Number(song.bpm)||120)),length=song.duration?Math.max(0,Math.floor((Math.min(900,song.duration)-3)*bpm/60)+1):64;return Array.from({length},(_,i)=>({time:2+i*60/bpm,lane:(i*3+Math.floor(i/4))%4,done:false})).filter(n=>!song.vocalWindows||song.vocalWindows.some(([from,to])=>n.time>=from+1.8&&n.time<=to));};
   const battleChart = song => {
     if(song.tutorial)return {player:chart(song),opponent:[]};
-    if(song.reference)return {player:chart(song),opponent:collapseHoldOverlaps(song.notes.filter(n=>!(n.hit??n.side==='player'))).map(n=>({...n,done:false}))};
+    if(song.reference)return {player:chart(song),opponent:collapseHoldOverlaps(song.notes.filter(n=>n.side!=='player')).map(n=>({...n,done:false}))};
     const all=chart(song),beat=60/(song.bpm||120);
     return {player:all.filter(n=>Math.floor((n.time-2)/beat/4)%2===1),opponent:all.filter(n=>Math.floor((n.time-2)/beat/4)%2===0)};
   };
-  const soloChart=song=>song?.reference?song.notes.filter(n=>n.hit===true).map(n=>({...n,done:false})):chart(song);
+  const soloChart=chart;
   const notesForMode=(song,mode)=>mode==='watch'?[]:soloChart(song);
   const singAnimationFor=(available,lane)=>{const wanted=['singLEFT','singDOWN','singUP','singRIGHT'][lane];return available.includes(wanted)?wanted:available.find(name=>name.startsWith('sing'))||'idle';};
   const performanceHold=(side,character,watching,hold=0)=>{const minimum=watching?1.05:(side==='player'&&character==='simon'?0.85:0.68);return Math.max(hold,minimum);};

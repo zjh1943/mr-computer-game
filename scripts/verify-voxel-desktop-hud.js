@@ -16,6 +16,11 @@ assert.match(css, /\.voxel-heart(?:,|\{)/, 'the HUD needs a pixel heart style');
 assert.match(css, /\.voxel-drumstick(?:\{|,)/, 'the HUD needs a pixel food style');
 assert.match(css, /\.voxel-xp-bar\{/, 'the HUD needs an experience bar style');
 assert.match(css, /\.voxel-hotbar button\.selected:after/, 'the selected hotbar item should have a clear desktop slot frame');
-assert.match(page, /computer-apps\.css\?v=20261023-voxelhud1/, 'the published page should request the new HUD stylesheet');
+assert.match(css, /\.voxel-heart:before\{[^}]*box-shadow:/, 'hearts should be built from square pixels');
+assert.match(css, /\.voxel-drumstick:before\{[^}]*box-shadow:/, 'food icons should be built from square pixels');
+assert.doesNotMatch(css, /\.voxel-heart:before\{[^}]*clip-path/, 'hearts should not use smooth vector shapes');
+assert.match(css, /\.voxel-joystick\{[^}]*border-radius:0/, 'touch controls should use a square pixel joystick');
+assert.match(css, /@media\(pointer:coarse\)\{\.voxel-joystick\{display:block/, 'the joystick should appear only for touch input');
+assert.match(page, /computer-apps\.css\?v=20261023-pixelcontrols1/, 'the published page should request the new pixel control stylesheet');
 
 console.log('Voxel desktop HUD verified.');

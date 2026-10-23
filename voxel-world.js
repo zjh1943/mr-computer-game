@@ -107,7 +107,7 @@
       let viewMode=0;const avatarMaterials=[];
       const geometry=new T.BoxGeometry(1,1,1),textures=[],materials={};
       function texture(color,kind){
-        const canvas=document.createElement('canvas');canvas.width=canvas.height=16;canvas.style.imageRendering='pixelated';const c=canvas.getContext('2d');
+        const canvas=document.createElement('canvas');canvas.width=canvas.height=16;canvas.style.imageRendering='pixelated';const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
         const palettes={
           'grass-top':['#57983d','#69a947','#7db653','#447d33'],'grass-side':['#866043','#9a704c','#6e4c34','#b17c51'],dirt:['#866043','#9a704c','#6e4c34','#b17c51'],stone:['#747b7d','#858c8e','#62696c','#9ba0a0'],cobblestone:['#687074','#858c8f','#4f575b','#9aa0a1'],bedrock:['#303338','#45494f','#1f2226','#5d6268'],
           wood:['#86613b','#9d7548','#68472d','#ba8e59'],planks:['#a87a47','#bd8d53','#835d36','#d0a365'],darkplanks:['#66503b','#7d6246','#4e3d30','#967858'],sand:['#d8ca82','#e6d891','#c2b46e','#f0e4a4'],brick:['#9b4d3c','#b75d48','#77382f','#d27a5c'],

@@ -3,6 +3,7 @@ const fs = require('node:fs');
 
 const world = fs.readFileSync('voxel-world.js', 'utf8');
 const css = fs.readFileSync('computer-apps.css', 'utf8');
+const page = fs.readFileSync('computer.html', 'utf8');
 
 assert.match(world, /class="voxel-hud"/, 'the 3D world should render a desktop game HUD');
 assert.match(world, /data-voxel-health/, 'the HUD should expose pixel health hearts');
@@ -15,5 +16,6 @@ assert.match(css, /\.voxel-heart(?:,|\{)/, 'the HUD needs a pixel heart style');
 assert.match(css, /\.voxel-drumstick(?:\{|,)/, 'the HUD needs a pixel food style');
 assert.match(css, /\.voxel-xp-bar\{/, 'the HUD needs an experience bar style');
 assert.match(css, /\.voxel-hotbar button\.selected:after/, 'the selected hotbar item should have a clear desktop slot frame');
+assert.match(page, /computer-apps\.css\?v=20261023-voxelhud1/, 'the published page should request the new HUD stylesheet');
 
 console.log('Voxel desktop HUD verified.');

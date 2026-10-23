@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,noteTravelY,grade}=require('../computer-apps.js');
+const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,noteTravelY,grade,battleOutcome}=require('../computer-apps.js');
 const {tracks}=require('../dance-reference-data.js');
 const assertNoLaneOverlap=list=>{const laneEnds=new Map();for(const note of [...list].sort((a,b)=>a.time-b.time)){const end=laneEnds.get(note.lane)||-Infinity;assert(note.time>end+.035,'one lane cannot show a new arrow during its long note');laneEnds.set(note.lane,Math.max(end,note.time+(note.hold||0)));}};
 for(const song of tracks){const b=battleChart(song);assert(b.player.length>100&&b.opponent.length>100);assert(b.player.every(n=>n.side==='player'),'only the player character may receive player arrows');assert(b.opponent.every(n=>n.side!=='player'),'non-player character notes stay automatic');assert(b.opponent.every(n=>n.done===false));assertNoLaneOverlap(b.player);assertNoLaneOverlap(b.opponent);}
@@ -20,6 +20,9 @@ assert.deepEqual([0,1,2,3].map(lane=>orientedLane('opponent',lane)),[0,1,2,3]);
 assert.deepEqual([0,1,2,3].map(lane=>orientedLane('player',lane)),[3,1,2,0]);
 assert.equal(grade(.24),60);
 assert.equal(grade(.29),0);
+assert.equal(battleOutcome(0),'player','the player loses only when their end of the bar is empty');
+assert.equal(battleOutcome(100),'opponent','the opponent loses when pushed to their end of the bar');
+assert.equal(battleOutcome(55),null,'a middle balance keeps the song running');
 assert(Math.abs(noteTravelY(12.2,10,34,300)-34)<1e-9,'a player note enters at the top edge');
 assert.equal(noteTravelY(10,10,34,300),300,'a player note reaches the bottom receptor on its beat');
 assert(noteTravelY(11,10,34,300)>34&&noteTravelY(11,10,34,300)<300,'a player note crosses the full lane from top to bottom');

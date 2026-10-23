@@ -115,6 +115,7 @@
 .dance-gray-person{position:absolute;left:-20%;bottom:8%;width:130px;height:auto;object-fit:contain;opacity:0;animation:dance-gray-walk 1.15s .65s ease-out forwards}
 .dance-failure-scene.is-returning .dance-gray-person{left:43%;opacity:1;animation:dance-gray-transform 1.05s ease-in forwards}
 .dance-player.dance-role-lost{filter:grayscale(1);opacity:.18;transform:scale(.55)!important;transition:filter .3s,opacity .3s,transform .3s!important}.dance-rack .role-taken{opacity:.18;transform:translateY(-16px);pointer-events:none}
+.dance-rival.dance-role-lost{filter:grayscale(1);opacity:.18;transform:scale(.55)!important;transition:filter .3s,opacity .3s,transform .3s!important}
 @keyframes dance-icon-taken{0%{transform:translate(0,0) scale(1)}100%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}}
 @keyframes dance-icon-return{0%{transform:translate(220%,-170%) rotate(18deg) scale(.72)}100%{transform:translate(0,0) rotate(0) scale(1)}}
 @keyframes dance-gray-walk{0%{left:-20%;opacity:0;transform:translateY(0)}20%{opacity:1}70%{left:43%;transform:translateY(-5px)}100%{left:43%;opacity:1;transform:translateY(0)}}

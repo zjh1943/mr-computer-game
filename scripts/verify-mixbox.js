@@ -1,0 +1,19 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const apps = require('../computer-apps.js');
+
+const source = fs.readFileSync('computer-apps.js', 'utf8');
+const css = fs.readFileSync('computer-apps.css', 'utf8');
+const app = fs.readFileSync('app.js', 'utf8');
+
+assert.deepEqual(apps.catalog.mixbox, ['合', '节奏盒子音乐站']);
+assert(source.includes("function mixbox(host)"));
+assert(source.includes("const safeIds=['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin']"));
+assert(!source.match(/safeIds=.*['"]black['"]/), 'Black must not be selectable in the safe music hub');
+assert(source.includes("'打开节奏音乐跳舞游戏'"));
+assert(source.includes("new CustomEvent('computer-open-app'"));
+assert(app.includes('window.addEventListener("computer-open-app"'));
+assert(css.includes('.mixbox-app'));
+assert(css.includes('.mixbox-member.is-playing'));
+
+console.log('Safe offline Sprunki mixbox verified.');

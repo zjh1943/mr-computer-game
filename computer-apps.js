@@ -1,12 +1,12 @@
 /* Runnable, local applications. Every mount returns a cleanup function. */
 (() => {
-  const catalog = {calculator:['算','计算器'],notes:['记','便签本'],tasks:['单','待办清单'],memory:['牌','记忆翻牌'],piano:['琴','小钢琴'],videos:['视','视频'],characters:['角','角色介绍'],dance:['舞','节奏音乐跳舞游戏'],blocks3d:['立','我的世界 3D']};
+  const catalog = {calculator:['算','计算器'],notes:['记','便签本'],tasks:['单','待办清单'],memory:['牌','记忆翻牌'],piano:['琴','小钢琴'],videos:['视','视频'],characters:['角','角色介绍'],mixbox:['合','节奏盒子音乐站'],dance:['舞','节奏音乐跳舞游戏'],blocks3d:['立','我的世界 3D']};
   const characterProfile=(group,sound,color,description)=>({age:'未公开',birthday:'未公开',group,sound,color,description});
   const characterProfiles={
     oren:characterProfile('节拍组','基础鼓点','橙色','橙色节拍手，负责稳定的基础节奏。'),raddy:characterProfile('节拍组','强劲鼓点','红色','红色鼓手，声音有力而直接。'),clukr:characterProfile('节拍组','金属镲片','银色','头顶转盘的银色演奏家。'),funbot:characterProfile('节拍组','机械节拍','银灰色','快乐机器人，会用机械节拍带动大家。'),vineria:characterProfile('节拍组','沙锤节奏','绿色','绿色藤蔓歌手，声音轻快。'),
     gray:characterProfile('效果组','低音效果','灰色','安静的灰色低音角色。'),brud:characterProfile('效果组','桶帽打击声','棕色','棕色桶帽角色，带来有趣的节拍。'),garnold:characterProfile('效果组','电子效果','金色','金色护目镜演奏家，是电脑先生的朋友。'),lime:characterProfile('效果组','快速效果音','青柠色','活泼的青柠角色，动作变化很快。'),sky:characterProfile('效果组','明亮效果音','天蓝色','蓝色小熊耳角色，音色明亮。'),
     mr_sun:characterProfile('旋律组','温暖钢琴旋律','黄色','太阳公公，用温暖的旋律照亮舞台。'),durple:characterProfile('旋律组','悠长管乐','紫色','紫色长角歌手，擅长悠长的声音。'),mr_tree:characterProfile('旋律组','厚实低音','棕绿双色','大树先生，负责厚实的低音。'),simon:characterProfile('旋律组','明亮主旋律','黄色','黄色天线歌手，是节奏对战里的主唱之一。'),tunner:characterProfile('旋律组','口哨旋律','棕褐色','棕色宽檐帽角色，吹出清楚的旋律。'),
-    computer:characterProfile('人声组','电子人声','灰黑色','电脑先生，黑色屏幕会跟着歌词变化。'),wenda:characterProfile('人声组','清亮人声','白色','白色猫耳歌手，声音清亮。'),pinki:characterProfile('人声组','轻快人声','粉色','粉色蝴蝶结歌手，节奏轻快。'),jevin:characterProfile('人声组','低沉人声','深蓝色','深蓝斗篷歌手，声音沉稳。'),black:characterProfile('人声组','普通阶段无独立声音','黑色','Black 的正常造型；角色介绍不播放恐怖内容。')
+    computer:characterProfile('人声组','电子人声','灰黑色','电脑先生会读代码、找出小错误，也会把新点子变成游戏；黑色屏幕会跟着歌词变化。'),wenda:characterProfile('人声组','清亮人声','白色','白色猫耳歌手，声音清亮。'),pinki:characterProfile('人声组','轻快人声','粉色','粉色蝴蝶结歌手，节奏轻快。'),jevin:characterProfile('人声组','低沉人声','深蓝色','深蓝斗篷歌手，声音沉稳。'),black:characterProfile('人声组','普通阶段无独立声音','黑色','Black 的正常造型；角色介绍不播放恐怖内容。')
   };
   Object.assign(catalog,typeof module!=="undefined"?require("./arcade-games.js").catalog:window.ArcadeGames?.catalog);
   const songs = [{name:'芯片起舞',bpm:96,scale:[0,4,7,12,7,4,2,7]},{name:'霓虹对决',bpm:120,scale:[0,3,7,10,12,10,7,3]},{name:'月光律动',bpm:84,scale:[0,5,9,12,9,7,5,2]},{name:'像素冲刺',bpm:140,scale:[0,7,12,7,3,10,15,10]},{name:'彩虹派对',bpm:110,scale:[0,2,4,7,9,7,4,2]}];
@@ -57,7 +57,7 @@
   function sound(ctx,freq,start,duration=.16,type='sine',volume=.08){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(volume,start);g.gain.exponentialRampToValueAtTime(.001,start+duration);o.connect(g).connect(ctx.destination);o.onended=()=>{o.disconnect();g.disconnect();};o.start(start);o.stop(start+duration);}
   function mount(id,host){host.classList.add('extra-app');
     if(window.ArcadeGames?.catalog[id])return window.ArcadeGames.mount(id,host);
-    if(id==='videos')return videos(host); if(id==='characters')return characters(host); if(id==='dance')return dance(host); if(id==='blocks3d')return blocks(host);
+    if(id==='videos')return videos(host); if(id==='characters')return characters(host); if(id==='mixbox')return mixbox(host); if(id==='dance')return dance(host); if(id==='blocks3d')return blocks(host);
     if(id==='calculator'){
       const input=el('input',undefined,host);input.type='text';input.placeholder='输入两个数字，例如 12 × 3';input.setAttribute('aria-label','计算式');const out=el('output','',host);
       const calc=()=>{const m=input.value.match(/^\s*(-?\d+(?:\.\d+)?)\s*([+\-*/×÷])\s*(-?\d+(?:\.\d+)?)\s*$/);if(!m){out.textContent='请输入 数字 运算符 数字';return;}const a=+m[1],b=+m[3];const result={'+':()=>a+b,'-':()=>a-b,'*':()=>a*b,'×':()=>a*b,'/':()=>a/b,'÷':()=>a/b}[m[2]]();out.textContent=Number.isFinite(result)?String(result):'不能除以零';};btn(host,'计算',calc);input.onkeydown=e=>{if(e.key==='Enter')calc();};
@@ -73,6 +73,28 @@
       el('p','点击琴键演奏',host);let ctx;const keys=el('div',undefined,host);keys.className='piano-keys';['Do','Re','Mi','Fa','Sol','La','Si','Do↑'].forEach((name,i)=>btn(keys,name,async()=>{try{ctx??=new(window.AudioContext||window.webkitAudioContext)();await ctx.resume();sound(ctx,261.63*2**([0,2,4,5,7,9,11,12][i]/12),ctx.currentTime,.6,'triangle');}catch{keys.title='浏览器没有开启声音';}}));return()=>{if(ctx)ctx.close();};
     }
     return()=>{};
+  }
+
+  function mixbox(host){
+    host.classList.add('mixbox-app');
+    const safeIds=['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin'];
+    const presets=[
+      {name:'原版快乐合奏',detail:'五个基础节拍声部',ids:['oren','raddy','clukr','funbot','vineria']},
+      {name:'阳光草地模组',detail:'太阳公公、莱姆和西蒙',ids:['mr_sun','lime','simon','vineria']},
+      {name:'电脑先生朋友团',detail:'电脑先生、快乐机器人与加诺德',ids:['computer','funbot','garnold','clukr']},
+      {name:'彩虹人声模组',detail:'温达、平吉、杰文与德普勒',ids:['wenda','pinki','jevin','durple']},
+      {name:'树林旋律模组',detail:'大树先生、图纳与灰灰',ids:['mr_tree','tunner','gray','sky']}
+    ];
+    const heading=el('h2','节奏盒子音乐站',host),note=el('p','这里是电脑先生里保存的安全合奏：点角色加入或移除声部，再按播放。没有恐怖阶段、黑色角色或外站加载。',host),presetBar=el('div',undefined,host),status=el('p','请选择一个模组，或自己组合角色。',host),grid=el('div',undefined,host),controls=el('div',undefined,host);
+    heading.className='mixbox-title';note.className='mixbox-note';presetBar.className='mixbox-presets';status.className='mixbox-status';grid.className='mixbox-cast';controls.className='mixbox-controls';
+    const selected=new Set(['oren','raddy','clukr','funbot','vineria']);let audio=[];let animationTimer=0;
+    const asset=file=>'./assets/sprunki-kiss-local/assets/'+file;
+    const stop=()=>{audio.forEach(item=>{item.pause();item.currentTime=0;});audio=[];clearInterval(animationTimer);grid.querySelectorAll('.mixbox-member').forEach(card=>card.classList.remove('is-playing'));};
+    const render=()=>{grid.replaceChildren();safeIds.forEach(id=>{const art=window.DanceCast?.[id];if(!art)return;const card=btn(grid,art.name,()=>{selected.has(id)?selected.delete(id):selected.add(id);render();status.textContent=selected.size?`已选 ${selected.size} 个声部，可以开始合奏。`:'请至少选一个声部。';});card.className='mixbox-member';card.dataset.id=id;card.setAttribute('aria-pressed',String(selected.has(id)));const img=el('img',undefined,card);img.src=asset(art.idle);img.alt='';const label=el('span',art.name,card);if(selected.has(id))label.insertAdjacentText('beforeend',' ✓');});};
+    const play=()=>{stop();const ids=[...selected];if(!ids.length){status.textContent='请先选一个角色。';return;}audio=ids.map(id=>{const art=window.DanceCast?.[id];const clip=new Audio(art.audio);clip.loop=true;clip.volume=Math.min(.3,Math.max(.1,(art.gain||.16)*1.3));clip.play().catch(()=>{status.textContent='浏览器还没有允许声音，请再点一次播放。';});return clip;});status.textContent=`正在本地合奏：${ids.map(id=>window.DanceCast[id].name).join('、')}`;let frame=0;animationTimer=setInterval(()=>{grid.querySelectorAll('.mixbox-member').forEach(card=>{const art=window.DanceCast?.[card.dataset.id];if(!art)return;card.classList.toggle('is-playing',selected.has(card.dataset.id));const image=card.querySelector('img');const frames=[art.idle,...(art.frames||[])];image.src=asset(frames[frame%frames.length]);});frame++;},210);};
+    presets.forEach(preset=>btn(presetBar,preset.name,()=>{selected.clear();preset.ids.forEach(id=>selected.add(id));render();status.textContent=`已装入“${preset.name}”：${preset.detail}`;}));
+    btn(controls,'▶ 播放本地合奏',play);btn(controls,'■ 停止',()=>{stop();status.textContent='合奏已停止。';});btn(controls,'打开节奏音乐跳舞游戏',()=>{window.dispatchEvent(new CustomEvent('computer-open-app',{detail:{app:'dance'}}));});
+    render();return stop;
   }
 
   function videos(host){

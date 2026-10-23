@@ -9001,6 +9001,11 @@ function openComputerApp(app) {
   saveGameState();
 }
 
+window.addEventListener("computer-open-app", (event) => {
+  const app = event.detail?.app;
+  if (typeof app === "string" && window.ComputerApps?.catalog?.[app]) openComputerApp(app);
+});
+
 function closeComputerApp() {
   window.ComputerExperience?.leaveFullscreen();
   window.ComputerExperience?.stopSoftware();

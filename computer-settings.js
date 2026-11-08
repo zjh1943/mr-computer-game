@@ -63,6 +63,7 @@
   function playVoice(){voiceAudio?.pause();if(!state.characterSounds)return;voiceAudio=new Audio(versionProfiles[state.version].voice);voiceAudio.volume=state.masterVolume;voiceAudio.play().catch(()=>{});}
   voicePreview.onclick=playVoice;
   new MutationObserver(applyMedia).observe(document.body,{childList:true,subtree:true});
-  window.ComputerSettings={...api,get:()=>({...state}),voiceSettings:()=>voiceSettings(state),open};
+  const setVersion=id=>{if(!versionProfiles[id])return;state.version=id;apply(true);if(state.characterSounds)playVoice();};
+  window.ComputerSettings={...api,get:()=>({...state}),voiceSettings:()=>voiceSettings(state),setVersion,open};
   apply(false);
 })();

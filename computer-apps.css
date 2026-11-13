@@ -283,6 +283,8 @@
   pointer-events:none;
   z-index:5;
 }
+.dance-stage:not(.friend-safe-stage)::before{content:"";position:absolute;inset:0 0 auto;height:30%;z-index:3;background:#05070b;pointer-events:none}
+.dance-stage:not(.friend-safe-stage) .dance-lanes{inset:0 5% 0;height:auto}
 .dance-stage .dance-bank{position:relative;height:100%;overflow:hidden;border:0;background:transparent;box-shadow:none}
 .dance-stage .dance-bank>b{top:0;color:#fff;font-size:10px;text-shadow:0 2px 3px #000}
 .dance-stage .dance-bank canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
@@ -293,6 +295,12 @@
 .dance-stage .dance-targets button,.dance-stage .dance-opponent-targets span{min-height:0;background:transparent!important;border:0!important;padding:0!important}
 .dance-stage .dance-targets img{display:block;width:100%;height:clamp(32px,4.6vw,58px);object-fit:contain;filter:drop-shadow(0 3px 1px #111)}
 .dance-stage .dance-opponent-targets [data-feedback="hit"] img{filter:brightness(1.55) drop-shadow(0 0 9px #fff)}
+.dance-targets button,.dance-opponent-targets span{position:relative}
+.dance-targets button:nth-child(1),.dance-opponent-targets span:nth-child(1){--receptor-mask:url('./assets/dance-reference/arrows/receptor-left.png')}
+.dance-targets button:nth-child(2),.dance-opponent-targets span:nth-child(2){--receptor-mask:url('./assets/dance-reference/arrows/receptor-down.png')}
+.dance-targets button:nth-child(3),.dance-opponent-targets span:nth-child(3){--receptor-mask:url('./assets/dance-reference/arrows/receptor-up.png')}
+.dance-targets button:nth-child(4),.dance-opponent-targets span:nth-child(4){--receptor-mask:url('./assets/dance-reference/arrows/receptor-right.png')}
+.dance-targets button[data-feedback="hit"]::after,.dance-opponent-targets span[data-feedback="hit"]::after{content:"";position:absolute;inset:0;background:var(--arrow-color);opacity:.9;pointer-events:none;-webkit-mask:var(--receptor-mask) center/contain no-repeat;mask:var(--receptor-mask) center/contain no-repeat;filter:drop-shadow(0 0 10px var(--arrow-color))}
 .friend-safe-stage .dance-stage{background:#20dbe6 url('./assets/friend-like-you/stage-day.png') center/cover no-repeat!important;transition:filter 1.2s ease,background-color 1.2s ease}
 .friend-safe-stage.friend-night-phase .dance-stage{background:#120307 url('./assets/friend-like-you/stage-black.png') center/cover no-repeat!important;filter:none;animation:none}
 .friend-safe-stage.friend-night-phase .dance-sky-sun{opacity:0;transition:opacity .8s ease}
@@ -480,8 +488,10 @@
 .character-guide-app .character-guide-viewer img{height:min(32vh,250px)}
 @media(max-width:600px){.character-guide-facts{font-size:11px;gap:2px 7px}.character-guide-source-note{font-size:9px}.character-guide-app .character-guide-viewer img{height:min(24vh,170px)}}
 
-/* The player reads falling notes at the bottom; the opponent auto-hits rising notes at the top. */
-.dance-player-targets{top:83%!important}.dance-opponent-targets{top:17%!important}
+/* Normal FNF rounds keep both receptor banks together in the upper black HUD.
+   Friend Like You retains its separately staged player bank below. */
+.dance-stage:not(.friend-safe-stage) .dance-player-targets,.dance-stage:not(.friend-safe-stage) .dance-opponent-targets{top:17%!important}
+.friend-safe-stage .dance-player-targets{top:83%!important}.friend-safe-stage .dance-opponent-targets{top:17%!important}
 
 /* Crisp directional receptors plus a non-horror spectator for the safe stage. */
 .dance-targets img{display:block;width:100%;height:clamp(44px,6vw,78px);object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 3px 0 #111b);pointer-events:none}

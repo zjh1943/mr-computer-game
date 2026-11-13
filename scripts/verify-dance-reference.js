@@ -2,6 +2,15 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
 const cast=require('../dance-cast'),data=require('../dance-reference-data'),{tracks}=require('../dance-music'),{chart}=require('../computer-apps');
 assert.equal(Object.keys(cast).length,20);assert(cast.black.silent);assert(!cast.black.audio);assert.equal(tracks.filter(t=>t.reference).length,4);assert.equal(tracks.filter(t=>t.mix).length,1);assert.equal(tracks.filter(t=>t.video).length,1);
 for(const track of tracks.filter(t=>t.reference&&!t.friendLikeYou)){assert(track.notes.length>500);assert(chart(track).length>100);assert(track.events.some(e=>e.character==='computer'));assert(!track.events.some(e=>e.character&&/black|killer|horror|ed$/.test(e.character)));for(const path of track.audioStems||[track.audioFile]){const file=fs.readFileSync(path);assert.equal(file.toString('ascii',0,4),'OggS');assert(file.length>1000000);}assert(track.duration>240);}
+const colorful=tracks.find(track=>track.id==='reference-colorful-bunch');
+assert.deepEqual(colorful.notes.slice(0,4).map(({time,lane,side,hold})=>({time,lane,side,hold})),[
+  {time:0,lane:1,side:'player',hold:0},
+  {time:.22556,lane:3,side:'gf',hold:0},
+  {time:.33835,lane:2,side:'gf',hold:0},
+  {time:.45113,lane:1,side:'player',hold:0}
+],'Colorful Bunch must retain the source chart opening order');
+const danceCss=fs.readFileSync('computer-apps.css','utf8');
+assert.match(danceCss,/dance-stage:not\(\.friend-safe-stage\) \.dance-player-targets,\.dance-stage:not\(\.friend-safe-stage\) \.dance-opponent-targets\{top:17%!important\}/,'normal rounds keep both receptor banks in the upper HUD');
 const friend=tracks.find(t=>t.id==='friend-like-you');assert.equal(friend?.video,'_bwDYOzbkBY');assert.equal(friend.audioFile,undefined);assert(friend.notes.some(n=>n.hold>=1.5));assert.equal(friend.name,'Friend Like You');assert.deepEqual(friend.initial,{player:'computer',dad:'mr_tree'});assert.equal(friend.events[0].side,'dad');assert.equal(friend.events[0].character,'black');assert(friend.notes.filter(n=>n.time>=55&&n.time<115).every(n=>n.side==='player'&&n.hit===true));assert(friend.events.some(e=>e.time===115&&e.character==='mr_tree'));
 for(const [id,art] of Object.entries(data.characters)){assert(art.animations.idle);const png=fs.readFileSync(art.image),width=png.readUInt32BE(16),height=png.readUInt32BE(20);for(const a of Object.values(art.animations))for(const frame of a.frames){assert(frame>=0&&frame<width/art.cell[0]*height/art.cell[1],id+' frame out of bounds');}assert(!/black|horror|killer/.test(id));}
 function wave(file){const b=fs.readFileSync(file);let fmt,pcm;for(let i=12;i+8<b.length;){const size=b.readUInt32LE(i+4),tag=b.toString('ascii',i,i+4);if(tag==='fmt ')fmt=b.subarray(i+8,i+8+size);if(tag==='data')pcm=b.subarray(i+8,i+8+size);i+=8+size+(size%2);}const kind=fmt.readUInt16LE(0),bits=fmt.readUInt16LE(14),channels=fmt.readUInt16LE(2),rate=fmt.readUInt32LE(4),bytes=bits/8;return {rate,count:pcm.length/bytes/channels,sample(i){let value=0;for(let c=0;c<channels;c++){const p=(i*channels+c)*bytes;value+=(kind===3?pcm.readFloatLE(p):pcm.readIntLE(p,bytes)/2**(bits-1))/channels;}return value;}};}

@@ -192,6 +192,18 @@
 .dance-custom-motion .dance-player[data-pose="-1"] .dance-original{animation:fnf-idle var(--dance-beat,.6s) infinite ease-in-out}
 .dance-rival:has(>div:only-child){grid-template-columns:1fr}
 @media(prefers-reduced-motion:reduce){.dance-custom-motion .dance-original{animation:none!important}}
+
+/* Song cards use the same locally bundled stage art and cast framing as the
+   playable stage.  This avoids a generic thumbnail and gives new video songs
+   one clear place to describe their cover crop. */
+.dance-song-cards .dance-song-card{display:grid;grid-template-columns:118px minmax(0,1fr);align-items:stretch;gap:8px;padding:5px;min-height:76px;text-align:left;overflow:hidden}
+.dance-song-cover{position:relative;display:flex;align-items:end;justify-content:space-around;overflow:hidden;border:2px solid #17243b;border-radius:7px;background-color:#48bde9;background-size:cover;background-repeat:no-repeat;box-shadow:inset 0 0 0 1px #ffffff99}
+.dance-song-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 48%,#10283c66);pointer-events:none}
+.dance-song-cover img{position:relative;z-index:1;display:block;max-width:54%;width:52%;height:94%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 2px 1px #15212d99)}
+.dance-song-card-copy{display:grid;align-content:center;gap:4px;min-width:0}
+.dance-song-card-copy strong,.dance-song-card-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dance-song-card-copy small{color:#344d61;font-weight:600}
+@media(max-width:600px){.dance-song-cards .dance-song-card{grid-template-columns:78px minmax(0,1fr);min-height:58px;gap:5px}.dance-song-card-copy strong{font-size:11px}.dance-song-card-copy small{font-size:9px}}
 /* Original normal-mode reference scenery, layered from sky to foreground. */
 .dance-stage{background-color:#43c5eb;background-image:url('./assets/dance-reference/background-4.png'),url('./assets/dance-reference/background-3.png'),url('./assets/dance-reference/background-2.png'),url('./assets/dance-reference/background-1.png');background-size:120% 42%,115% 43%,110% 44%,cover;background-position:center bottom,center 72%,center 48%,center;background-repeat:no-repeat}
 .dance-rack{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;width:100%;max-width:850px;align-self:center}

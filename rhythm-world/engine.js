@@ -14,6 +14,7 @@ export const distanceTo = distanceBetween;
 
 export function createEngine({ canvas, state, onInteract, onMessage = () => {}, onSunFarewell = onMessage, getBeatTime = () => 0 }) {
   let mode = 'factory';
+  let verticalVelocity = 0, grounded = true;
   let player = createCharacter3D(state.player.character || 'gray');
   let playerPerformance = { active: false, role: 'voice' };
   let cameraControl, input, town, sky, npcs, interaction;
@@ -34,6 +35,10 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
       const dz = (-move.x * Math.sin(angle) - move.y * Math.cos(angle)) * speed * dt;
       player.position.x += dx;
       player.position.z += dz;
+      if (input.consumeJump() && grounded) { verticalVelocity = 7.4; grounded = false; }
+      verticalVelocity -= 18 * dt;
+      player.position.y = Math.max(0, player.position.y + verticalVelocity * dt);
+      if (player.position.y <= 0) { player.position.y = 0; verticalVelocity = 0; grounded = true; }
       const resolved = resolveSolidCollisions({ x: player.position.x, z: player.position.z }, [...npcs.getSolidColliders(), ...town.getSolidColliders()], previous);
       player.position.x = resolved.x;
       player.position.z = resolved.z;
@@ -68,7 +73,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
     resize: () => runtime.resize(),
     setMode(value) { mode = value; },
     setJoystick(x, y) { input.setVirtual(x, y); },
-    setPlayerPosition(x, z) { player.position.set(x, 0, z); state.player.x = x; state.player.y = z; state.player.z = z; town.update(player.position); },
+    setPlayerPosition(x, z) { player.position.set(x, 0, z); verticalVelocity = 0; grounded = true; state.player.x = x; state.player.y = z; state.player.z = z; town.update(player.position); },
     setPlayerCharacter(id) {
       const position = player.position.clone();
       const rotation = player.rotation.y;

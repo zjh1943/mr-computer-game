@@ -9,11 +9,13 @@ import { createNpcSystem } from './npc-3d.js';
 import { getDayNightState, getWorldPhase } from './day-night.js';
 import { distanceBetween } from './interactions.js';
 import { resolveSolidCollisions } from './solid-collision.js';
+import { applyTrafficImpact } from './traffic-safety.js';
 
 export const distanceTo = distanceBetween;
 
 export function createEngine({ canvas, state, onInteract, onMessage = () => {}, onSunFarewell = onMessage, getBeatTime = () => 0 }) {
   let mode = 'factory';
+  let trafficSafety = { health: state.player.health ?? 100, lastImpactAt: -Infinity };
   let verticalVelocity = 0, grounded = true;
   let player = createCharacter3D(state.player.character || 'gray');
   let playerPerformance = { active: false, role: 'voice' };
@@ -47,6 +49,8 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
       state.player.x = player.position.x;
       state.player.z = player.position.z;
       state.player.y = player.position.z;
+      const car=town.getTrafficColliders().find(item=>Math.hypot(player.position.x-item.x,player.position.z-item.z)<item.radius+.45);
+      if(car){const impact=applyTrafficImpact(trafficSafety,{now,speed:car.speed});trafficSafety=impact;if(impact.injured){state.player.health=impact.health;const awayX=player.position.x-car.x,awayZ=player.position.z-car.z,length=Math.hypot(awayX,awayZ)||1;player.position.x+=awayX/length*1.8;player.position.z+=awayZ/length*1.8;onMessage(`🚑 被车辆撞到了！生命 ${impact.health}%`);if(impact.health<=0){trafficSafety={health:100,lastImpactAt:now};state.player.health=100;player.position.set(0,0,0);onMessage('你被送回原版村休息，生命恢复了。')}}}
     }
     const performanceBeat = getBeatTime();
     setCharacterMotion(player, { moving, performing: playerPerformance.active, performanceBeat, performanceRole: playerPerformance.role, time: now, direction: player.rotation.y, cameraYaw: cameraControl.yaw });

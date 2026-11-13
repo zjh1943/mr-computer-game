@@ -18,8 +18,9 @@ export function createCityPlan(seed='city'){
   for(const z of[58,82,110,138])for(const x of[-60,-47,-25,-14,14,25,47,60]){const r=hash(seed,index++);buildings.push({id:`tower-${index}`,label:`${['节拍公寓','旋律大厦','和声中心','音符商场'][index%4]} ${index}`,x,z,width:8+r*3,depth:8+r*3,height:10+r*24,color:[0x5794ba,0xd48576,0x75aa8c,0xa982bc,0xc5a75a][index%5],entrance:{side:z<78?'south':'north'}})}
   const cars=Array.from({length:12},(_,i)=>({route:ROUTES[i%3],offset:i/12,speed:7+(i%4)*1.6,color:[0xf05252,0x4aa9e8,0xffd34e,0xeeeeee][i%4],driver:['oren','raddy','simon','pinki'][i%4]}));
   const pedestrians=Array.from({length:14},(_,i)=>({route:ROUTES[(i+1)%3],offset:i/14,speed:1.1+(i%3)*.25,character:['oren','raddy','gray','pinki','simon','sky','wenda'][i%7],mood:['happy','curious','calm','excited'][i%4]}));
-  const signals=[{x:-5,z:35},{x:5,z:45},{x:-43,z:35},{x:-33,z:45},{x:33,z:111},{x:43,z:121}];
-  return{roads,buildings,cars,pedestrians,signals,center:{x:0,z:78}};
+  const signals=[{x:-5,z:35},{x:5,z:45},{x:-43,z:35},{x:-33,z:45},{x:33,z:111},{x:43,z:121},{x:-5,z:111},{x:5,z:121}];
+  const crosswalks=[{x:0,z:34,axis:'x'},{x:0,z:46,axis:'x'},{x:-44,z:40,axis:'z'},{x:-32,z:40,axis:'z'},{x:32,z:116,axis:'z'},{x:44,z:116,axis:'z'},{x:0,z:110,axis:'x'},{x:0,z:122,axis:'x'}];
+  return{roads,buildings,cars,pedestrians,signals,crosswalks,center:{x:0,z:78}};
 }
 
 function routeMetrics(route){const segments=route.map((a,i)=>{const b=route[(i+1)%route.length];return{a,b,length:Math.hypot(b.x-a.x,b.z-a.z)}});return{segments,total:segments.reduce((sum,s)=>sum+s.length,0)}}

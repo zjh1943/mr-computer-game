@@ -45,7 +45,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
     }
     const performanceBeat = getBeatTime();
     setCharacterMotion(player, { moving, performing: playerPerformance.active, performanceBeat, performanceRole: playerPerformance.role, time: now, direction: player.rotation.y, cameraYaw: cameraControl.yaw });
-    town.update(player.position);
+    town.update(player.position,now);
     sky.update(dayState, runtime.camera, now);
     npcs.update({ time: now, dayState, player, cameraYaw: cameraControl.yaw, performanceBeat });
     cameraControl.update(dt);

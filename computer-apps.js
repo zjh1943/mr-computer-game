@@ -26,7 +26,9 @@
   const performanceHold=(side,character,watching,hold=0)=>{const minimum=watching?1.05:(side==='player'&&character==='simon'?0.85:0.68);return Math.max(hold,minimum);};
   const orientedLane=(side,lane)=>side==='player'&&lane%3===0?3-lane:lane;
   const characterFrameDuration=frameCount=>Math.max(110,Math.min(220,Math.round(2400/Math.max(1,frameCount))));
-  const NOTE_TRAVEL_SECONDS=2.2;
+  // The reference FNF rounds keep the upper HUD readable: only the next
+  // short phrase is visible at once, while the chart itself keeps its timing.
+  const NOTE_TRAVEL_SECONDS=1.2;
   const BATTLE_GRACE_MS=5000;
   const noteTravelY=(noteTime,now,start,target)=>{const remaining=Math.max(0,Math.min(NOTE_TRAVEL_SECONDS,noteTime-now));return start+(target-start)*(1-remaining/NOTE_TRAVEL_SECONDS);};
   // A visual profile belongs to the song, rather than being guessed from the
@@ -69,7 +71,7 @@
     {name:'星光彩色地板演唱会',cast:['pinki','durple','jevin','sky','tunner','mr_tree'],duration:60,bpm:102,theme:'rainbow'},
     {name:'十九人离线合唱',cast:['oren','raddy','clukr','funbot','vineria','gray','brud','garnold','lime','sky','mr_sun','durple','mr_tree','simon','tunner','computer','wenda','pinki','jevin'],duration:60,bpm:120,theme:'finale'}
   ];
-  if(typeof module!=='undefined') { module.exports={catalog,characterProfiles,songs,tutorialLevels,collapseHoldOverlaps,chart,battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,characterFrameDuration,stageSunVisible,noteTravelY,noteTravelBounds,danceVisualProfile,grade,battleOutcome,audioFileAllowed,matchesSong,songSources,leadCharacter}; return; }
+  if(typeof module!=='undefined') { module.exports={catalog,characterProfiles,songs,tutorialLevels,collapseHoldOverlaps,chart,battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,characterFrameDuration,stageSunVisible,NOTE_TRAVEL_SECONDS,noteTravelY,noteTravelBounds,danceVisualProfile,grade,battleOutcome,audioFileAllowed,matchesSong,songSources,leadCharacter}; return; }
   const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem('apps-'+key))??fallback;}catch{return fallback;}};
   const save=(key,value)=>{try{localStorage.setItem('apps-'+key,JSON.stringify(value));return true;}catch{return false;}};
   const el=(tag,text,parent)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(parent)parent.append(n);return n;};

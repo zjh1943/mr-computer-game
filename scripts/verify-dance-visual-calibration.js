@@ -1,5 +1,7 @@
 const assert=require('node:assert/strict');
-const {danceVisualProfile,noteTravelBounds}=require('../computer-apps.js');
+const {danceVisualProfile,noteTravelBounds,NOTE_TRAVEL_SECONDS}=require('../computer-apps.js');
+
+assert.equal(NOTE_TRAVEL_SECONDS,1.2,'normal FNF rounds only show the next 1.2 seconds of notes');
 
 const friend=danceVisualProfile({id:'friend-like-you',friendLikeYou:true,cast:['mr_tree','computer','black']});
 assert.equal(friend.cover,'./assets/friend-like-you/stage-day.png');

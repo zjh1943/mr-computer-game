@@ -19,5 +19,26 @@ assert(player.start>300&&opponent.start>300,'both Friend Like You arrow fields e
 
 const normal=danceVisualProfile({id:'practice'});
 assert(normal.cover.includes('background-1.png'));
-assert.equal(normal.arrowScale,.72);
+assert.equal(normal.arrowScale,.64);
+assert.equal(normal.maxArrowSize,48);
+assert.equal(normal.receptorRatio.player,.17);
+assert.equal(normal.receptorRatio.opponent,.17);
+assert.equal(normal.flow.player,'up');
+assert.equal(normal.flow.opponent,'up');
+
+const reference=danceVisualProfile({
+  id:'reference-colorful-bunch',
+  reference:true,
+  cast:['oren','raddy','simon'],
+  initial:{dad:'oren',player:'simon'}
+});
+assert.deepEqual(reference.coverCast,['oren','simon']);
+assert.equal(reference.arrowScale,.64);
+assert.equal(reference.maxArrowSize,48);
+assert.equal(reference.receptorRatio.player,.17);
+assert.equal(reference.receptorRatio.opponent,.17);
+assert.equal(reference.flow.player,'up');
+assert.equal(reference.flow.opponent,'up');
+assert.equal(reference.entryWindow,1.15);
+assert.deepEqual(reference.entry,{player:'right',opponent:'left'});
 console.log('Dance covers and FNF arrow scale / receptor calibration verified.');

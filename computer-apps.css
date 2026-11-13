@@ -216,6 +216,17 @@
 @media(max-width:600px){.dance-rack{grid-template-columns:repeat(5,minmax(0,1fr))}.dance-rack img{height:28px;width:28px}.dance-stage canvas.dance-original{height:170px!important}}
 .dance-stage{background-image:url('./assets/dance-reference/background-4.png'),url('./assets/dance-reference/background-3.png'),url('./assets/dance-reference/background-2.png'),linear-gradient(transparent 64%,#08cf04 64%),url('./assets/dance-reference/background-1.png');background-size:120% 42%,115% 43%,110% 44%,100% 100%,cover;background-position:center bottom,center 72%,center 48%,center,center}
 
+/* Normal Yet Another Sprunki rounds: the cast enters from the outer edges,
+   then settles into the same left-opponent / right-player staging seen in the
+   reference before the first arrows arrive. */
+.dance-reference-opening .dance-rival{animation:dance-reference-enter-left 1.05s cubic-bezier(.16,.84,.28,1) both}
+.dance-reference-opening .dance-player{animation:dance-reference-enter-right 1.15s .08s cubic-bezier(.16,.84,.28,1) both}
+.dance-reference-opening .dance-rival>div:nth-child(2){animation:dance-reference-support-in .7s .16s cubic-bezier(.2,.8,.3,1) both}
+@keyframes dance-reference-enter-left{0%{opacity:0;translate:-72% 8%;scale:.9}58%{opacity:1;translate:5% -1%;scale:1.02}78%{translate:-2% 1%;scale:.995}100%{opacity:1;translate:0 0;scale:1}}
+@keyframes dance-reference-enter-right{0%{opacity:0;translate:72% 8%;scale:.9}58%{opacity:1;translate:-5% -1%;scale:1.02}78%{translate:2% 1%;scale:.995}100%{opacity:1;translate:0 0;scale:1}}
+@keyframes dance-reference-support-in{from{opacity:0;translate:-20% 10%;scale:.88}to{opacity:1;translate:0 0;scale:1}}
+@media(prefers-reduced-motion:reduce){.dance-reference-opening .dance-rival,.dance-reference-opening .dance-player,.dance-reference-opening .dance-rival>div:nth-child(2){animation:none}}
+
 /* Independent opponent and player arrow banks. */
 .dance-stage .dance-lanes{grid-column:1/-1;position:absolute;inset:0 2% 35%;height:auto;z-index:2;overflow:visible}
 .dance-player-targets{left:50%;right:0}.dance-opponent-targets{left:0;right:50%;pointer-events:none}

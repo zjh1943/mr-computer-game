@@ -1,5 +1,6 @@
 import fs from'node:fs';import assert from'node:assert/strict';
 const source=fs.readFileSync(new URL('../rhythm-world.js',import.meta.url),'utf8');
-assert.match(source,/\$\('#interact'\)\.onclick=\(\)=>interact\(\)/,'互动按钮必须丢弃浏览器点击事件并读取锁定目标');
-assert.doesNotMatch(source,/\$\('#interact'\)\.onclick=interact/,'不能把 MouseEvent 当成交互目标');
-console.log('Interact button event binding verification passed.');
+const html=fs.readFileSync(new URL('../rhythm-world.html',import.meta.url),'utf8');
+assert.doesNotMatch(html,/id="interact"/,'取消底部互动按钮，角色和建筑改为直接点击');
+assert.match(source,/function updateTalkPrompt\(\)/,'靠近角色时必须显示点击对话提示');
+console.log('Direct-click conversation verification passed.');

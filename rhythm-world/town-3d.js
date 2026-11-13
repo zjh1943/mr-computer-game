@@ -47,6 +47,8 @@ function tree(x, z, scale = 1) {
   const shadow = new THREE.Mesh(new THREE.CircleGeometry(.7 * scale, 20), new THREE.MeshBasicMaterial({ color: 0x16351e, transparent: true, opacity: .22, depthWrite: false })); shadow.rotation.x = -Math.PI / 2; shadow.position.y = .02; group.add(shadow);
   group.position.set(x, 0, z); group.userData = { kind: 'decorativeTree', solidRadius: .72 * scale }; return group;
 }
+function cityBuilding(x,z,height,color){const tower=new THREE.Mesh(new THREE.BoxGeometry(5,height,5),material(color));tower.position.set(x,height/2,z);tower.name='cityBuilding';return cast(tower)}
+function villageMarker(label,x,z){const group=new THREE.Group();group.name='villageMarker';const hut=house({id:label,label:`${label}村`,residents:[]},0xe7a96c);hut.scale.set(.72,.72,.72);group.add(hut);group.position.set(x,0,z);return group}
 export function createHills(seed, cx, cz) {
   const hills = new THREE.Group(); hills.name = 'rollingHills';
   for (let i = 0; i < 4; i++) {
@@ -61,6 +63,7 @@ function groundChunk(cx, cz, seed) {
   const road = new THREE.Mesh(new THREE.PlaneGeometry(5.4, CHUNK_SIZE_3D), material(0xd8c28e)); road.rotation.x = -Math.PI / 2; road.position.y = .015; group.add(road);
   group.add(createHills(seed,cx,cz));
   for (let i = 0; i < 4; i++) { const random = seededValue(seed, cx * 13 + i, cz * 17 - i); group.add(tree((random > .5 ? 1 : -1) * (6 + random * 9), -13 + i * 8.5, .78 + random * .28)); }
+  const distance=Math.hypot(cx,cz);if(distance>5&&value>.72){for(let i=0;i<4;i++)group.add(cityBuilding(-11+i*7,-8+(i%2)*12,8+seededValue(seed,cx+i,cz-i)*16,[0x72a9d8,0xc985a7,0x6fc5bd][i%3]))}else if(distance>2&&value<.3){group.add(villageMarker(['奥伦','西蒙','平琪','机器人'][Math.abs(cx+cz)%4],9,-5))}
   group.position.set(cx * CHUNK_SIZE_3D, 0, cz * CHUNK_SIZE_3D); return group;
 }
 

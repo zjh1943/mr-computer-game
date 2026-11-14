@@ -10418,6 +10418,7 @@ function scheduleHomeLawnNightConcert(runners, delay = 46000 + Math.random() * 2
 }
 
 function startHomeLawnNightConcert(runners) {
+  if (currentComputerApp) return;
   if (!document.body.classList.contains("night-mode") || !runners.length) return;
   if (homeLawnGroupActive || homeHelpActive) {
     scheduleHomeLawnNightConcert(runners, 2200);

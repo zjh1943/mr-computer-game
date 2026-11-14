@@ -6776,6 +6776,7 @@ function getFlightCommand(text) {
 }
 
 function speakReply(text, voiceSettings = clearVoiceSettings) {
+  if (currentComputerApp && currentComputerApp !== 'chat') return;
   if (!("speechSynthesis" in window) || !text) return;
 
   const savedVoice = window.ComputerSettings?.voiceSettings?.();

@@ -1,6 +1,10 @@
 const assert=require('node:assert/strict');
 const {battleChart,soloChart,notesForMode,singAnimationFor,performanceHold,orientedLane,stageSunVisible,noteTravelY,grade,battleOutcome,applyPlayerBalance,applyPlayerScore,HIT_WINDOW_SECONDS}=require('../computer-apps.js');
 const {tracks}=require('../dance-reference-data.js');
+const {referenceVoiceSide}=require('../computer-apps.js');
+assert.equal(referenceVoiceSide('player'),'dad','the opening down vocal belongs to Oren, not idle Simon');
+assert.equal(referenceVoiceSide('dad'),'player','Simon performs the answering vocal');
+assert.equal(referenceVoiceSide('gf'),'gf','the supporting singer keeps their own animation');
 const assertNoLaneOverlap=list=>{const laneEnds=new Map();for(const note of [...list].sort((a,b)=>a.time-b.time)){const end=laneEnds.get(note.lane)||-Infinity;assert(note.time>end+.035,'one lane cannot show a new arrow during its long note');laneEnds.set(note.lane,Math.max(end,note.time+(note.hold||0)));}};
 for(const song of tracks){const b=battleChart(song);assert(b.player.length>100&&b.opponent.length>100);assert(b.player.every(n=>n.side==='player'),'only the player character may receive player arrows');assert(b.opponent.every(n=>n.side!=='player'),'non-player character notes stay automatic');assert(b.opponent.every(n=>n.done===false));assertNoLaneOverlap(b.player);assertNoLaneOverlap(b.opponent);}
 assert(soloChart(tracks[0]).length>100);

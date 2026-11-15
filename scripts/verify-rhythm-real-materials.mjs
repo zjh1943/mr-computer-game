@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const town=fs.readFileSync(new URL('../rhythm-world/town-3d.js',import.meta.url),'utf8');
+for(const file of ['asphalt_02_diff_1k.jpg','concrete_pavement_03_diff_1k.jpg','red_bricks_04_diff_1k.jpg','marble_01_diff_1k.jpg'])assert.ok(fs.existsSync(new URL(`../assets/city-materials/${file}`,import.meta.url)),`missing ${file}`);
+assert.match(town,/realMaterial\(['"]asphalt/,'roads must use real asphalt texture');
+assert.match(town,/realMaterial\(['"]concrete/,'sidewalks must use real concrete texture');
+assert.match(town,/realMaterial\(['"]marble/,'lobbies must use real marble texture');
+assert.match(town,/red_bricks_04/,'some towers must use real brick texture');
+assert.match(town,/MeshPhysicalMaterial/,'modern towers need reflective glass material');
+console.log('Verified real CC0 road, concrete, brick, marble, and glass materials.');

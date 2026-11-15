@@ -48,7 +48,7 @@ for slug,title in [('colorful-bunch','Colorful Bunch'),('colorful-bunch-(bf-mix)
  for section in j['notes']:
   for n in section['sectionNotes']:
    if n[1]<0:continue
-   player=bool(section['mustHitSection'])^(int(n[1])>=4);typ=n[3] if len(n)>3 else ''
+   player=(int(n[1])<4) if j.get('format')=='psych_v1_convert' else bool(section['mustHitSection'])^(int(n[1])>=4);typ=n[3] if len(n)>3 else ''
    side='gf' if typ=='GF Sing' else ('player' if player else 'dad')
    notes.append({'time':round(n[0]/1000,5),'lane':int(n[1])%4,'side':side,'hit':player,'hold':round(n[2]/1000,5),'animate':typ!='No Animation'})
  notes.sort(key=lambda n:n['time'])
@@ -57,7 +57,8 @@ for slug,title in [('colorful-bunch','Colorful Bunch'),('colorful-bunch-(bf-mix)
   for event in items:
    if event[0]=='Change Character':events.append({'time':t/1000,'side':{'bf':'player','0':'player','1':'dad','2':'gf'}.get(event[1],event[1]),'character':char(event[2])})
    elif event[0]=='Play Animation' and event[1] in ['hello','would','some','us','fun']:events.append({'time':t/1000,'side':{'bf':'player'}.get(event[2],event[2]),'animation':event[1]})
- manifest['tracks'].append({'id':'reference-'+slug,'name':title,'artist':'Just_Camilo'+(' / Chadowsky' if 'bf-mix' in slug else ''),'bpm':j['bpm'],'duration':math.ceil(notes[-1]['time']+4),'reference':True,'audioFile':'./assets/dance-reference/'+slug+'.ogg','cast':[initial['dad'],initial['gf']],'lead':initial['player'],'initial':initial,'notes':notes,'events':sorted(events,key=lambda e:e['time']),'source':'https://gamebanana.com/mods/585004'})
+ # psych_v1_convert stores absolute columns; mustHitSection selects the camera only.
+ manifest['tracks'].append({'id':'reference-'+slug,'name':title,'artist':'Just_Camilo'+(' / Chadowsky' if 'bf-mix' in slug else ''),'bpm':j['bpm'],'duration':math.ceil(notes[-1]['time']+4),'reference':True,'chartFormat':j.get('format'),'audioFile':'./assets/dance-reference/'+slug+'.ogg','cast':[initial['dad'],initial['gf']],'lead':initial['player'],'initial':initial,'notes':notes,'events':sorted(events,key=lambda e:e['time']),'source':'https://gamebanana.com/mods/585004'})
  # Audio sources are retained outside the published tree until rendered together.
  dest=ROOT/'outputs/reference-audio'/slug;dest.mkdir(parents=True,exist_ok=True)
  for stem in ['Inst','Voices-Opponent','Voices-Player']:(dest/(stem+'.ogg')).write_bytes(z.read(base+'songs/'+slug+'/'+stem+'.ogg'))

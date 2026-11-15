@@ -177,7 +177,7 @@
 .dance-battle{display:grid;grid-template-columns:auto minmax(80px,1fr) auto;align-items:center;gap:8px;font-size:12px;font-weight:bold;color:#223b33}
 .dance-balance{height:14px;background:#ee727e;border:2px solid #223b33;border-radius:9px;overflow:visible;position:relative}
 .dance-balance i{position:absolute;right:0;top:0;bottom:0;width:var(--player-share,50%);background:#74de9a;border-radius:0 7px 7px 0;transition:width .15s}
-.dance-battle-icons{position:absolute;z-index:2;left:calc(var(--player-share,50%) - 25px);top:-9px;width:50px;height:29px;transition:left .15s;filter:drop-shadow(0 2px 1px #15212d99)}
+.dance-battle-icons{position:absolute;z-index:2;left:calc(100% - var(--player-share,50%) - 25px);top:-9px;width:50px;height:29px;transition:left .15s;filter:drop-shadow(0 2px 1px #15212d99)}
 .dance-battle-icon{position:absolute;top:0;transform:scale(.44);transform-origin:top left}
 .dance-battle-opponent-icon{left:0}
 .dance-battle-player-icon{left:23px;z-index:1}
@@ -253,9 +253,6 @@
 .dance-targets button[data-feedback="hit"] path,.dance-opponent-targets [data-feedback="hit"] path{fill:var(--arrow-color)!important;stroke:#fff!important}
 .dance-targets button[data-feedback="miss"] path{fill:#78808d!important}
 .dance-player canvas.dance-original{transform:scaleX(-1);transform-origin:50% 100%}
-.dance-player[data-view="back"] canvas.dance-original{transform:scaleX(-1) rotateY(24deg);filter:brightness(.78) saturate(.82)}
-.dance-rival>div[data-view="back"] canvas.dance-original{transform:rotateY(-24deg);filter:brightness(.78) saturate(.82)}
-.dance-player[data-view="front"] canvas.dance-original,.dance-rival>div[data-view="front"] canvas.dance-original{filter:brightness(1.08)}
 @media(max-width:600px){.dance-stage .dance-lanes{grid-template-columns:minmax(0,1fr) 4px minmax(0,1fr);gap:2px;inset:61% 2% 3%}.dance-bank{border-width:2px;border-radius:7px}.dance-divider{width:2px}.dance-bank>b{font-size:8px}.dance-targets button svg,.dance-opponent-targets svg{height:30px}}
 
 /* Solo Simon practice: one unboxed, softly rounded printed arrow row. */
@@ -498,7 +495,9 @@
 .dance-targets img{display:block;width:100%;height:clamp(44px,6vw,78px);object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 3px 0 #111b);pointer-events:none}
 .dance-spectator{position:absolute;z-index:1;left:6%;bottom:5%;width:clamp(32px,5vw,66px);height:clamp(78px,13vw,138px);transform-origin:50% 100%;pointer-events:none;transition:transform .16s ease}
 .dance-spectator[hidden]{display:none!important}
+.dance-stage .dance-bank{width:min(100%,195px)!important;justify-self:center}.dance-stage .dance-targets{gap:1px!important}.dance-stage .dance-targets img{height:48px!important;width:100%!important;object-fit:contain}.dance-targets [data-feedback="hit"],.dance-targets [data-feedback="holding"]{transform:none!important;animation:none!important}.dance-hit-splash{position:absolute;width:7px;height:7px;z-index:30;pointer-events:none;box-shadow:0 0 7px currentColor;animation:dance-splash .35s ease-out forwards}.dance-hit-rating{position:absolute;z-index:31;pointer-events:none;color:#ffe34b;text-shadow:2px 2px #a536dc,-1px -1px #fff;font:900 18px sans-serif;white-space:nowrap;animation:dance-rating .6s ease-out forwards}@keyframes dance-splash{to{translate:var(--dx) var(--dy);opacity:0;scale:.2}}@keyframes dance-rating{from{translate:-50% -80%;opacity:1}to{translate:-50% -180%;opacity:0}}
 .dance-live-scores{display:flex;justify-content:space-around;gap:12px;padding:8px;background:#101626;color:white;position:sticky;top:0;z-index:20}.dance-live-scores[hidden]{display:none}.dance-live-scores>div{display:grid;grid-template-columns:1fr auto;gap:3px 12px;min-width:35%}.dance-live-scores strong{font:900 30px monospace;grid-row:2}.dance-live-scores small{color:#ffe36e;grid-row:2;align-self:center}
+
 .dance-targets [data-feedback="hit"] img,.dance-targets [data-feedback="holding"] img{filter:brightness(3) drop-shadow(0 0 12px #fff)!important}.dance-targets [data-feedback="hit"],.dance-targets [data-feedback="holding"]{background:#ffffff66!important;box-shadow:0 0 18px var(--arrow-color)!important;border-radius:8px}.dance-player-targets button:active{filter:brightness(3)!important;background:#ffffff66!important}
 .dance-spectator i{position:absolute;left:0;top:0;width:100%;height:42%;border-radius:48% 48% 42% 42%;background:linear-gradient(90deg,#7f888b,#b7bec0 48%,#737d80);box-shadow:inset -7px 0 #535c5f}
 .dance-spectator b{position:absolute;left:18%;right:18%;bottom:0;height:63%;border-radius:45% 45% 12% 12%;background:linear-gradient(90deg,#747d80,#aeb6b8 48%,#697376);box-shadow:inset -6px 0 #566064}
@@ -522,3 +521,6 @@
 
 /* Beginner course: choose a singer, clear stages in order, then unlock a song. */
 .dance-tutorial-panel{position:absolute;inset:38px 8px 8px;z-index:40;overflow:auto;padding:10px;border:3px solid #fff;border-radius:14px;background:#13233aee;color:#fff;box-shadow:0 14px 34px #0008}.dance-tutorial-panel[hidden]{display:none!important}.dance-tutorial-panel header{display:flex;align-items:center;justify-content:space-between;gap:8px}.dance-tutorial-panel header button{width:28px;height:28px;border:2px solid #fff;border-radius:50%;background:#f45b68;color:#fff;font-size:18px}.dance-tutorial-panel>p{margin:6px 0 9px;font-size:11px}.dance-tutorial-characters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}.dance-tutorial-character{display:grid;grid-template-columns:34px auto;align-items:center;gap:4px;padding:3px 7px;border:2px solid #8fa4b5;border-radius:10px;background:#e8f2f5;color:#183044}.dance-tutorial-character[aria-pressed="true"]{border-color:#75ef62;background:#d9ffd1;box-shadow:0 0 0 2px #75ef6266}.dance-tutorial-character .dance-character-icon{width:30px;height:34px;background-size:contain!important;background-repeat:no-repeat}.dance-tutorial-levels{display:grid;grid-template-columns:repeat(5,minmax(70px,1fr));gap:6px}.dance-tutorial-level{min-height:45px;border:2px solid #fff;border-radius:10px;background:#375f8f;color:#fff;font-weight:900}.dance-tutorial-level[data-cleared="true"]{background:#258455}.dance-tutorial-level[data-cleared="true"]::after{content:" ✓"}.dance-tutorial-level[disabled]{border-color:#657382;background:#343c49;color:#9aa6b1;filter:grayscale(1);cursor:not-allowed}.dance-tutorial-reward{display:grid;gap:6px;margin-top:10px;padding:9px;border:2px solid #ffe769;border-radius:12px;background:#4a3c0c;text-align:center}.dance-tutorial-reward[hidden]{display:none}.dance-tutorial-reward button{padding:8px;border:0;border-radius:9px;background:#ffe769;color:#332600;font-weight:900}@media(max-width:600px){.dance-tutorial-panel{inset:34px 3px 3px}.dance-tutorial-levels{grid-template-columns:repeat(2,minmax(90px,1fr))}.dance-tutorial-character{grid-template-columns:26px auto;font-size:10px}.dance-tutorial-character .dance-character-icon{width:24px;height:28px}}
+
+/* Native atlas frames already contain their directional motion. Keep lighting steady. */
+.dance-stage canvas.dance-original{filter:none!important;transition:none!important}

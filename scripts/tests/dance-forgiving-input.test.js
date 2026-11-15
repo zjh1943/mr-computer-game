@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const game=require('../../computer-apps');
+assert.equal(typeof game.findPlayableDanceNote,'function');
+const first={time:10,lane:1},next={time:10.4,lane:1};
+assert.equal(game.findPlayableDanceNote([first],1,10.65,'easy'),first,'simple accepts a nearby late press');
+assert.equal(game.findPlayableDanceNote([first,next],1,10.35,'easy'),next,'choose the closest arrow, not the oldest one');
+assert.equal(game.findPlayableDanceNote([{...first,done:true}],1,10.1,'easy'),undefined,'do not score the same arrow twice');
+assert.equal(game.findPlayableDanceNote([first],1,10.65,'extreme'),undefined);
+assert.equal(game.findPlayableDanceNote([first],2,10,'easy'),undefined,'the direction still needs to match');
+console.log('Forgiving timing, nearest-note selection and duplicate-hit protection verified.');

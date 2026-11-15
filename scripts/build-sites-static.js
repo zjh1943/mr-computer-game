@@ -20,6 +20,8 @@ const includeFiles = [
   "computer-apps.js",
   "arcade-games.js",
   "dance-music.js",
+  "dance-mobile.js",
+  "dance-mobile.css",
   "dance-cast.js",
   "dance-reference.js",
   "dance-reference-data.js",

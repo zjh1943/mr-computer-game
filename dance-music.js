@@ -95,6 +95,25 @@
       };
     };
   }
-  if(typeof module!=='undefined')module.exports={tracks,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt,captionForTrack};
-  else window.DanceMusic={tracks,open,sections,prepareMix,prepareLiveMix,parseLyrics,captionAt,captionForTrack};
+  async function prepareStems(ctx,track){
+    const buffers=await Promise.all(track.audioStems.map(async path=>{
+      const response=await fetch(path);if(!response.ok)throw Error('歌曲分轨读取失败');
+      return ctx.decodeAudioData(await response.arrayBuffer());
+    }));
+    return start=>{
+      const channels=buffers.map((buffer,index)=>{
+        const source=ctx.createBufferSource(),gain=ctx.createGain();
+        source.buffer=buffer;source.connect(gain).connect(ctx.destination);source.start(start);
+        return {source,gain,path:track.audioStems[index]};
+      });
+      const playback={onended:null,setVoice(role,enabled){
+        const channel=channels.find(c=>c.path.toLowerCase().includes('voices-'+role));
+        channel?.gain.gain.setValueAtTime(enabled?1:0,ctx.currentTime);
+      },stop(){channels.forEach(({source,gain})=>{source.onended=null;try{source.stop();}catch{}source.disconnect();gain.disconnect();});}};
+      channels[0].source.onended=()=>playback.onended?.();
+      return playback;
+    };
+  }
+  if(typeof module!=='undefined')module.exports={tracks,sections,prepareStems,prepareMix,prepareLiveMix,parseLyrics,captionAt,captionForTrack};
+  else window.DanceMusic={tracks,open,sections,prepareStems,prepareMix,prepareLiveMix,parseLyrics,captionAt,captionForTrack};
 })();

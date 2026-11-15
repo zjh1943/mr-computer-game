@@ -4,10 +4,10 @@ assert.equal(Object.keys(cast).length,20);assert(cast.black.silent);assert(!cast
 for(const track of tracks.filter(t=>t.reference&&!t.friendLikeYou)){assert(track.notes.length>500);assert(chart(track).length>100);assert(track.events.some(e=>e.character==='computer'));assert(!track.events.some(e=>e.character&&/black|killer|horror|ed$/.test(e.character)));for(const path of track.audioStems||[track.audioFile]){const file=fs.readFileSync(path);assert.equal(file.toString('ascii',0,4),'OggS');assert(file.length>1000000);}assert(track.duration>240);}
 const colorful=tracks.find(track=>track.id==='reference-colorful-bunch');
 assert.deepEqual(colorful.notes.slice(0,4).map(({time,lane,side,hold})=>({time,lane,side,hold})),[
-  {time:0,lane:1,side:'player',hold:0},
+  {time:0,lane:1,side:'dad',hold:0},
   {time:.22556,lane:3,side:'gf',hold:0},
   {time:.33835,lane:2,side:'gf',hold:0},
-  {time:.45113,lane:1,side:'player',hold:0}
+  {time:.45113,lane:1,side:'dad',hold:0}
 ],'Colorful Bunch must retain the source chart opening order');
 const danceCss=fs.readFileSync('computer-apps.css','utf8');
 assert.match(danceCss,/dance-stage:not\(\.friend-safe-stage\) \.dance-player-targets,\.dance-stage:not\(\.friend-safe-stage\) \.dance-opponent-targets\{top:17%!important\}/,'normal rounds keep both receptor banks in the upper HUD');

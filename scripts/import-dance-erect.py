@@ -28,7 +28,7 @@ with zipfile.ZipFile(ARCHIVE) as archive:
         for raw in section["sectionNotes"]:
             if raw[1] < 0:
                 continue
-            player = bool(section["mustHitSection"]) ^ (int(raw[1]) >= 4)
+            player = (int(raw[1]) < 4) if chart.get("format") == "psych_v1_convert" else bool(section["mustHitSection"]) ^ (int(raw[1]) >= 4)
             note_type = raw[3] if len(raw) > 3 else ""
             side = "gf" if note_type == "GF Sing" else ("player" if player else "dad")
             notes.append({
@@ -55,10 +55,11 @@ with zipfile.ZipFile(ARCHIVE) as archive:
         (ROOT / "assets" / "dance-reference" / output_name).write_bytes(archive.read(BASE + f"songs/{SLUG}/{stem_name}.ogg"))
         audio_stems.append(f"./assets/dance-reference/{output_name}")
 
+# psych_v1_convert stores absolute columns; mustHitSection selects the camera only.
 track = {
     "id": TRACK_ID, "name": chart["song"], "artist": "Just_Camilo",
     "bpm": chart["bpm"], "duration": math.ceil(notes[-1]["time"] + 4),
-    "reference": True, "audioStems": audio_stems,
+    "reference": True, "chartFormat": chart.get("format"), "audioStems": audio_stems,
     "cast": [character(chart["player2"]), character(chart.get("gfVersion"))],
     "lead": character(chart["player1"]),
     "initial": {"player": character(chart["player1"]), "dad": character(chart["player2"]), "gf": character(chart.get("gfVersion"))},

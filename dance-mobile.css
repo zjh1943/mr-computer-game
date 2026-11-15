@@ -1,0 +1,58 @@
+/* Portrait mode has one camera-sized stage, never a letterboxed 16:9 panel. */
+.dance-touch-pad,.dance-mobile-edge-glow,.dance-mobile-play{display:none}
+.dance-mobile-world{display:contents}
+.dance-mobile-fullscreen-toggle{white-space:nowrap}
+.dance-mobile-mode .dance-stage{background-image:none!important;position:relative;overflow:hidden!important;isolation:isolate;min-height:520px!important;height:75svh!important;max-height:none!important;background-size:160% 48%,150% 48%,140% 48%,100% 100%,cover!important;background-position:var(--mobile-pan,50%) bottom,var(--mobile-pan,50%) 73%,var(--mobile-pan,50%) 48%,center,var(--mobile-pan,50%) center!important;transition:background-position .45s ease}
+.dance-mobile-mode .dance-stage:not(.friend-safe-stage)::before{display:none!important}
+.dance-mobile-mode.dance-system-fullscreen,.dance-mobile-mode.dance-mobile-fallback{height:100dvh!important;width:100vw!important;max-height:none!important;background:#45c5ed!important;padding:0!important;overflow:hidden!important}
+.dance-mobile-fallback{position:fixed!important;inset:0!important;z-index:2147483000!important;display:grid!important;place-items:stretch!important}
+.dance-mobile-mode.dance-system-fullscreen>.dance-stage,.dance-mobile-mode.dance-mobile-fallback>.dance-stage{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;max-width:none!important;aspect-ratio:auto!important;border:0!important;border-radius:0!important}
+.dance-mobile-fallback>*{display:none!important}
+.dance-mobile-fallback>.dance-toolbar,.dance-mobile-fallback>.dance-battle{display:block!important;position:absolute;z-index:70}
+.dance-mobile-fallback>.dance-toolbar{right:8px;top:max(8px,env(safe-area-inset-top))}
+.dance-mobile-fallback>.dance-battle{top:48px;left:3%;width:94%}
+.dance-mobile-fallback>.dance-toolbar>*{display:none!important}
+.dance-mobile-mode.dance-system-fullscreen>.dance-toolbar>.dance-mobile-fullscreen-toggle,.dance-mobile-fallback>.dance-toolbar>.dance-mobile-fullscreen-toggle{display:block!important;background:#10283bd9!important;border:1px solid #ffffffa0!important;color:#fff!important}
+.dance-mobile-mode.dance-system-fullscreen>.dance-toolbar>.dance-fullscreen-toggle{display:none!important}
+.dance-mobile-mode.dance-system-fullscreen>.dance-battle{top:max(52px,calc(env(safe-area-inset-top) + 46px));width:94vw;font-size:10px;gap:5px}
+.dance-mobile-mode .dance-stage .dance-player,.dance-mobile-mode .dance-stage .dance-rival{position:absolute!important;bottom:40%!important;top:auto!important;width:32vw!important;max-width:none!important;margin:0!important;scale:1!important;opacity:1!important;transition:translate .45s cubic-bezier(.2,.65,.25,1)!important;transform:none!important;z-index:3}
+.dance-mobile-mode .dance-stage .dance-player{left:142vw!important;right:auto!important;translate:0 0}
+.dance-mobile-mode .dance-stage .dance-rival{left:76vw!important;right:auto!important;translate:0 0;gap:0!important}
+.dance-mobile-mode .dance-stage.dance-camera-player .dance-player{translate:0 0!important}
+.dance-mobile-mode .dance-stage.dance-camera-player .dance-rival{translate:0 0!important}
+.dance-mobile-mode .dance-stage.dance-camera-rival .dance-rival{translate:0 0!important}
+.dance-mobile-mode .dance-stage.dance-camera-rival .dance-player{translate:0 0!important}
+.dance-mobile-mode .dance-stage.dance-camera-duet .dance-player,.dance-mobile-mode .dance-stage.dance-camera-duet .dance-rival{translate:0 0!important}
+.dance-mobile-mode .dance-stage .dance-rival:has(>div:only-child){grid-template-columns:1fr!important}
+.dance-mobile-mode .dance-stage .dance-original,.dance-mobile-mode .dance-stage canvas.dance-original{height:clamp(160px,29svh,300px)!important;max-height:32svh!important;max-width:100%!important;rotate:none!important;filter:none!important}
+.dance-mobile-mode .dance-stage .dance-rival>div{min-width:0;opacity:1!important;translate:none!important}
+.dance-mobile-mode .dance-stage small{font-size:12px!important}
+.dance-mobile-mode .dance-stage .dance-lanes{position:absolute!important;inset:100px 0 max(18px,env(safe-area-inset-bottom))!important;display:block!important;width:auto!important;height:auto!important;min-height:0!important;scale:1!important;background:transparent!important;border:0!important;z-index:8;pointer-events:none}
+.dance-mobile-mode .dance-stage .dance-opponent-bank,.dance-mobile-mode .dance-divider{display:none!important}
+.dance-mobile-mode .dance-stage .dance-player-bank{position:relative!important;display:block!important;width:100%!important;max-width:none!important;height:100%!important;margin:auto;background:transparent!important;border:0!important;box-shadow:none!important}
+.dance-mobile-mode .dance-stage .dance-bank>b{display:none!important}
+.dance-mobile-mode .dance-stage .dance-player-targets{top:auto!important;bottom:8px!important;left:0!important;right:0!important;transform:none!important;gap:0!important;height:72px;pointer-events:none}
+.dance-mobile-mode .dance-stage .dance-player-targets img{height:64px!important;width:100%!important}
+.dance-mobile-mode .dance-stage .dance-sky-sun{left:calc(50% - 26px)!important;top:20%;width:52px;scale:1!important}
+.dance-mobile-mode .dance-stage canvas.dance-original{transform:none!important}
+.dance-mobile-mode .dance-touch-pad{position:absolute;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:0;left:0;right:0;top:100px;bottom:max(18px,env(safe-area-inset-bottom));height:auto;max-width:none;margin:0;z-index:50;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:none}
+.dance-touch-direction{position:relative;display:block;border:0!important;border-left:1px solid #ffffff38!important;border-right:1px solid #ffffff38!important;border-radius:0!important;background:linear-gradient(180deg,#ffffff06,#f3faff12 50%,#ffffff08)!important;box-shadow:none;color:var(--touch-color)!important;pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:64px;padding:0!important;transition:background .08s,box-shadow .08s}
+.dance-touch-direction>span,.dance-touch-direction>small{display:none!important}
+/* The real receptors below the canvas are the four visible bottom arrows. */
+.dance-touch-direction[data-direction="up"]{grid-column:3;grid-row:1}
+.dance-touch-direction[data-direction="left"]{grid-column:1;grid-row:1}
+.dance-touch-direction[data-direction="right"]{grid-column:4;grid-row:1}
+.dance-touch-direction[data-direction="down"]{grid-column:2;grid-row:1}
+.dance-touch-direction[data-lit="true"]{background:color-mix(in srgb,var(--touch-color) 24%,transparent)!important;box-shadow:inset 0 0 28px color-mix(in srgb,var(--touch-color) 65%,transparent),inset 0 -12px 26px color-mix(in srgb,var(--touch-color) 45%,transparent)!important}
+.dance-touch-direction:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.dance-touch-center{display:none}
+.dance-mobile-mode .dance-mobile-edge-glow{display:block;position:absolute;inset:0;z-index:45;pointer-events:none;border:3px solid transparent;box-shadow:inset 0 0 35px transparent;transition:box-shadow .1s,border-color .1s}
+.dance-mobile-mode .dance-mobile-edge-glow[data-lit="true"]{border-color:var(--edge-color);box-shadow:inset 0 0 35px var(--edge-color),inset 0 0 80px color-mix(in srgb,var(--edge-color) 25%,transparent)}
+.dance-mobile-mode .dance-mobile-play{display:block;position:absolute;z-index:60;left:12px;top:max(8px,env(safe-area-inset-top));border:1px solid #ffffffa0;border-radius:9px;background:#10283bd9;color:white;padding:7px 10px;font-size:12px;font-weight:800}
+.dance-mobile-mode .dance-stage .dance-hit-rating{z-index:55}
+@media(prefers-reduced-motion:reduce){.dance-mobile-mode .dance-stage .dance-player,.dance-mobile-mode .dance-stage .dance-rival{transition:none!important}}
+
+/* Background and actors share one rigid world; only this layer follows the camera. */
+.dance-mobile-mode .dance-mobile-world{display:block;position:absolute;left:-50vw;top:0;bottom:0;width:220vw;height:100%;z-index:3;background-size:160% 48%,150% 48%,140% 48%,100% 100%,cover;background-position:center bottom,center 73%,center 48%,center,center;background-repeat:no-repeat;translate:var(--mobile-world-x,-25vw) 0;transition:translate .5s cubic-bezier(.2,.65,.25,1);will-change:translate}
+.dance-mobile-mode .dance-mobile-world .dance-sky-sun{left:121vw!important}
+@media(prefers-reduced-motion:reduce){.dance-mobile-mode .dance-mobile-world{transition:none}}

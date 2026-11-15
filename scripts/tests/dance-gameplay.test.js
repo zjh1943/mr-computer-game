@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const game=require('../../computer-apps');
+assert.equal(game.applyPlayerBalance(55,-8),47,'misses must let the opponent push back');
+assert.equal(game.battleOutcome(0),'player');
+assert.equal(game.battleOutcome(100),'opponent');
+assert.equal(game.applyPlayerScore(100,-1),100,'a miss changes battle health, not earned points');
+assert.equal(game.applyPlayerScore(100,60),160,'a successful note adds to the singer own score');
+const heads=game.collapseHoldOverlaps([{time:0,lane:0,hold:2},{time:1,lane:0,hold:0}]);
+assert.equal(heads.length,2,'a hold must not delete a later sung note');
+assert(heads[0].hold<1,'trim the old tail before the next head');
+console.log('Miss penalty, win/loss and preserved note heads verified.');

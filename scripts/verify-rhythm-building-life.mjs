@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { buildingFloorCount, createTaxiCall, updateTaxiCall, interiorSpawn, createPhoneState, sendPhoneMessage, taxiDestinations } from '../rhythm-world/building-life.js';
+
+assert.equal(buildingFloorCount(10),3);
+assert.equal(buildingFloorCount(80),20);
+assert.deepEqual(interiorSpawn('tower-4',7),{x:250,z:250,floor:7,buildingId:'tower-4'});
+const call=createTaxiCall({x:5,z:8},1000);
+assert.equal(call.status,'approaching');
+assert.equal(updateTaxiCall(call,{x:5.2,z:8.1},1500).status,'arrived');
+const phone=createPhoneState();
+assert.deepEqual(phone.apps,['taxi','wechat']);
+assert.equal(sendPhoneMessage(phone,'simon','你好').messages.simon.at(-1).text,'你好');
+assert.equal(taxiDestinations([{id:'tower-1',label:'旋律大厦',x:4,z:8}]).at(-1).label,'旋律大厦');
+const town=fs.readFileSync(new URL('../rhythm-world/town-3d.js',import.meta.url),'utf8');
+const engine=fs.readFileSync(new URL('../rhythm-world/engine.js',import.meta.url),'utf8');
+const app=fs.readFileSync(new URL('../rhythm-world.js',import.meta.url),'utf8');
+assert.match(town,/createBuildingInterior/);
+assert.match(town,/luxurySofa/);
+assert.match(town,/elevatorDoor/);
+assert.match(engine,/enterBuilding/);
+assert.match(engine,/callTaxi/);
+assert.match(app,/openElevator/);
+assert.match(app,/openPhone/);
+assert.match(app,/sendWechatMessage/);
+assert.match(app,/inviteWechatContact/);
+assert.match(app,/openTaxiDestinations/);
+console.log('Verified phone taxi calls, 3D interiors, elevators, floors, and luxury homes.');

@@ -55,6 +55,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
     const performanceBeat = getBeatTime();
     setCharacterMotion(player, { moving, performing: playerPerformance.active, performanceBeat, performanceRole: playerPerformance.role, time: now, direction: player.rotation.y, cameraYaw: cameraControl.yaw });
     town.update(player.position,now);
+    const taxiRide=town.getTaxiRidePosition();if(taxiRide){player.position.set(taxiRide.x,1.05,taxiRide.z);state.player.x=taxiRide.x;state.player.z=taxiRide.z;}
     sky.update(dayState, runtime.camera, now);
     npcs.update({ time: now, dayState, player, cameraYaw: cameraControl.yaw, performanceBeat });
     cameraControl.update(dt);
@@ -64,6 +65,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
   const runtime = createScene3D({ canvas, onFrame: frame, onError: onMessage });
   runtime.scene.add(player);
   town = createTown3D({ scene: runtime.scene, seed: state.seed });
+  if(state.player.indoor?.buildingId){const saved=state.player.indoor,townRoom=town.enterBuilding(saved.buildingId,{x:saved.outdoorX||0,z:saved.outdoorZ||0});const room=saved.floor>1?town.goToFloor(saved.floor):townRoom;if(room)player.position.set(room.spawn.x,0,room.spawn.z)}
   sky = createSky3D(runtime.scene, { onFarewell: onSunFarewell });
   npcs = createNpcSystem({ scene: runtime.scene, onSpeech: target => { if (mode === 'world') onInteract?.(target); } });
   input = createInput3D({ canvas });
@@ -97,6 +99,14 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
     setNpcChorusRole(id, role) { npcs.setChorusRole(id, role); },
     setPlayerPerforming(active, role = 'voice') { playerPerformance = { active, role }; },
     setNpcPerforming(id, active, role = 'voice') { npcs.setPerforming(id, active, role); },
+    enterBuilding(id) { const outdoor={x:player.position.x,z:player.position.z},interior=town.enterBuilding(id,player.position);if(!interior)return null;state.player.indoor={buildingId:id,floor:1,outdoorX:outdoor.x,outdoorZ:outdoor.z};player.position.set(interior.spawn.x,0,interior.spawn.z);return{floors:interior.floors,floor:1,buildingId:id}; },
+    goToFloor(floor) { const interior=town.goToFloor(floor);if(!interior)return null;if(state.player.indoor)state.player.indoor.floor=floor;player.position.set(interior.spawn.x,0,interior.spawn.z);return{floors:interior.floors,floor,buildingId:interior.group.userData.buildingId}; },
+    exitBuilding() { const position=town.exitBuilding();delete state.player.indoor;player.position.set(position.x,0,position.z);return position; },
+    callTaxi() { return town.callTaxi(player.position); },
+    getTaxiDestinations() { return town.getTaxiDestinations(); },
+    boardTaxi(destination) { return town.boardTaxi(destination); },
+    getTaxiStatus() { return town.getTaxiStatus(); },
+    inviteNpc(id) { npcs.setChorusRole(id,'approaching'); },
     getNearbyInteractable() { if (mode === 'factory') return { kind: 'factoryExit', label: '离开生产中心' }; return interaction.currentTarget; },
     getMode: () => mode,
     residentHomes: npcs.entities.map(npc => npc.home),

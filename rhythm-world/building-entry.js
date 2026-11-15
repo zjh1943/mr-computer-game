@@ -1,0 +1,2 @@
+export function buildingEntrancePoint(building){const front=building.entrance?.side==='south'?-1:1;return{x:building.x,z:building.z+front*(building.depth/2+1)}}
+export function findBuildingEntrance(buildings,position,now,lastEntry,radius=1.45,cooldown=1400){if(lastEntry&&now-lastEntry.time<cooldown)return null;for(const building of buildings){const point=buildingEntrancePoint(building);if(Math.hypot(position.x-point.x,position.z-point.z)<=radius)return{id:building.id,label:building.label,point}}return null}

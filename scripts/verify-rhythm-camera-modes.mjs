@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { nextCameraMode, cameraDistanceForMode } from '../rhythm-world/camera-modes.js';
+assert.equal(nextCameraMode('third-near'),'first');
+assert.equal(nextCameraMode('first'),'third-far');
+assert.equal(nextCameraMode('third-far'),'third-near');
+assert.equal(cameraDistanceForMode('first'),0);
+assert.ok(cameraDistanceForMode('third-far')>cameraDistanceForMode('third-near'));
+const html=fs.readFileSync(new URL('../rhythm-world.html',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../rhythm-world-camera.css',import.meta.url),'utf8');
+const engine=fs.readFileSync(new URL('../rhythm-world/engine.js',import.meta.url),'utf8');
+assert.match(html,/id="cameraView"/,'touch UI needs an eye button');
+assert.match(css,/camera-view/,'eye button needs touch responsive styling');
+assert.match(engine,/cycleCameraMode/,'engine needs to switch camera mode');
+console.log('Verified touch eye control and first/near/far camera modes.');

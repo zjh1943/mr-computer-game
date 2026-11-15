@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { findBuildingEntrance } from '../rhythm-world/building-entry.js';
+const buildings=[{id:'tower-1',x:10,z:20,width:10,depth:12,entrance:{side:'south'}}];
+assert.equal(findBuildingEntrance(buildings,{x:10,z:13},2000,null)?.id,'tower-1');
+assert.equal(findBuildingEntrance(buildings,{x:10,z:13},2500,{id:'tower-1',time:2000}),null,'entry cooldown prevents a loop');
+assert.equal(findBuildingEntrance(buildings,{x:30,z:30},4000,null),null);
+const town=fs.readFileSync(new URL('../rhythm-world/town-3d.js',import.meta.url),'utf8');
+const app=fs.readFileSync(new URL('../rhythm-world.js',import.meta.url),'utf8');
+assert.match(town,/PlaneGeometry\(42,34\)/,'interior must be substantially larger');
+assert.match(town,/getAutomaticBuildingEntry/,'town must expose automatic doorway entry');
+assert.match(town,/walkInApartment/,'every home and neighbor home must have a walk-in 3D room');
+assert.match(town,/apartmentFurniture/,'walk-in homes must contain furniture');
+assert.match(town,/apartmentDoorOpening/,'corridor walls must contain real door openings');
+assert.match(town,/hollowVillageHome/,'standalone character homes must be hollow walk-in buildings');
+assert.doesNotMatch(app,/target\.id\?\.startsWith\('tower-'\).*enterHighRise/,'tower entry must not require interaction click');
+assert.doesNotMatch(app,/target\.kind==='residentHome'\)return openHome/,'standalone homes must not open a fake room modal');
+console.log('Verified seamless automatic tower entry, cooldown, and expanded interiors.');

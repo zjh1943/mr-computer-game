@@ -10,6 +10,7 @@ import { getDayNightState, getWorldPhase } from './day-night.js';
 import { distanceBetween } from './interactions.js';
 import { resolveSolidCollisions } from './solid-collision.js';
 import { applyTrafficImpact } from './traffic-safety.js';
+import { nextCameraMode } from './camera-modes.js';
 
 export const distanceTo = distanceBetween;
 
@@ -19,9 +20,10 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
   let verticalVelocity = 0, grounded = true;
   let player = createCharacter3D(state.player.character || 'gray');
   let playerPerformance = { active: false, role: 'voice' };
-  let cameraControl, input, town, sky, npcs, interaction;
+  let cameraControl, input, town, sky, npcs, interaction,cameraMode=state.settings?.cameraMode||'third-near';
   player.position.set(state.player.x || 0, 0, state.player.z ?? state.player.y ?? 0);
   player.rotation.y = Math.PI;
+  function enterTower(id){const outdoor={x:player.position.x,z:player.position.z},interior=town.enterBuilding(id,player.position);if(!interior)return null;state.player.indoor={buildingId:id,floor:1,outdoorX:outdoor.x,outdoorZ:outdoor.z};player.position.set(interior.spawn.x,0,interior.spawn.z);return{floors:interior.floors,floor:1,homeFloor:interior.homeFloor,buildingId:id}}
 
   function frame({ now, dt }) {
     const dayState = getDayNightState(getWorldPhase());
@@ -49,6 +51,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
       state.player.x = player.position.x;
       state.player.z = player.position.z;
       state.player.y = player.position.z;
+      if(!state.player.indoor){const automaticEntry=town.getAutomaticBuildingEntry(player.position,now);if(automaticEntry){const entered=enterTower(automaticEntry.id);if(entered)onMessage(`你直接走进了${automaticEntry.label}，这里是宽阔的实时大厅。`)}}
       const car=town.getTrafficColliders().find(item=>Math.hypot(player.position.x-item.x,player.position.z-item.z)<item.radius+.45);
       if(car){const impact=applyTrafficImpact(trafficSafety,{now,speed:car.speed});trafficSafety=impact;if(impact.injured){state.player.health=impact.health;const awayX=player.position.x-car.x,awayZ=player.position.z-car.z,length=Math.hypot(awayX,awayZ)||1;player.position.x+=awayX/length*1.8;player.position.z+=awayZ/length*1.8;onMessage(`🚑 被车辆撞到了！生命 ${impact.health}%`);if(impact.health<=0){trafficSafety={health:100,lastImpactAt:now};state.player.health=100;player.position.set(0,0,0);onMessage('你被送回原版村休息，生命恢复了。')}}}
     }
@@ -70,6 +73,7 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
   npcs = createNpcSystem({ scene: runtime.scene, onSpeech: target => { if (mode === 'world') onInteract?.(target); } });
   input = createInput3D({ canvas });
   cameraControl = createThirdPersonCamera({ camera: runtime.camera, canvas, target: player });
+  cameraControl.setMode(cameraMode);player.visible=cameraMode!=='first';
   interaction = createInteraction3D({ camera: runtime.camera, canvas, getTargets: () => [...town.getInteractables(), ...npcs.getInteractables()], getPlayer: () => player, onInteract });
   town.update(player.position);
 
@@ -99,13 +103,14 @@ export function createEngine({ canvas, state, onInteract, onMessage = () => {}, 
     setNpcChorusRole(id, role) { npcs.setChorusRole(id, role); },
     setPlayerPerforming(active, role = 'voice') { playerPerformance = { active, role }; },
     setNpcPerforming(id, active, role = 'voice') { npcs.setPerforming(id, active, role); },
-    enterBuilding(id) { const outdoor={x:player.position.x,z:player.position.z},interior=town.enterBuilding(id,player.position);if(!interior)return null;state.player.indoor={buildingId:id,floor:1,outdoorX:outdoor.x,outdoorZ:outdoor.z};player.position.set(interior.spawn.x,0,interior.spawn.z);return{floors:interior.floors,floor:1,homeFloor:interior.homeFloor,buildingId:id}; },
+    enterBuilding(id) { return enterTower(id); },
     goToFloor(floor) { const interior=town.goToFloor(floor);if(!interior)return null;if(state.player.indoor)state.player.indoor.floor=floor;player.position.set(interior.spawn.x,0,interior.spawn.z);return{floors:interior.floors,floor,homeFloor:interior.homeFloor,buildingId:interior.group.userData.buildingId}; },
     exitBuilding() { const position=town.exitBuilding();delete state.player.indoor;player.position.set(position.x,0,position.z);return position; },
     callTaxi() { return town.callTaxi(player.position); },
     getTaxiDestinations() { return town.getTaxiDestinations(); },
     boardTaxi(destination) { return town.boardTaxi(destination); },
     getTaxiStatus() { return town.getTaxiStatus(); },
+    cycleCameraMode() { cameraMode=nextCameraMode(cameraMode);cameraControl.setMode(cameraMode);player.visible=cameraMode!=='first';state.settings.cameraMode=cameraMode;return cameraMode; },
     inviteNpc(id) { npcs.setChorusRole(id,'approaching'); },
     getNearbyInteractable() { if (mode === 'factory') return { kind: 'factoryExit', label: '离开生产中心' }; return interaction.currentTarget; },
     getMode: () => mode,

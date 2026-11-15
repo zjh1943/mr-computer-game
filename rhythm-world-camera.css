@@ -1,0 +1,1 @@
+.camera-view{display:none!important}@media (hover:none),(pointer:coarse),(max-width:1024px){#hud .camera-view{display:inline-block!important;background:linear-gradient(#8be8ff,#5d78d7);color:#101b3c}.camera-view:active{filter:brightness(1.2)}}

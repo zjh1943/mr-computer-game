@@ -1,5 +1,8 @@
 const assert=require('node:assert/strict');
 const mobile=require('../../dance-mobile');
+assert.equal(typeof mobile.isMobileWidth,'function');
+for(const width of [320,390,700,768])assert(mobile.isMobileWidth(width));
+for(const width of [769,1024,1920])assert(!mobile.isMobileWidth(width),'wide screens always keep the desktop layout');
 assert.deepEqual(mobile.directions.map(d=>[d.lane,d.id]),[[0,'left'],[1,'down'],[2,'up'],[3,'right']]);
 const events=[];
 const input=mobile.createTouchInput(lane=>events.push(['hit',lane]),lane=>events.push(['release',lane]));

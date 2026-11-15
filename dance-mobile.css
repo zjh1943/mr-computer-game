@@ -56,3 +56,5 @@
 .dance-mobile-mode .dance-mobile-world{display:block;position:absolute;left:-50vw;top:0;bottom:0;width:220vw;height:100%;z-index:3;background-size:160% 48%,150% 48%,140% 48%,100% 100%,cover;background-position:center bottom,center 73%,center 48%,center,center;background-repeat:no-repeat;translate:var(--mobile-world-x,-25vw) 0;transition:translate .5s cubic-bezier(.2,.65,.25,1);will-change:translate}
 .dance-mobile-mode .dance-mobile-world .dance-sky-sun{left:121vw!important}
 @media(prefers-reduced-motion:reduce){.dance-mobile-mode .dance-mobile-world{transition:none}}
+
+.dance-mobile-fullscreen-toggle[hidden]{display:none!important}

@@ -1,5 +1,7 @@
 /* Portrait touch controls share the desktop rhythm clock and judgement. */
 (()=>{
+  const MOBILE_MAX_WIDTH=768;
+  const isMobileWidth=width=>Number(width)>0&&Number(width)<=MOBILE_MAX_WIDTH;
   const directions=[
     {lane:0,id:'left',name:'左',arrow:'←',color:'#cb75ed'},
     {lane:1,id:'down',name:'下',arrow:'↓',color:'#45dcf0'},
@@ -13,8 +15,8 @@
   }
   const cameraPlacement=camera=>({world:camera==='player'?-58:camera==='rival'?8:-25});
   function mount({host,stage,hit,release,start,onEnter}){
-    const toolbar=host.querySelector('.dance-toolbar'),portrait=matchMedia('(max-width:700px) and (orientation:portrait)');
-    let manual=false,lastGlow='',lastCamera='',disposed=false;
+    const toolbar=host.querySelector('.dance-toolbar'),mobileScreen=matchMedia('(max-width:'+MOBILE_MAX_WIDTH+'px)');
+    let lastGlow='',lastCamera='',disposed=false;
     const world=document.createElement('div');world.className='dance-mobile-world';world.style.backgroundImage=getComputedStyle(stage).backgroundImage;for(const actor of [...stage.children].filter(node=>node.matches('.dance-player,.dance-rival,.dance-sky-sun,.dance-spectator,.friend-chorus-crowd')))world.append(actor);stage.prepend(world);
     const modeButton=document.createElement('button');modeButton.type='button';modeButton.className='dance-mobile-fullscreen-toggle';modeButton.textContent='手机竖屏全屏';toolbar.append(modeButton);
     const pad=document.createElement('div');pad.className='dance-touch-pad';pad.setAttribute('role','group');pad.setAttribute('aria-label','手机四方向触控');
@@ -37,20 +39,20 @@
       buttons.forEach((button,lane)=>{const lit=input.held(lane)||performance.now()<Number(button.dataset.flashUntil||0)||['hit','holding'].includes(targets[lane]?.dataset.feedback);button.dataset.lit=String(lit);button.setAttribute('aria-pressed',String(input.held(lane)));if(lit)glowColor=directions[lane].color;});
       if(glowColor!==lastGlow){glow.style.setProperty('--edge-color',glowColor||'transparent');glow.dataset.lit=String(!!glowColor);lastGlow=glowColor;}
     }
-    function layout(){if(!disposed)host.classList.toggle('dance-mobile-mode',manual||portrait.matches);}
+    function layout(){if(disposed)return;const mobile=mobileScreen.matches;host.classList.toggle('dance-mobile-mode',mobile);modeButton.hidden=!mobile;if(!mobile){input.clear();host.classList.remove('dance-mobile-fallback');}}
     function fullscreenChanged(){const full=document.fullscreenElement===host||host.classList.contains('dance-mobile-fallback');modeButton.textContent=full?'退出手机版':'手机竖屏全屏';input.clear();layout();}
     modeButton.onclick=async()=>{
-      if(document.fullscreenElement===host&&!host.classList.contains('dance-mobile-mode')){manual=true;layout();onEnter?.();fullscreenChanged();return;}
-      if(document.fullscreenElement===host){await document.exitFullscreen();manual=false;layout();return;}
-      if(host.classList.contains('dance-mobile-fallback')){host.classList.remove('dance-mobile-fallback');manual=false;fullscreenChanged();return;}
-      manual=true;layout();onEnter?.();
+      if(!mobileScreen.matches)return;
+      if(document.fullscreenElement===host){await document.exitFullscreen();layout();return;}
+      if(host.classList.contains('dance-mobile-fallback')){host.classList.remove('dance-mobile-fallback');fullscreenChanged();return;}
+      layout();onEnter?.();
       try{await host.requestFullscreen();}catch{host.classList.add('dance-mobile-fallback');fullscreenChanged();}
     };
     const clear=()=>{input.clear();sync();};
     const visibility=()=>{if(document.hidden)clear();};
-    portrait.addEventListener('change',layout);document.addEventListener('fullscreenchange',fullscreenChanged);document.addEventListener('visibilitychange',visibility);window.addEventListener('blur',clear);layout();
-    return {sync,dispose(){input.clear();disposed=true;portrait.removeEventListener('change',layout);document.removeEventListener('fullscreenchange',fullscreenChanged);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('blur',clear);modeButton.remove();pad.remove();glow.remove();play.remove();for(const actor of [...world.children])stage.insertBefore(actor,world);world.remove();host.classList.remove('dance-mobile-mode','dance-mobile-fallback');}};
+    mobileScreen.addEventListener('change',layout);document.addEventListener('fullscreenchange',fullscreenChanged);document.addEventListener('visibilitychange',visibility);window.addEventListener('blur',clear);layout();
+    return {sync,dispose(){input.clear();disposed=true;mobileScreen.removeEventListener('change',layout);document.removeEventListener('fullscreenchange',fullscreenChanged);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('blur',clear);modeButton.remove();pad.remove();glow.remove();play.remove();for(const actor of [...world.children])stage.insertBefore(actor,world);world.remove();host.classList.remove('dance-mobile-mode','dance-mobile-fallback');}};
   }
-  const api={directions,createTouchInput,cameraPlacement,mount};
+  const api={MOBILE_MAX_WIDTH,isMobileWidth,directions,createTouchInput,cameraPlacement,mount};
   if(typeof module!=='undefined')module.exports=api;else window.DanceMobile=api;
 })();

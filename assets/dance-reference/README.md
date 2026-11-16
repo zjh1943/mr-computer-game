@@ -12,3 +12,7 @@ The source page states CC BY-NC-ND 4.0; this record does not change that license
 The reference importer accepts only the normal character files and Colorful Bunch / Colorful Bunch (BF Mix) / Colorful Bunch Erect. Foredoomed, horror forms, creepy audio, executable files and Lua scripts are excluded. Image frames are packed at browser-friendly resolution; soundtrack stems keep their unchanged time axis. The playable note timings and cast changes come from the source chart, not random generation. The fixed receptors and falling note pictures in `arrows/` are exact crops from the mod's normal `NOTE_assets` atlas.
 
 The separate free-mix voice library uses both normal A/B samples from the existing local Sprunki Kiss package. Black is silent and cannot switch modes. No YouTube iframe, advertisements, recommendation feed or remote video is included in this selection.
+
+## Rainbrawl normal performances
+
+`rainbrawl` retains its three source stems on one audio clock. This normal edition ends at 228 seconds, before the source stage/horror change. The importer reads each song's separate `events.json`, retains actual Sprunki playable variants and Abgerny characters, and does not execute source scripts. Sprunked / Abgerny original character credits also belong to Draker and Baggerhead as listed by the mod author.

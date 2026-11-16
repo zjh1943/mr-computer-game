@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const cast=require('../dance-cast'),data=require('../dance-reference-data'),{tracks}=require('../dance-music'),{chart}=require('../computer-apps');
-assert.equal(Object.keys(cast).length,20);assert(cast.black.silent);assert(!cast.black.audio);assert.equal(tracks.filter(t=>t.reference).length,4);assert.equal(tracks.filter(t=>t.mix).length,1);assert.equal(tracks.filter(t=>t.video).length,1);
-for(const track of tracks.filter(t=>t.reference&&!t.friendLikeYou)){assert(track.notes.length>500);assert(chart(track).length>100);assert(track.events.some(e=>e.character==='computer'));assert(!track.events.some(e=>e.character&&/black|killer|horror|ed$/.test(e.character)));for(const path of track.audioStems||[track.audioFile]){const file=fs.readFileSync(path);assert.equal(file.toString('ascii',0,4),'OggS');assert(file.length>1000000);}assert(track.duration>240);}
+assert.equal(Object.keys(cast).length,20);assert(cast.black.silent);assert(!cast.black.audio);assert.equal(tracks.filter(t=>t.reference).length,5);assert.equal(tracks.filter(t=>t.mix).length,1);assert.equal(tracks.filter(t=>t.video).length,1);
+for(const track of tracks.filter(t=>t.reference&&!t.friendLikeYou)){assert(track.notes.length>500);assert(chart(track).length>100);assert(track.events.some(e=>e.character?.startsWith('computer')));assert(!track.events.some(e=>e.character&&/black|killer|horror|ed$/.test(e.character)));for(const path of track.audioStems||[track.audioFile]){const file=fs.readFileSync(path);assert.equal(file.toString('ascii',0,4),'OggS');assert(file.length>1000000);}assert(track.duration>200);}
 const colorful=tracks.find(track=>track.id==='reference-colorful-bunch');
 assert.deepEqual(colorful.notes.slice(0,4).map(({time,lane,side,hold})=>({time,lane,side,hold})),[
   {time:0,lane:1,side:'dad',hold:0},

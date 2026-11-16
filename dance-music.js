@@ -30,6 +30,9 @@
   for(let phrase=0,start=friendPhases.finaleStart;start<148;phrase++,start+=2){for(let i=0;i<finalePattern.length;i++){const [offset,lane]=finalePattern[i],at=start+offset;if(at>=148)break;addFriendNote(at,(lane+phrase)%4,'player',i===3&&phrase%3===0?.75:0);if(i%2===0)addFriendNote(at,(3-lane+phrase)%4,'dad',i===2&&phrase%4===2?.75:0);}}
   friendNotes.sort((a,b)=>a.time-b.time||Number(a.hit)-Number(b.hit));
   const friendLocal={id:'friend-like-you',name:'Friend Like You',artist:'Mr. Tree · 电脑先生 · Black',bpm:120,duration:150,reference:true,friendLikeYou:true,video:'_bwDYOzbkBY',chartOffset:2,chartDuration:148,pixelClockDuration:150,phases:friendPhases,cast:['mr_tree','computer','black'],lead:'computer',initial:{player:'computer',dad:'mr_tree'},notes:friendNotes,events:[{time:friendPhases.nightStart,side:'dad',character:'black'},{time:friendPhases.finaleStart,side:'dad',character:'mr_tree'}],source:'https://www.youtube.com/watch?v=_bwDYOzbkBY'};
+  const menuPreviews={'reference-colorful-bunch':'sprunki-cover.jpg','reference-colorful-bunch-(bf-mix)':'bf-mix-cover.jpg','reference-colorful-bunch-erect':'erect-cover.jpg','reference-rainbrawl':'rainbrawl-cover.jpg'};
+  for(const track of reference.tracks)if(menuPreviews[track.id])track.menuPreview='./assets/dance-menu/'+menuPreviews[track.id];
+  friendLocal.menuPreview='./assets/dance-menu/friend-cover.jpg';
   const tracks=[...reference.tracks,friendLocal,custom];
   function parseLyrics(text){const cues=[];for(const line of text.split(/\r?\n/)){const words=line.replace(/\[\d+:\d+(?:\.\d+)?\]/g,'').trim();for(const match of line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g))cues.push({time:Number(match[1])*60+Number(match[2]),text:words.slice(0,160)});}return cues.sort((a,b)=>a.time-b.time);}
   function captionAt(cues,time){let result='';for(const cue of cues||[]){if(cue.time>time)break;result=time-cue.time<6?cue.text:'';}return result;}
@@ -51,7 +54,7 @@
   }
   async function open(host,track,events){
     const YT=await loadAPI();if(!host.isConnected)return null;
-    let player=null,dead=false,generation=0,retries=0,timer=0,resumeAt=0;
+    let player=null,dead=false,generation=0,retries=0,timer=0,resumeAt=0,introPlayed=false;
     const valid=g=>!dead&&g===generation&&host.isConnected;
     function arm(g,ms,fn){clearTimeout(timer);timer=setTimeout(()=>{if(valid(g))fn();},ms);}
     function fail(message,permanent=false){if(dead)return;clearTimeout(timer);if(!permanent&&retries<1){retries++;resumeAt=Number(player?.getCurrentTime?.())||resumeAt;events.loading?.('连接中断，正在重新连接原曲…');launch();return;}events.error(message);}
@@ -59,8 +62,8 @@
       const g=++generation;player?.destroy();host.replaceChildren();const slot=document.createElement('div');host.append(slot);
       arm(g,15000,()=>fail('原曲连接仍未成功，请点“重试原曲”；本机歌曲可离线播放'));
       player=new YT.Player(slot,{width:'100%',height:'220',videoId:track.video,
-        playerVars:{playsinline:1,autoplay:1,controls:0,disablekb:1,modestbranding:1,origin:location.origin,start:Math.floor(resumeAt)},events:{
-          onReady:e=>{if(!valid(g))return;e.target.unMute?.();e.target.playVideo();arm(g,6000,()=>events.blocked());},
+        playerVars:{playsinline:1,autoplay:events.beforePlay?0:1,controls:0,disablekb:1,modestbranding:1,origin:location.origin,start:Math.floor(resumeAt)},events:{
+          onReady:async e=>{if(!valid(g))return;try{if(!introPlayed&&events.beforePlay){introPlayed=true;clearTimeout(timer);await events.beforePlay();}if(!valid(g))return;e.target.unMute?.();e.target.playVideo();arm(g,6000,()=>events.blocked());}catch(error){if(valid(g))fail(error.message);}},
           onStateChange:e=>{if(!valid(g))return;clearTimeout(timer);events.state(e.data,e.target);if(e.data===3)arm(g,20000,()=>fail('歌曲缓冲超时，请重试原曲'));},
           onAutoplayBlocked:()=>{if(valid(g)){clearTimeout(timer);events.blocked();}},
           onError:e=>{if(valid(g))fail([100,101,150].includes(e.data)?'这首原曲暂时不允许嵌入播放，请选择本机音频':'原曲连接失败，请重试',[100,101,150].includes(e.data));}
@@ -104,6 +107,7 @@
       const channels=buffers.map((buffer,index)=>{
         const source=ctx.createBufferSource(),gain=ctx.createGain();
         source.buffer=buffer;source.connect(gain).connect(ctx.destination);source.start(start);
+        if(track.playbackDuration){gain.gain.setValueAtTime(1,start+Math.max(0,track.playbackDuration-.16));gain.gain.linearRampToValueAtTime(0,start+track.playbackDuration);source.stop(start+track.playbackDuration);}
         return {source,gain,path:track.audioStems[index]};
       });
       const playback={onended:null,setVoice(role,enabled){

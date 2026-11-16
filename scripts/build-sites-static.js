@@ -22,6 +22,8 @@ const includeFiles = [
   "dance-music.js",
   "dance-mobile.js",
   "dance-mobile.css",
+  "dance-menu.js",
+  "dance-menu.css",
   "dance-cast.js",
   "dance-reference.js",
   "dance-reference-data.js",

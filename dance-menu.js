@@ -1,0 +1,52 @@
+/* Entry and song selection are separate from rhythm input. */
+(()=>{
+ const countInAt=(elapsed,beat=.5)=>elapsed<0||elapsed>=beat*4?'':['3','2','1','GO'][Math.floor(elapsed/beat)];
+ async function prepareCountIn(ctx){const buffers=await Promise.all(['intro3','intro2','intro1','introGo'].map(async name=>{const response=await fetch('./assets/dance-menu/'+name+'.ogg');if(!response.ok)throw Error('倒计时声音读取失败');return ctx.decodeAudioData(await response.arrayBuffer());}));return start=>buffers.forEach((buffer,index)=>{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;gain.gain.value=.55;source.connect(gain).connect(ctx.destination);source.start(start+index*.5);source.onended=()=>{source.disconnect();gain.disconnect();};});}
+ function step(state,action,count){
+  let {page,index}=state;index=Math.max(0,Math.min(index,Math.max(0,count-1)));
+  if(action==='back')page=page==='play'?'songs':'entry';
+  else if(action==='confirm'){if(page==='entry')page='songs';else if(page==='songs'&&count)page='play';}
+  else if(page==='songs'&&count&&(['up','down','left','right'].includes(action)))index=(index+(['up','left'].includes(action)?-1:1)+count)%count;
+  return {page,index};
+ }
+ function mount(host,{getTracks,onStart,onStop,onDifficulty=()=>{},onMode=()=>{},isBusy=()=>false}){
+  let state={page:'entry',index:0},tracks=[],disposed=false,enterTimer=0,entering=false;
+  const backgroundMusic=new Audio('./assets/dance-menu/menu-music.ogg');backgroundMusic.loop=true;backgroundMusic.volume=.18;const playBackground=()=>backgroundMusic.play().catch(()=>{});
+  const overlay=document.createElement('section');overlay.className='dance-menu';overlay.setAttribute('aria-label','节奏盒子选歌');
+  overlay.innerHTML='<div class="dance-entry"><img class="dance-title-logo" src="./assets/dance-menu/source-logo.png" alt="Yet Another Sprunki FNF Mod"><canvas class="dance-title-characters" width="878" height="710" role="img" aria-label="Pinki、Simon 和 Gray 的待机动画"></canvas><button class="dance-entry-text" type="button">Press Enter to Begin</button></div><div class="dance-picker" hidden><header><button type="button" data-action="back">← 返回</button><span>选择对战</span><span data-count></span></header><div class="dance-picker-banner"><img data-preview alt="所选游戏预览"></div><div class="dance-picker-body"><div class="dance-track-info"><b>TRACKS</b><div class="dance-picker-list" role="listbox" aria-label="对战曲目"></div></div><div class="dance-picker-preview"><div class="dance-game-choice"><button type="button" data-action="left" aria-label="上一个游戏">◀</button><strong data-title></strong><button type="button" data-action="right" aria-label="下一个游戏">▶</button></div><p data-detail></p><div class="dance-menu-cast" aria-hidden="true"></div><a data-source target="_blank" rel="noopener noreferrer">查看对战视频</a></div></div><footer><button type="button" data-action="up" aria-label="上一首">▲</button><button type="button" data-action="confirm">OK</button><button type="button" data-action="down" aria-label="下一首">▼</button></footer><p class="dance-picker-help">方向键选择 · Enter / OK 开始 · Esc 返回</p></div>';
+  host.prepend(overlay);host.classList.add('dance-menu-open','dance-cinematic');
+  const settings=document.createElement('label');settings.className='dance-menu-difficulty';settings.textContent='难度 ';const difficulty=document.createElement('select');difficulty.setAttribute('aria-label','选歌难度');for(const [value,name] of [['easy','简单'],['normal','普通'],['extreme','超难']]){const option=document.createElement('option');option.value=value;option.textContent=name;difficulty.append(option);}difficulty.onchange=()=>onDifficulty(difficulty.value);settings.append(difficulty);overlay.querySelector('.dance-game-choice').after(settings);
+  const modeLabel=document.createElement('label');modeLabel.className='dance-menu-mode';modeLabel.textContent='玩法 ';const mode=document.createElement('select');mode.setAttribute('aria-label','选歌玩法');for(const [value,name] of [['solo','单人游戏'],['practice','自由练习 · 不会失败'],['watch','观战 · 自动演唱']]){const option=document.createElement('option');option.value=value;option.textContent=name;mode.append(option);}modeLabel.append(mode);settings.after(modeLabel);
+  mode.onchange=()=>onMode(mode.value);
+  const result=document.createElement('section');result.className='dance-round-result';result.hidden=true;result.setAttribute('aria-label','演唱成绩');result.innerHTML='<h2></h2><strong data-score></strong><p></p><button type="button">返回选歌</button>';host.append(result);result.querySelector('button').onclick=()=>{result.hidden=true;controller.show();};
+  const exit=document.createElement('button');exit.className='dance-round-exit';exit.textContent='返回选歌';exit.type='button';exit.onclick=()=>controller.results({title:'本次演唱',score:0,detail:'已结束本次演唱'});host.append(exit);
+  const entry=overlay.querySelector('.dance-entry'),picker=overlay.querySelector('.dance-picker'),list=overlay.querySelector('.dance-picker-list'),cast=overlay.querySelector('.dance-menu-cast');
+  function render(){
+   if(disposed)return;if(state.page==='play')backgroundMusic.pause();else playBackground();tracks=getTracks();state.index=Math.min(state.index,Math.max(0,tracks.length-1));
+   overlay.hidden=state.page==='play';host.classList.toggle('dance-menu-open',state.page!=='play');entry.hidden=state.page!=='entry';picker.hidden=state.page!=='songs';
+   if(state.page!=='play')result.hidden=true;
+   if(state.page!=='songs')return;
+   list.replaceChildren();tracks.forEach((track,index)=>{const button=document.createElement('button');button.type='button';button.setAttribute('role','option');button.setAttribute('aria-selected',String(index===state.index));button.dataset.song=track.id;button.textContent=track.name;button.onclick=()=>{state.index=index;render();};button.ondblclick=()=>dispatch('confirm');list.append(button);});
+   const selected=tracks[state.index];overlay.querySelector('[data-count]').textContent=tracks.length?`${state.index+1} / ${tracks.length}`:'暂无曲目';overlay.querySelector('[data-title]').textContent=selected?.name||'暂无曲目';overlay.querySelector('[data-detail]').textContent=selected?`${selected.artist} · ${selected.bpm} BPM`:'';
+   overlay.querySelector('[data-preview]').src=selected?.menuPreview||'./assets/dance-menu/sprunki-preview.png';
+   const source=overlay.querySelector('[data-source]');source.hidden=!selected?.videoSource&&!selected?.video;source.href=selected?.videoSource||(selected?.video?'https://www.youtube.com/watch?v='+selected.video:'#');
+   cast.replaceChildren();for(const id of [selected?.initial?.dad,selected?.initial?.player].filter(Boolean)){
+    if(window.DanceReference?.has(id)){const canvas=document.createElement('canvas');canvas.setAttribute('aria-label',id);cast.append(canvas);window.DanceReference.prepare([id]).then(()=>{if(canvas.isConnected)window.DanceReference.draw(canvas,id,'idle',0);}).catch(()=>{});}
+   }
+   list.querySelector('[aria-selected="true"]')?.scrollIntoView({block:'nearest'});
+  }
+  function dispatch(action){if(isBusy()||entering)return;if(!result.hidden){if(action==='back'||action==='confirm')controller.show();return;}if(state.page==='play'&&action==='back'){exit.onclick();return;}if(state.page!=='play')playBackground();const cue=new Audio('./assets/dance-menu/'+(action==='confirm'?'confirmMenu':action==='back'?'cancelMenu':'scrollMenu')+'.ogg');cue.volume=.22;cue.play().catch(()=>{});
+   const proceed=()=>{const previous=state.page;state=step(state,action,tracks.length);render();if(previous!=='play'&&state.page==='play')onStart(tracks[state.index]);else if(previous==='play'&&state.page!=='play')onStop();};
+   if(state.page==='entry'&&action==='confirm'){entering=true;entry.classList.add('is-entering');enterTimer=setTimeout(()=>{entering=false;entry.classList.remove('is-entering');if(!disposed)proceed();},650);}else proceed();
+  }
+  overlay.querySelector('.dance-entry-text').onclick=()=>dispatch('confirm');overlay.querySelectorAll('[data-action]').forEach(button=>button.onclick=()=>dispatch(button.dataset.action));
+  const key=event=>{if(event.repeat||/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))return;const action={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'confirm',' ':'confirm',Escape:'back'}[event.key];if(!action||state.page==='play'&&result.hidden&&action!=='back')return;event.preventDefault();event.stopImmediatePropagation();dispatch(action);};
+  const titleImage=new Image();titleImage.src='./assets/dance-menu/title-characters.png';let titleFrames=[],raf=0,lastFrame=-1;
+  fetch('./assets/dance-menu/title-frames.json').then(response=>{if(!response.ok)throw Error('title frames');return response.json();}).then(frames=>{titleFrames=frames;}).catch(()=>{});
+  const titleCanvas=overlay.querySelector('.dance-title-characters'),titleContext=titleCanvas.getContext('2d');
+  function animate(now){if(disposed)return;raf=requestAnimationFrame(animate);if(state.page!=='entry'||!titleFrames.length||!titleImage.complete||!titleImage.naturalWidth)return;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,index=reduced?0:Math.floor(now/70)%titleFrames.length;if(index===lastFrame)return;lastFrame=index;const frame=titleFrames[index];titleContext.clearRect(0,0,878,710);titleContext.drawImage(titleImage,Number(frame.x),Number(frame.y),Number(frame.width),Number(frame.height),0,0,878,710);}
+  raf=requestAnimationFrame(animate);document.addEventListener('keydown',key,true);render();
+  const controller={show(){if(isBusy())return;onStop();result.hidden=true;state.page='songs';render();},hide(){result.hidden=true;state.page='play';render();},setExit(action){exit.onclick=action;},results({title='演唱结束',score=0,detail=''}){onStop();state.page='play';render();result.hidden=false;playBackground();result.querySelector('h2').textContent=title;result.querySelector('[data-score]').textContent='得分 '+score;result.querySelector('p').textContent=detail;},dispose(){disposed=true;clearTimeout(enterTimer);backgroundMusic.pause();backgroundMusic.removeAttribute('src');backgroundMusic.load();cancelAnimationFrame(raf);document.removeEventListener('keydown',key,true);overlay.remove();result.remove();exit.remove();host.classList.remove('dance-menu-open','dance-cinematic');}};return controller;
+ }
+ const api={step,mount,countInAt,prepareCountIn};if(typeof module!=='undefined')module.exports=api;else window.DanceMenu=api;
+})();

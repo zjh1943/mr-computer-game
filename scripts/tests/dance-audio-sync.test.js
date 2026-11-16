@@ -10,11 +10,11 @@ const { prepareStems } = require('../../dance-music');
     currentTime: 10, destination: {},
     decodeAudioData: async () => ({ duration: 30 }),
     createBufferSource() {
-      const source = { connect() { return this; }, disconnect() {}, start(at) { this.at = at; }, stop() { this.stopped = true; } };
+      const source = { connect() { return this; }, disconnect() {}, start(at) { this.at = at; }, stop(at) { this.stopped = true; this.stopAt=at; } };
       sources.push(source); return source;
     },
     createGain() {
-      const gain = { value: 1, setValueAtTime(value) { this.value = value; } };
+      const gain = { value: 1, setValueAtTime(value) { this.value = value; }, linearRampToValueAtTime(value,at){this.ramp={value,at};} };
       gains.push(gain); return { gain, connect() { return this; }, disconnect() {} };
     }
   };
@@ -30,6 +30,10 @@ const { prepareStems } = require('../../dance-music');
     sources[0].onended(); assert.equal(ended, 1);
     playback.stop(); assert(sources.every(s => s.stopped));
     assert.equal(sources[0].onended, null, 'stopping must not finish a replacement song');
+    const cutSchedule=await prepareStems(ctx,{audioStems:['Inst.ogg','Voices-Player.ogg','Voices-Opponent.ogg'],playbackDuration:20});
+    const cut=cutSchedule(12);
+    assert.deepEqual(sources.slice(3).map(s=>s.stopAt),[32,32,32],'all channels end at the normal-edition boundary');
+    assert(gains.slice(3).every(g=>g.ramp.at===32&&g.ramp.value===0));cut.stop();
     console.log('Stem start times, voice identity and cleanup verified.');
   } finally { global.fetch = previousFetch; }
 })().catch(error => { console.error(error); process.exitCode = 1; });

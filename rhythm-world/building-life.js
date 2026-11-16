@@ -1,8 +1,9 @@
 export function buildingFloorCount(height=12){return Math.max(1,Math.min(20,Math.round(height/3.2)))}
 export function interiorSpawn(buildingId,floor=1){return{x:250,z:250,floor,buildingId}}
 function stableNumber(value){let n=0;for(const ch of String(value))n=(n*31+ch.charCodeAt(0))>>>0;return n}
-export function homeFloorForBuilding(buildingId,floors=12){if(floors<=1)return 1;return 2+stableNumber(buildingId)%(floors-1)}
-export function floorHouseholds(buildingId,floor){const names=['奥伦一家','西蒙一家','平琪一家','快乐机器人之家','格蕾之家','加鲁德之家'];const offset=stableNumber(`${buildingId}:${floor}`)%names.length;return[{id:'player-home',label:'我的家',isPlayer:true,door:'A'},...Array.from({length:3},(_,i)=>({id:`neighbor-${i+1}`,label:names[(offset+i)%names.length],isPlayer:false,door:String.fromCharCode(66+i)}))]}
+export const PLAYER_HOME_BUILDING_ID='tower-1';
+export function homeFloorForBuilding(buildingId,floors=12){if(buildingId!==PLAYER_HOME_BUILDING_ID)return 0;if(floors<=1)return 1;return 2+stableNumber(buildingId)%(floors-1)}
+export function floorHouseholds(buildingId,floor){const names=['奥伦一家','西蒙一家','平琪一家','快乐机器人之家','格蕾之家','加鲁德之家'];const offset=stableNumber(`${buildingId}:${floor}`)%names.length,neighbors=Array.from({length:buildingId===PLAYER_HOME_BUILDING_ID?3:4},(_,i)=>({id:`${buildingId}-neighbor-${i+1}`,label:names[(offset+i)%names.length],isPlayer:false,door:String.fromCharCode(65+i+(buildingId===PLAYER_HOME_BUILDING_ID?1:0))}));return buildingId===PLAYER_HOME_BUILDING_ID?[{id:'player-home',label:'我的家',isPlayer:true,door:'A'},...neighbors]:neighbors}
 export function createTaxiCall(target,now=performance.now()){return{status:'approaching',target:{x:target.x,z:target.z},requestedAt:now,arrivedAt:null}}
 export function updateTaxiCall(call,taxiPosition,now=performance.now()){
   if(!call||call.status!=='approaching')return call;

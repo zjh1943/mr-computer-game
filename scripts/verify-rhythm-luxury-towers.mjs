@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createCityPlan } from '../rhythm-world/city-layout.js';
-import { homeFloorForBuilding, floorHouseholds } from '../rhythm-world/building-life.js';
+import { homeFloorForBuilding, floorHouseholds, PLAYER_HOME_BUILDING_ID } from '../rhythm-world/building-life.js';
 
 const plan=createCityPlan('luxury');
 assert.ok(new Set(plan.buildings.map(b=>b.style)).size>=5,'skyline needs at least five building shapes');
-const tower=plan.buildings.find(b=>b.height>20),floors=Math.min(20,Math.round(tower.height/3.2)),home=homeFloorForBuilding(tower.id,floors);
+const tower=plan.buildings.find(b=>b.id===PLAYER_HOME_BUILDING_ID),floors=Math.min(20,Math.round(tower.height/3.2)),home=homeFloorForBuilding(tower.id,floors);
 assert.ok(home>=2&&home<=floors,'player home floor must be a valid residential floor');
 assert.equal(floorHouseholds(tower.id,home).length,4,'each residential floor needs player and neighbor homes');
 const town=fs.readFileSync(new URL('../rhythm-world/town-3d.js',import.meta.url),'utf8');

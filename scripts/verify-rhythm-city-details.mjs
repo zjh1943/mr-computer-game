@@ -18,7 +18,7 @@ const [town,engine,input]=await Promise.all([
 assert.match(town,/trafficSignal/,'visible traffic signals are required');
 assert.match(town,/driverSprite/,'cars need visible drivers');
 assert.match(town,/moodBubble/,'pedestrians need mood bubbles');
-assert.match(town,/cityDoor/,'buildings need usable doors');
+assert.match(town,/automaticGlassDoor/,'buildings need usable automatic doors');
 assert.match(town,/cityStairs/,'buildings need stairs');
 assert.match(input,/consumeJump/,'input needs a jump action');
 assert.match(engine,/verticalVelocity/,'engine needs vertical jump physics');

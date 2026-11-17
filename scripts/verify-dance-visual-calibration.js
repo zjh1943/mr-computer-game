@@ -6,8 +6,8 @@ assert.equal(NOTE_TRAVEL_SECONDS,1.2,'normal FNF rounds only show the next 1.2 s
 const friend=danceVisualProfile({id:'friend-like-you',friendLikeYou:true,cast:['mr_tree','computer','black']});
 assert.equal(friend.cover,'./assets/friend-like-you/stage-day.png');
 assert.deepEqual(friend.coverCast,['mr_tree','computer']);
-assert.equal(friend.arrowScale,.56);
-assert.equal(friend.maxArrowSize,46);
+assert.equal(friend.arrowScale,.9);
+assert.equal(friend.maxArrowSize,100);
 assert.equal(friend.receptorRatio.player,.17);
 assert.equal(friend.receptorRatio.opponent,.17);
 assert.equal(friend.flow.player,'up');

@@ -19,3 +19,12 @@
 - Mouse desktop at1024px retains top banks; phone390px retains four controls. Fixed inherited195px bank clamp and duplicate vertical translation affecting arrow sizes.
 - Review identified tablet native/fallback fullscreen restoration; menu, results and exit now remain visible in both paths.
 - Visual QA harness is unpublished and uses a fixed clock to inspect scenes; production continues using the original video/audio clock.
+
+## Follow-up after visual feedback
+
+- Removed the second Friend HUD countdown and the extra audio pre-roll in front of its source video.
+- Replaced the newly drawn Tree and Computer bodies with normal Sprunki source SVG silhouettes; Computer directional expressions change only its screen, avoiding mixer lyric-screen costumes.
+- Finale's five companions now use normal source silhouettes with a restrained beat; this avoids mixing unrelated FNF atlases into the scene.
+- Friend uses a song-clock progress bar at the top. Its lower health strip is absent; Black solo also hides the two health icons while retaining the score line.
+- Removed pose crossfades that could briefly produce doubled eyes/bodies.
+- Original source video description still says “Download soon”; these changes do not claim possession of the original Friend mod sprites or chart.

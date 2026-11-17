@@ -23,3 +23,17 @@
 .friend-safe-stage.friend-chorus-phase .friend-chorus-crowd{display:block!important;position:absolute!important;inset:0!important;height:100%!important;width:100%!important;pointer-events:none;z-index:3}.friend-safe-stage .friend-chorus-crowd>div{position:absolute!important;translate:none!important;scale:1!important;filter:none!important}.friend-safe-stage .friend-chorus-crowd>div:nth-child(1){left:1%;bottom:8%;width:15%;height:34%}.friend-safe-stage .friend-chorus-crowd>div:nth-child(2){left:11%;bottom:24%;width:13%;height:43%}.friend-safe-stage .friend-chorus-crowd>div:nth-child(3){left:47%;bottom:10%;width:16%;height:50%}.friend-safe-stage .friend-chorus-crowd>div:nth-child(4){right:1%;bottom:24%;width:14%;height:45%}.friend-safe-stage .friend-chorus-crowd>div:nth-child(5){right:1%;bottom:7%;width:19%;height:37%}.friend-safe-stage .friend-chorus-crowd canvas.dance-original{height:100%!important;max-height:none!important;width:100%!important;object-fit:contain}.friend-safe-stage .friend-chorus-crowd small{display:none!important}.friend-safe-stage.dance-mobile-mode.friend-chorus-phase .friend-chorus-crowd{left:75vw!important;right:auto!important;width:100vw!important}
 .friend-safe-stage .dance-stage .dance-bank{width:100%!important}.friend-safe-stage:not(.dance-mobile-mode):not(.dance-tablet-mode) .dance-stage .dance-targets{translate:none!important;transform:translateY(-50%)!important}
 .friend-safe-stage.dance-mobile-mode:not(.friend-night-phase) .dance-stage .dance-player,.friend-safe-stage.dance-mobile-mode:not(.friend-night-phase) .dance-stage .dance-rival{height:34dvh!important;bottom:40%!important;top:auto!important}.friend-safe-stage.dance-mobile-mode:not(.friend-night-phase) .dance-stage .dance-rival>div{height:100%!important}
+.friend-safe-stage.friend-night-phase>.dance-battle>.dance-balance{display:none!important}
+.friend-safe-stage .friend-background-dancer{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;transform-origin:center bottom}
+.friend-safe-stage.friend-chorus-phase .friend-background-dancer{animation:friend-background-beat var(--dance-beat,.5s) ease-in-out infinite}
+@keyframes friend-background-beat{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(2px) scaleY(.975)}}
+@media(prefers-reduced-motion:reduce){.friend-safe-stage.friend-chorus-phase .friend-background-dancer{animation:none}}
+.friend-safe-stage>.dance-battle>.dance-balance{height:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.friend-safe-stage>.dance-battle>.dance-balance>i{display:none!important}
+.friend-safe-stage .friend-fnf-top{background:#050505!important;border:0!important;box-shadow:none!important}
+.friend-safe-stage .friend-fnf-health{left:38%!important;right:38%!important;bottom:auto!important;top:14px!important;height:5px!important;border:1px solid #555!important;background:#202020!important}
+.friend-safe-stage .friend-fnf-health i{margin-left:0!important;width:var(--friend-progress,0%)!important;background:#fff!important;box-shadow:none!important}
+.friend-safe-stage .friend-fnf-time{background:#050505;z-index:1;padding:0 5px}
+.friend-safe-stage .dance-friend-layer{transition:none!important}
+.friend-safe-stage .dance-friend-layer:not(.is-active){visibility:hidden!important}
+.friend-safe-stage .dance-friend-layer.is-active{visibility:visible!important}

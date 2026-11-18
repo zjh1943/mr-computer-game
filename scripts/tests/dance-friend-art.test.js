@@ -26,3 +26,8 @@ test('the monitor head and stationary table cover exactly one full source sprite
  const whole=asset('computer-down'),body=asset('computer-body');
  for(const pose of ['idle','left','down','up','right']){const head=asset('computer-'+pose+'-head');assert.equal(head.readUInt32BE(16),whole.readUInt32BE(16));assert.equal(head.readUInt32BE(20)+body.readUInt32BE(20),whole.readUInt32BE(20));}
 });
+
+const {friendActionFrame}=require('../../computer-apps');
+test('authored action advances through anticipation, peak and return',()=>{assert.deepEqual(Array.from({length:10},(_,i)=>friendActionFrame(i/30)),[0,1,2,3,4,5,6,7,8,8]);assert.equal(friendActionFrame(-1),0);assert.equal(friendActionFrame(0),0);});
+test('held notes sustain the peak then return without restarting',()=>{assert.equal(friendActionFrame(.2,.5),4);assert.equal(friendActionFrame(.5,.5),4);assert.equal(friendActionFrame(16/30,.5),5);assert.equal(friendActionFrame(19/30,.5),8);});
+test('every actor direction has nine equal sized transparent frames',()=>{const root=path.join(__dirname,'../../assets/friend-like-you/frame-poses'),manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.json')));for(const [base,size] of Object.entries(manifest.layouts))for(const pose of ['left','down','up','right']){const png=fs.readFileSync(path.join(root,base+'-'+pose+'.png'));assert.equal(png.readUInt32BE(16),size.width*9);assert.equal(png.readUInt32BE(20),size.height);assert.equal(png[25],6);}});

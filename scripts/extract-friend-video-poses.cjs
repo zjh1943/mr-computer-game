@@ -6,6 +6,7 @@ const crcTable=Array.from({length:256},(_,n)=>{for(let k=0;k<8;k++)n=n&1?0xedb88
 function chunk(type,data){const name=Buffer.from(type),body=Buffer.concat([name,data]);let c=0xffffffff;for(const v of body)c=crcTable[(c^v)&255]^(c>>>8);const out=Buffer.alloc(data.length+12);out.writeUInt32BE(data.length);body.copy(out,4);out.writeUInt32BE((c^0xffffffff)>>>0,out.length-4);return out;}
 function pngWrite(file,w,h,data){const hdr=Buffer.alloc(13);hdr.writeUInt32BE(w);hdr.writeUInt32BE(h,4);hdr[8]=8;hdr[9]=6;const raw=Buffer.alloc((w*4+1)*h);for(let y=0;y<h;y++)data.copy(raw,y*(w*4+1)+1,y*w*4,(y+1)*w*4);fs.writeFileSync(file,Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',hdr),chunk('IDAT',zlib.deflateSync(raw)),chunk('IEND',Buffer.alloc(0))]));}
 function inside(x,y,points){let yes=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])yes=!yes;}return yes;}
+if(require.main===module){
 const input=path.resolve(__dirname,'../outputs/friend-review'),out=path.resolve(__dirname,'../assets/friend-like-you/video-poses');fs.mkdirSync(out,{recursive:true});
 function extract(name,file,box,regions,repair){const image=pngRead(path.join(input,file));const [x0,y0,w,h]=box,data=Buffer.alloc(w*h*4);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const sx=x+x0,sy=y+y0,p=(sy*image.w+sx)*4,q=(y*w+x)*4,color=[...image.data.subarray(p,p+3)];if(!regions.some(region=>inside(sx,sy,region.points)&&(region.accept?region.accept(color,sx,sy):true)))continue;const fixed=repair?.(color,sx,sy,image)||color;for(let k=0;k<3;k++)data[q+k]=fixed[k];data[q+3]=fixed[3]??255;}pngWrite(path.join(out,name+'.png'),w,h,data);return {name,file,box};}
 const dark=c=>Math.max(...c)<22||(c[0]<85&&c[0]>c[1]*1.4&&c[0]>c[2]*1.2), blackOrEyes=(c,x,y)=>dark(c)||(y>300&&y<435&&Math.min(...c)>160);
@@ -81,4 +82,5 @@ for(const pose of ['idle','left','down','up','right']){const im=pngRead(path.joi
 const rig=pngRead(path.join(out,'computer-down.png')),body=Buffer.from(rig.data.subarray(177*rig.w*4));pngWrite(path.join(out,'computer-body.png'),rig.w,rig.h-177,body);
 fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify({source:'https://www.youtube.com/watch?v=_bwDYOzbkBY',method:'Direct source-frame pixels with silhouette masks. No normal-mode costume assets.',frames:manifest},null,2));
 console.log('Extracted',manifest.length,'source-video poses.');
-module.exports={pngRead,pngWrite,extract,inside};
+}
+module.exports={pngRead,pngWrite};

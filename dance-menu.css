@@ -39,11 +39,11 @@
 .friend-safe-stage .dance-friend-layer.is-active{visibility:visible!important}
 /* Video-frame silhouettes share the source scene's cover scale. The canopy's
    captured upper edge stays under the source-style top HUD rather than floating. */
-.friend-safe-stage:not(.dance-mobile-mode):not(.dance-tablet-mode):not(.friend-night-phase) .dance-rival{left:calc(50% - max(35.9vw,63.82vh))!important;width:max(40vw,71.11vh)!important;height:83%!important;bottom:9.6%!important}
+.friend-safe-stage:not(.dance-mobile-mode):not(.dance-tablet-mode):not(.friend-night-phase) .dance-rival{left:2%!important;width:44%!important;height:83%!important;bottom:9.6%!important}
 .friend-safe-stage:not(.dance-mobile-mode):not(.dance-tablet-mode) .dance-stage .dance-targets{top:10.5%!important}
 .friend-safe-stage .dance-friend-layer{object-position:center bottom!important}
 .friend-safe-stage .friend-fnf-hud{grid-template-rows:7.6vh 1fr 25px!important}
-.friend-safe-stage.dance-tablet-mode:not(.friend-night-phase) .dance-stage .dance-rival{left:calc(50% - max(35.9vw,63.82vh))!important;width:max(40vw,71.11vh)!important;height:83%!important;bottom:22%!important}
+.friend-safe-stage.dance-tablet-mode:not(.friend-night-phase) .dance-stage .dance-rival{left:2%!important;width:44%!important;height:83%!important;bottom:22%!important}
 .friend-safe-stage>.dance-battle{left:22%!important;width:56%!important}
 .friend-safe-stage>.dance-battle>.dance-balance{height:12px!important;border:3px solid #090909!important;background:#babebe!important;box-shadow:none!important}
 .friend-safe-stage>.dance-battle>.dance-balance>i{display:block!important;background:#7d4300!important}
@@ -51,7 +51,7 @@
 .friend-safe-stage .dance-battle-icons{width:220px!important;height:120px!important;top:-99px!important;left:calc(100% - var(--player-share,50%) - 110px)!important}
 .friend-safe-stage .dance-friend-video-icon{width:120px!important;height:120px!important;background-size:contain!important;background-repeat:no-repeat!important;transform:none!important;animation:none!important}
 .friend-safe-stage .dance-battle-player-icon.dance-friend-video-icon{left:97px!important}
-.friend-safe-stage:not(.dance-mobile-mode) .dance-friend-opponent .dance-friend-layer{object-fit:cover!important}
+.friend-safe-stage:not(.dance-mobile-mode) .dance-friend-opponent .dance-friend-layer{object-fit:contain!important}
 .friend-safe-stage.friend-night-phase:not(.dance-mobile-mode) .dance-stage .dance-rival{left:calc(50% - max(23.5vw,41.75vh))!important;width:max(47vw,83.5vh)!important;height:83.5vh!important;bottom:8%!important}
 .friend-safe-stage.dance-mobile-mode:not(.friend-night-phase) .dance-stage .dance-rival{height:83dvh!important;bottom:25%!important;width:80vw!important}
 .friend-black-entry{display:none;pointer-events:none;position:absolute;z-index:4;max-width:none!important;width:110%;height:auto;top:-10%;left:calc(-100% + var(--friend-entry-x,0%));object-fit:contain}

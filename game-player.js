@@ -1,6 +1,6 @@
 /* Each standalone HTML declares just one game; engines load after entering that page. */
 (async()=>{
-const revision='20261117-friend-source2';
+const revision='20261118-friend-textures1';
 const host=document.querySelector('#standalone-game'),id=document.body.dataset.game;
 const load=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='/'+src+'?v='+revision;s.onload=resolve;s.onerror=()=>{s.remove();reject(Error('文件加载失败：'+src));};document.head.append(s);});
 window.ComputerExperience={fullscreen:()=>host.requestFullscreen?.(),isDamaged:()=>false};

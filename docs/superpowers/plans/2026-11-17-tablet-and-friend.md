@@ -28,3 +28,11 @@
 - Friend uses a song-clock progress bar at the top. Its lower health strip is absent; Black solo also hides the two health icons while retaining the score line.
 - Removed pose crossfades that could briefly produce doubled eyes/bodies.
 - Original source video description still says “Download soon”; these changes do not claim possession of the original Friend mod sprites or chart.
+
+## Source texture completion — 2026-11-18
+
+- Completed source-video PNG poses for the three leads, five finale companions, both icons and Black's entry silhouette. Added a complete separated computer head/body rig and preload coverage.
+- Replaced whole-monitor motion with authored audio-clock head motion; table/cable remain still. Tree sway uses its bottom pivot. Repeated notes restart their motion without a second CSS idle animation.
+- Kept the accepted arrow-direction and boundary corrections already present in the working tree.
+- Source frame cutouts retain some video compression/occlusion artifacts; they are not original downloadable sprite sheets.
+- PNG coverage and dimensions, 23 dance tests, and source-reference calibration checks pass. Native browser visual verification is unavailable after the browser tool change; do not claim a new in-browser screenshot or frame-perfect validation.

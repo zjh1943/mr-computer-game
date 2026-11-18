@@ -1,0 +1,320 @@
+{
+  "source": "https://www.youtube.com/watch?v=_bwDYOzbkBY",
+  "method": "Direct source-frame pixels with silhouette masks. No normal-mode costume assets.",
+  "frames": [
+    {
+      "name": "black-right",
+      "file": "t110-watch.png",
+      "box": [
+        314,
+        202,
+        265,
+        306
+      ]
+    },
+    {
+      "name": "black-down",
+      "file": "t100-watch.png",
+      "box": [
+        303,
+        257,
+        329,
+        264
+      ],
+      "alignment": {
+        "anchor": [
+          447,
+          518
+        ],
+        "scale": 1.25,
+        "canvas": [
+          480,
+          480
+        ],
+        "ground": [
+          240,
+          460
+        ]
+      }
+    },
+    {
+      "name": "mr-tree-up",
+      "file": "t050-watch.png",
+      "box": [
+        118,
+        106,
+        355,
+        413
+      ]
+    },
+    {
+      "name": "black-up",
+      "file": "source-black-up-decoded.png",
+      "box": [
+        282,
+        145,
+        124,
+        273
+      ]
+    },
+    {
+      "name": "computer-down",
+      "file": "t050-watch.png",
+      "box": [
+        623,
+        196,
+        167,
+        328
+      ]
+    },
+    {
+      "name": "mr-tree-up",
+      "file": "t050-watch.png",
+      "box": [
+        118,
+        106,
+        355,
+        413
+      ]
+    },
+    {
+      "name": "mr-tree-idle",
+      "file": "t020-watch.png",
+      "box": [
+        72,
+        106,
+        360,
+        415
+      ]
+    },
+    {
+      "name": "mr-tree-left",
+      "file": "t000-watch.png",
+      "box": [
+        120,
+        106,
+        370,
+        415
+      ]
+    },
+    {
+      "name": "mr-tree-down",
+      "file": "t040-watch.png",
+      "box": [
+        67,
+        102,
+        342,
+        392
+      ]
+    },
+    {
+      "name": "mr-tree-right",
+      "file": "t140-watch.png",
+      "box": [
+        135,
+        102,
+        317,
+        421
+      ]
+    },
+    {
+      "name": "computer-left",
+      "file": "t010-watch.png",
+      "box": [
+        536,
+        165,
+        117,
+        173
+      ],
+      "method": "Video head/stand on the video table, retaining source expression and tilt"
+    },
+    {
+      "name": "computer-up",
+      "file": "t020-watch.png",
+      "box": [
+        590,
+        171,
+        126,
+        194
+      ],
+      "method": "Video head/stand on the video table, retaining source expression and tilt"
+    },
+    {
+      "name": "computer-idle",
+      "file": "watch030.png",
+      "box": [
+        671,
+        190,
+        148,
+        201
+      ],
+      "method": "Video head/stand on the video table, retaining source expression and tilt"
+    },
+    {
+      "name": "computer-right",
+      "file": "t140-watch.png",
+      "box": [
+        655,
+        241,
+        118,
+        156
+      ],
+      "method": "Video head/stand on the video table, retaining source expression and tilt"
+    },
+    {
+      "name": "durple-idle",
+      "file": "t140-watch.png",
+      "box": [
+        20,
+        331,
+        147,
+        195
+      ]
+    },
+    {
+      "name": "wenda-idle",
+      "file": "t140-watch.png",
+      "box": [
+        74,
+        249,
+        164,
+        234
+      ]
+    },
+    {
+      "name": "vineria-idle",
+      "file": "t140-watch.png",
+      "box": [
+        440,
+        236,
+        148,
+        279
+      ]
+    },
+    {
+      "name": "jevin-idle",
+      "file": "t140-watch.png",
+      "box": [
+        824,
+        231,
+        79,
+        204
+      ]
+    },
+    {
+      "name": "oren-idle",
+      "file": "t140-watch.png",
+      "box": [
+        783,
+        376,
+        120,
+        149
+      ]
+    },
+    {
+      "name": "black-left",
+      "file": "source-black-left-decoded.png",
+      "box": [
+        226,
+        161,
+        168,
+        270
+      ]
+    },
+    {
+      "name": "icon-mr-tree",
+      "file": "t050-watch.png",
+      "box": [
+        393,
+        459,
+        115,
+        107
+      ]
+    },
+    {
+      "name": "icon-computer",
+      "file": "t050-watch.png",
+      "box": [
+        503,
+        467,
+        95,
+        99
+      ]
+    },
+    {
+      "name": "black-right",
+      "file": "source-black-right-clean-decoded.png",
+      "box": [
+        620,
+        310,
+        570,
+        650
+      ],
+      "alignment": {
+        "anchor": [
+          930,
+          950
+        ],
+        "scale": 0.55,
+        "canvas": [
+          480,
+          480
+        ],
+        "ground": [
+          240,
+          460
+        ]
+      }
+    },
+    {
+      "name": "black-up",
+      "file": "source-black-up-clean-decoded.png",
+      "box": [
+        730,
+        310,
+        390,
+        675
+      ],
+      "alignment": {
+        "anchor": [
+          936,
+          980
+        ],
+        "scale": 0.55,
+        "canvas": [
+          480,
+          480
+        ],
+        "ground": [
+          240,
+          460
+        ]
+      }
+    },
+    {
+      "name": "black-left",
+      "file": "source-black-left-clean-decoded.png",
+      "box": [
+        598,
+        352,
+        435,
+        625
+      ],
+      "alignment": {
+        "anchor": [
+          946,
+          974
+        ],
+        "scale": 0.55,
+        "canvas": [
+          480,
+          480
+        ],
+        "ground": [
+          240,
+          460
+        ]
+      }
+    }
+  ]
+}

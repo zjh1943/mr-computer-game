@@ -20,12 +20,19 @@
     return {id,audio:source.audio,beats:source.beats,gain:source.gain};
   };
   custom.mix=order.map(originalStem);
-  const friendBeat=60/120,friendNotes=[],friendPhases={dayStart:0,nightStart:55,finaleStart:115,end:150};
+  const friendBeat=60/120,friendNotes=[],friendPhases={dayStart:0,blackEntryStart:65.5,nightStart:67.5,finaleStart:114.13,end:150};
   const addFriendNote=(time,lane,side,hold=0)=>friendNotes.push({time:Number(time.toFixed(5)),lane,side,hit:side==='player',hold,animate:true});
   const dayPattern=[[0,0],[.5,2],[1,1],[1.5,3],[2.5,0],[3,1],[3.5,2]];
   for(let phrase=0,start=2;start<friendPhases.nightStart;phrase++,start+=4){const side=phrase%2?'player':'dad';for(let i=0;i<dayPattern.length;i++){const [offset,lane]=dayPattern[i];if(start+offset>=friendPhases.nightStart)break;addFriendNote(start+offset,(lane+phrase)%4,side,i===3&&phrase%3===2?1:0);}if(phrase%2===1&&start+3.5<friendPhases.nightStart)addFriendNote(start+3.5,(phrase+2)%4,'dad');}
   const nightPattern=[[0,2],[.25,1],[.5,3],[1.25,0]];
-  for(let phrase=0,start=friendPhases.nightStart;start<friendPhases.finaleStart;phrase++,start+=2){for(let i=0;i<nightPattern.length;i++){const [offset,lane]=nightPattern[i];addFriendNote(start+offset,(lane+phrase)%4,'player',i===3&&phrase%4===1?1.5:0);}}
+  for(let phrase=0,start=friendPhases.nightStart;start<friendPhases.finaleStart;phrase++,start+=2){
+    for(let i=0;i<nightPattern.length;i++){
+      const [offset,lane]=nightPattern[i],at=start+offset;
+      if(at>=friendPhases.finaleStart)break;
+      const hold=i===3&&phrase%4===1?Math.min(1.5,friendPhases.finaleStart-at):0;
+      addFriendNote(at,(lane+phrase)%4,'player',hold);
+    }
+  }
   const finalePattern=[[0,0],[.25,1],[.5,2],[1,3],[1.5,1]];
   for(let phrase=0,start=friendPhases.finaleStart;start<148;phrase++,start+=2){for(let i=0;i<finalePattern.length;i++){const [offset,lane]=finalePattern[i],at=start+offset;if(at>=148)break;addFriendNote(at,(lane+phrase)%4,'player',i===3&&phrase%3===0?.75:0);if(i%2===0)addFriendNote(at,(3-lane+phrase)%4,'dad',i===2&&phrase%4===2?.75:0);}}
   friendNotes.sort((a,b)=>a.time-b.time||Number(a.hit)-Number(b.hit));

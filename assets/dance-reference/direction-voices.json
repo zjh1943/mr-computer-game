@@ -1,0 +1,602 @@
+{
+  "version": 1,
+  "description": "Source chart direction notes with original vocal stems; no pitch synthesis.",
+  "characters": {
+    "oren": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 0.75,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "oren",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 256.69173,
+        "duration": 0.32,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "oren",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 7.125,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "oren",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 2.0625,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "oren",
+        "lane": 3
+      }
+    ],
+    "raddy": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 24.375,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "raddy",
+        "lane": 0
+      },
+      null,
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 29.8125,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "raddy",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 2.4812,
+        "duration": 0.20557,
+        "track": "reference-colorful-bunch",
+        "role": "gf",
+        "character": "raddy",
+        "lane": 3
+      }
+    ],
+    "simon": [
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Player.ogg",
+        "offset": 97.44361,
+        "duration": 0.6,
+        "track": "reference-colorful-bunch",
+        "role": "player",
+        "character": "simon",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Player.ogg",
+        "offset": 93.83459,
+        "duration": 0.6,
+        "track": "reference-colorful-bunch",
+        "role": "player",
+        "character": "simon",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Player.ogg",
+        "offset": 238.64662,
+        "duration": 0.6,
+        "track": "reference-colorful-bunch",
+        "role": "player",
+        "character": "simon",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Player.ogg",
+        "offset": 95.6391,
+        "duration": 0.6,
+        "track": "reference-colorful-bunch",
+        "role": "player",
+        "character": "simon",
+        "lane": 3
+      }
+    ],
+    "clukr": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 52.875,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "clukr",
+        "lane": 0
+      },
+      null,
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 11.72932,
+        "duration": 0.20557,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "clukr",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 52.5,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "clukr",
+        "lane": 3
+      }
+    ],
+    "funbot": [
+      {
+        "audio": "./assets/dance-reference/colorful-bunch-erect-voices-opponent.ogg",
+        "offset": 14.375,
+        "duration": 0.18833,
+        "track": "reference-colorful-bunch-erect",
+        "role": "dad",
+        "character": "funbot",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/colorful-bunch-erect-voices-opponent.ogg",
+        "offset": 13.95833,
+        "duration": 0.32,
+        "track": "reference-colorful-bunch-erect",
+        "role": "dad",
+        "character": "funbot",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 36.75,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "funbot",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 21.50376,
+        "duration": 0.13038,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "funbot",
+        "lane": 3
+      }
+    ],
+    "gray": [
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 31.35338,
+        "duration": 0.45113,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "gray",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 64.5,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "gray",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 33.15789,
+        "duration": 0.45113,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "gray",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 34.96241,
+        "duration": 0.45113,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "gray",
+        "lane": 3
+      }
+    ],
+    "lime": [
+      null,
+      null,
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 60.90226,
+        "duration": 0.33835,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "lime",
+        "lane": 2
+      },
+      null
+    ],
+    "sky": [
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 95.6391,
+        "duration": 0.45113,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "sky",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 89.54887,
+        "duration": 0.39474,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "sky",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 93.83459,
+        "duration": 0.45113,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "sky",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 88.42105,
+        "duration": 0.45113,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "sky",
+        "lane": 3
+      }
+    ],
+    "mr_sun": [
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 110.97744,
+        "duration": 0.20557,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "mr_sun",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 101.05263,
+        "duration": 0.20557,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "mr_sun",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 156.1875,
+        "duration": 0.1675,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "mr_sun",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 111.42857,
+        "duration": 0.20557,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "mr_sun",
+        "lane": 3
+      }
+    ],
+    "durple": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 81.5625,
+        "duration": 0.375,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "durple",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 78,
+        "duration": 0.46875,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "durple",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 76.6875,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "durple",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 73.6875,
+        "duration": 0.5625,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "durple",
+        "lane": 3
+      }
+    ],
+    "mr_tree": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 171,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "mr_tree",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 172.5,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "mr_tree",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 177,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "mr_tree",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 135.67669,
+        "duration": 0.22556,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "mr_tree",
+        "lane": 3
+      }
+    ],
+    "tunner": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 89.25,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "tunner",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 93.75,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "tunner",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 85.125,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "tunner",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 93,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "tunner",
+        "lane": 3
+      }
+    ],
+    "wenda": [
+      null,
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 239.77444,
+        "duration": 0.32,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "wenda",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 189.69925,
+        "duration": 0.32,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "wenda",
+        "lane": 2
+      },
+      null
+    ],
+    "jevin": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 192,
+        "duration": 0.6,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "jevin",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 218.34586,
+        "duration": 0.6,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "jevin",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 233.68421,
+        "duration": 0.6,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "jevin",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 220.82707,
+        "duration": 0.56391,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "jevin",
+        "lane": 3
+      }
+    ],
+    "pinki": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 207.1875,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "pinki",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 204.1875,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "pinki",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 205.125,
+        "duration": 0.375,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "pinki",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 238.19549,
+        "duration": 0.45113,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "pinki",
+        "lane": 3
+      }
+    ],
+    "garnold": [
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 246.76692,
+        "duration": 0.20556,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "garnold",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 246.99248,
+        "duration": 0.32,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "garnold",
+        "lane": 1
+      },
+      null,
+      null
+    ],
+    "brud": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 155.625,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "brud",
+        "lane": 0
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 144,
+        "duration": 0.1675,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "brud",
+        "lane": 1
+      },
+      {
+        "audio": "./assets/dance-reference/stems/colorful-bunch/Voices-Opponent.ogg",
+        "offset": 250.37594,
+        "duration": 0.20556,
+        "track": "reference-colorful-bunch",
+        "role": "dad",
+        "character": "brud",
+        "lane": 2
+      },
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 147.375,
+        "duration": 0.1675,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "brud",
+        "lane": 3
+      }
+    ],
+    "vineria": [
+      {
+        "audio": "./assets/dance-reference/stems/rainbrawl/Voices-Player.ogg",
+        "offset": 17.8125,
+        "duration": 0.32,
+        "track": "reference-rainbrawl",
+        "role": "player",
+        "character": "vineria",
+        "lane": 0
+      },
+      null,
+      null,
+      {
+        "audio": "./assets/dance-reference/colorful-bunch-erect-voices-opponent.ogg",
+        "offset": 8.95833,
+        "duration": 0.18834,
+        "track": "reference-colorful-bunch-erect",
+        "role": "gf",
+        "character": "vineria",
+        "lane": 3
+      }
+    ]
+  }
+}

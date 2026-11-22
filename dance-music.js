@@ -106,7 +106,7 @@
     };
   }
   async function prepareStems(ctx,track,hero=null){
-    const choice=typeof module!=='undefined'?require('./dance-character-choice'):window.DanceCharacterChoice;const voiceSchedule=hero?await choice.prepareVoice(ctx,track,hero,cast):null;
+    const choice=typeof module!=='undefined'?require('./dance-character-choice'):window.DanceCharacterChoice;const voiceSchedule=hero?await choice.prepareVoice(ctx,track,hero,cast,hero==='computer'?null:await choice.loadReferences()):null;
     const buffers=await Promise.all(track.audioStems.map(async path=>{
       const response=await fetch(path);if(!response.ok)throw Error('歌曲分轨读取失败');
       return ctx.decodeAudioData(await response.arrayBuffer());
@@ -115,7 +115,7 @@
       const voice=voiceSchedule?.(start);
       const channels=buffers.map((buffer,index)=>{
         const source=ctx.createBufferSource(),gain=ctx.createGain();
-        source.buffer=buffer;const routing=hero&&track.audioStems[index].toLowerCase().includes('voices-player')?ctx.createGain():null;source.connect(gain).connect(routing||ctx.destination);routing?.connect(ctx.destination);if(routing){routing.gain.setValueAtTime(choice.needsOwnVoice(track,hero,0)?0:1,start);for(const event of track.events||[])if(event.side==='player'&&'character' in event)routing.gain.setValueAtTime(choice.needsOwnVoice(track,hero,event.time)?0:1,start+event.time);}source.start(start);
+        source.buffer=buffer;const routing=hero&&track.audioStems[index].toLowerCase().includes('voices-player')?ctx.createGain():null;source.connect(gain).connect(routing||ctx.destination);routing?.connect(ctx.destination);if(routing){routing.gain.setValueAtTime(choice.replaceSourcePlayer(track,hero,0)?0:1,start);for(const event of track.events||[])if('character' in event)routing.gain.setValueAtTime(choice.replaceSourcePlayer(track,hero,event.time)?0:1,start+event.time);}source.start(start);
         if(track.playbackDuration){gain.gain.setValueAtTime(1,start+Math.max(0,track.playbackDuration-.16));gain.gain.linearRampToValueAtTime(0,start+track.playbackDuration);source.stop(start+track.playbackDuration);}
         return {source,gain,routing,path:track.audioStems[index]};
       });

@@ -66,11 +66,30 @@
 .friend-safe-stage .dance-friend-view{translate:-50% 0!important}
 .dance-menu-character{display:flex;justify-content:center;align-items:center;gap:10px;color:#fff;margin:12px 0;font-size:18px}.dance-menu-character select{background:#161824;color:#fff;border:2px solid #70e7ef;border-radius:6px;padding:9px;max-width:230px;font:inherit}
 .dance-character-choice .dance-stage .dance-player{transition:right .35s ease,left .35s ease!important}
-.dance-character-choice.dance-choice-center:not(.dance-mobile-mode) .dance-stage .dance-player{position:absolute!important;grid-column:1/-1!important;left:auto!important;right:35%!important;width:30%!important;z-index:4;transform:none!important}
-.dance-character-choice.dance-choice-center.dance-mobile-mode .dance-stage .dance-player{left:109vw!important;right:auto!important}
 @media(prefers-reduced-motion:reduce){.dance-character-choice .dance-stage .dance-player{transition:none!important}}
 /* Match the source sprite's native facing so opponents look toward each other. */
 .dance-character-choice .dance-player>.dance-original,.dance-character-choice .dance-rival .dance-original{transform:none!important;scale:var(--rain-source-flip,1) 1!important;transform-origin:50% 100%!important}
 .dance-character-choice .dance-stage.dance-rainbrawl-stage .dance-player canvas.dance-original,.dance-character-choice .dance-stage.dance-rainbrawl-stage .dance-rival canvas.dance-original{transform:none!important;scale:var(--rain-source-flip,1) 1!important}
-.dance-character-choice.dance-choice-center.dance-mobile-mode .dance-mobile-world{translate:-25vw 0!important}
 .dance-character-sound-note{display:block;text-align:center;color:#ddd;font-size:12px;margin:4px 0}
+/* Cast grouping follows the source scene's one- or two-opponent cast. */
+.dance-cast-layout .dance-stage .dance-player,.dance-cast-layout .dance-stage .dance-rival{position:absolute!important;grid-column:1/-1!important;grid-row:1/-1!important;top:auto!important;bottom:12%!important;height:65%!important;max-height:none!important;margin:0!important;opacity:1!important;transform:none!important;translate:0 0!important;transition:left .3s ease,right .3s ease!important}
+.dance-cast-layout .dance-stage .dance-rival{display:block!important;overflow:visible!important}.dance-cast-layout .dance-stage .dance-rival>div{height:100%!important;width:100%!important}.dance-cast-layout .dance-stage canvas.dance-original{width:100%!important;height:100%!important;object-fit:contain!important}
+.dance-cast-layout[data-cast-layout='same-pair'] .dance-stage .dance-rival{left:30%!important;right:auto!important;width:19%!important}.dance-cast-layout[data-cast-layout='same-pair'] .dance-stage .dance-player{left:auto!important;right:30%!important;width:19%!important}
+.dance-cast-layout[data-cast-layout='same-solo'] .dance-stage .dance-player{left:36%!important;right:auto!important;width:28%!important}.dance-cast-layout[data-cast-layout='computer-solo'] .dance-stage .dance-rival{left:36%!important;right:auto!important;width:28%!important}
+.dance-cast-layout .dance-stage .dance-player[data-choice-hidden='true'],.dance-cast-layout .dance-stage .dance-rival[data-choice-hidden='true'],.dance-cast-layout .dance-stage .dance-rival>div[data-choice-hidden='true']{display:none!important;visibility:hidden!important}
+.dance-cast-layout.dance-mobile-mode .dance-mobile-world{translate:-25vw 0!important}.dance-cast-layout.dance-mobile-mode .dance-stage .dance-player,.dance-cast-layout.dance-mobile-mode .dance-stage .dance-rival{bottom:34%!important;height:48%!important}
+.dance-cast-layout.dance-mobile-mode[data-cast-layout='same-pair'] .dance-stage .dance-rival{left:104vw!important;width:20vw!important}.dance-cast-layout.dance-mobile-mode[data-cast-layout='same-pair'] .dance-stage .dance-player{left:126vw!important;right:auto!important;width:20vw!important}
+.dance-cast-layout.dance-mobile-mode[data-cast-layout='same-solo'] .dance-stage .dance-player,.dance-cast-layout.dance-mobile-mode[data-cast-layout='computer-solo'] .dance-stage .dance-rival{left:111vw!important;right:auto!important;width:28vw!important}
+.dance-cast-layout.dance-tablet-mode .dance-stage .dance-player,.dance-cast-layout.dance-tablet-mode .dance-stage .dance-rival{bottom:25%!important;height:57%!important}
+@media(prefers-reduced-motion:reduce){.dance-cast-layout .dance-stage .dance-player,.dance-cast-layout .dance-stage .dance-rival{transition:none!important}}
+/* Source duets keep distinct performers, e.g. Oren and Raddy, on our side. */
+.dance-character-choice .dance-stage .dance-player.dance-has-companion{position:absolute!important;grid-column:1/-1!important;grid-row:1/-1!important;left:auto!important;right:5%!important;bottom:12%!important;width:36%!important;height:55%!important}
+.dance-player.dance-has-companion>.dance-original{position:absolute!important;left:0!important;bottom:0!important;width:48%!important;height:100%!important;object-fit:contain!important}
+.dance-player-companion{position:absolute;left:52%;bottom:0;width:48%;height:100%;text-align:center}.dance-player-companion>.dance-original{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important;scale:var(--rain-source-flip,1) 1!important}.dance-player.dance-has-companion>small{position:absolute;left:24%;bottom:-12px;translate:-50% 0}.dance-player-companion>small{position:absolute;left:50%;bottom:-12px;translate:-50% 0}
+.dance-cast-layout[data-cast-layout='same-pair'] .dance-stage .dance-player.dance-has-companion{left:30%!important;right:auto!important;width:40%!important;height:60%!important}
+.dance-character-choice.dance-mobile-mode .dance-stage .dance-player.dance-has-companion{left:136vw!important;right:auto!important;width:48vw!important;bottom:34%!important;height:48%!important}
+.dance-cast-layout.dance-mobile-mode[data-cast-layout='same-pair'] .dance-stage .dance-player.dance-has-companion{left:101vw!important;right:auto!important;width:48vw!important}
+.dance-character-choice.dance-tablet-mode .dance-stage .dance-player.dance-has-companion{bottom:25%!important;height:57%!important}
+.dance-character-choice .dance-stage .dance-player.dance-has-companion>canvas.dance-original,.dance-cast-layout .dance-stage .dance-player.dance-has-companion>canvas.dance-original{width:48%!important;height:100%!important;object-position:center bottom!important}
+.dance-player-companion>canvas.dance-original{object-position:center bottom!important}
+.dance-character-choice .dance-stage .dance-player .dance-player-companion>canvas.dance-original{position:absolute!important;left:0!important;bottom:0!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important}

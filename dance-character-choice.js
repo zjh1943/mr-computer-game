@@ -1,7 +1,7 @@
 /* Optional performers use existing songs, source voices and cast timing. */
 (()=>{
  const normalId=id=>id?.replace(/-(playable|angry)$/,'');
- const names={oren:'奥伦',raddy:'瑞迪',clukr:'克鲁克',funbot:'机器人',vineria:'维内莉娅',gray:'格雷',brud:'布鲁德',garnold:'加诺德',lime:'奥瓦克斯',sky:'小天',mr_sun:'太阳先生',durple:'德普',mr_tree:'树先生',simon:'西蒙',tunner:'坦纳',computer:'电脑先生',wenda:'温达',pinki:'平琪',jevin:'杰文',black:'布莱克'};
+ const names={oren:'奥伦',raddy:'瑞迪',clukr:'克拉克',funbot:'机器人',vineria:'薇美利亚',gray:'格雷',brud:'布鲁德',garnold:'加诺德',lime:'奥瓦克斯',sky:'小天',mr_sun:'太阳先生',durple:'德普',mr_tree:'树先生',simon:'西蒙',tunner:'坦纳',computer:'电脑先生',wenda:'温达',pinki:'平琪',jevin:'杰文',black:'布莱克'};
  function rolesAt(track,time){const roles={...track.initial};for(const event of track.events||[]){if(event.time>time)break;if('character' in event)roles[event.side]=event.character;}return roles;}
  function performerAt(track,time){return rolesAt(track,time).player||track.lead;}
  function performanceAt(track,hero,time){const original=performerAt(track,time),normal=normalId(original);return {original,special:!!hero&&(normal===hero||normal==='computer')};}
@@ -29,15 +29,15 @@
   await Promise.all([...urls].map(async url=>{const response=await fetch(url);if(!response.ok)throw Error('角色演奏声音读取失败');buffers.set(url,await ctx.decodeAudioData(await response.arrayBuffer()));}));
   for(const material of materials.values()){material.fallback=buffers.get(material.art.audio);material.voiceStart=audibleOffset(material.fallback);}
   return start=>{
-   const gain=ctx.createGain(),sources=[];gain.connect(ctx.destination);const list=track.notes.filter(n=>n.side==='player'&&n.hit!==false);
+   const gain=ctx.createGain(),sources=[],limiter=ctx.createDynamicsCompressor?.();if(limiter){limiter.threshold.value=-6;limiter.knee.value=12;limiter.ratio.value=4;limiter.attack.value=.006;limiter.release.value=.12;gain.connect(limiter).connect(ctx.destination);}else gain.connect(ctx.destination);const list=track.notes.filter(n=>n.side==='player'&&n.hit!==false);
    for(let i=0;i<list.length;i++){const note=list[i];for(const id of selectedVoicesAt(track,hero,note.time)){
     if(!needsOwnVoice(track,id,note.time))continue;
     const {bank,fallback,voiceStart}=materials.get(id);let reference=bank[note.lane],buffer=reference?buffers.get(reference.audio):fallback;
     if(reference&&reference.offset+reference.duration>buffer.duration){reference=null;buffer=fallback;}
     const rate=reference?1:2**([-2,0,2,4][note.lane]/12),offset=reference?reference.offset:voiceStart,length=Math.min(Math.max(.18,note.hold||.32),Math.max(.08,(list[i+1]?.time??note.time+.5)-note.time-.015),reference?.duration??Infinity,(buffer.duration-offset)/rate);
-    const at=start+note.time,source=ctx.createBufferSource(),envelope=ctx.createGain();source.buffer=buffer;source.playbackRate.value=rate;source.connect(envelope).connect(gain);envelope.gain.setValueAtTime(0,at);envelope.gain.linearRampToValueAtTime(voices.length>1?.6:.8,at+.008);envelope.gain.setValueAtTime(voices.length>1?.6:.8,at+Math.max(.009,length-.025));envelope.gain.linearRampToValueAtTime(0,at+length);source.start(at,offset,length*rate);source.onended=()=>{source.disconnect();envelope.disconnect();};sources.push({source,envelope});
+    const at=start+note.time,source=ctx.createBufferSource(),envelope=ctx.createGain();source.buffer=buffer;source.playbackRate.value=rate;source.connect(envelope).connect(gain);envelope.gain.setValueAtTime(0,at);envelope.gain.linearRampToValueAtTime(voices.length>1?1.05:1.4,at+.008);envelope.gain.setValueAtTime(voices.length>1?1.05:1.4,at+Math.max(.009,length-.025));envelope.gain.linearRampToValueAtTime(0,at+length);source.start(at,offset,length*rate);source.onended=()=>{source.disconnect();envelope.disconnect();};sources.push({source,envelope});
    }}
-   return {setVoice(enabled){gain.gain.setValueAtTime(enabled?1:0,ctx.currentTime);},stop(){for(const {source,envelope} of sources){source.onended=null;try{source.stop();}catch{}source.disconnect();envelope.disconnect();}gain.disconnect();}};
+   return {setVoice(enabled){gain.gain.setValueAtTime(enabled?1:0,ctx.currentTime);},stop(){for(const {source,envelope} of sources){source.onended=null;try{source.stop();}catch{}source.disconnect();envelope.disconnect();}gain.disconnect();limiter?.disconnect();}};
   };
  }
 

@@ -64,3 +64,13 @@
    move the fixed table and overwrite the monitor rig's horizontal centering. */
 .friend-safe-stage .dance-friend-actor{animation:none!important}
 .friend-safe-stage .dance-friend-view{translate:-50% 0!important}
+.dance-menu-character{display:flex;justify-content:center;align-items:center;gap:10px;color:#fff;margin:12px 0;font-size:18px}.dance-menu-character select{background:#161824;color:#fff;border:2px solid #70e7ef;border-radius:6px;padding:9px;max-width:230px;font:inherit}
+.dance-character-choice .dance-stage .dance-player{transition:right .35s ease,left .35s ease!important}
+.dance-character-choice.dance-choice-center:not(.dance-mobile-mode) .dance-stage .dance-player{position:absolute!important;grid-column:1/-1!important;left:auto!important;right:35%!important;width:30%!important;z-index:4;transform:none!important}
+.dance-character-choice.dance-choice-center.dance-mobile-mode .dance-stage .dance-player{left:109vw!important;right:auto!important}
+@media(prefers-reduced-motion:reduce){.dance-character-choice .dance-stage .dance-player{transition:none!important}}
+/* Match the source sprite's native facing so opponents look toward each other. */
+.dance-character-choice .dance-player>.dance-original,.dance-character-choice .dance-rival .dance-original{transform:none!important;scale:var(--rain-source-flip,1) 1!important;transform-origin:50% 100%!important}
+.dance-character-choice .dance-stage.dance-rainbrawl-stage .dance-player canvas.dance-original,.dance-character-choice .dance-stage.dance-rainbrawl-stage .dance-rival canvas.dance-original{transform:none!important;scale:var(--rain-source-flip,1) 1!important}
+.dance-character-choice.dance-choice-center.dance-mobile-mode .dance-mobile-world{translate:-25vw 0!important}
+.dance-character-sound-note{display:block;text-align:center;color:#ddd;font-size:12px;margin:4px 0}

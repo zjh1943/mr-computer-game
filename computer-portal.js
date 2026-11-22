@@ -1,7 +1,7 @@
 (()=>{
-const loaded=new Map(),revision='20261118-friend-frames2';
+const loaded=new Map(),revision='20261122-character-choice2';
 function load(src){if(!loaded.has(src))loaded.set(src,new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='./'+src+'?v='+revision;s.onload=resolve;s.onerror=()=>{loaded.delete(src);s.remove();reject(Error('加载失败，请再试一次'));};document.head.append(s);}));return loaded.get(src);}
-const groups={blocks3d:['voxel-rules.js','voxel-terrain.js','voxel-workstations.js','voxel-audio.js','voxel-survival.js','voxel-shell.js','voxel-world.js'],dance:['dance-menu.js','source-performance-data.js','dance-reference-data.js','dance-reference.js','dance-music.js'],music:['source-performance-data.js','dance-reference-data.js','dance-reference.js','dance-music.js']};
+const groups={blocks3d:['voxel-rules.js','voxel-terrain.js','voxel-workstations.js','voxel-audio.js','voxel-survival.js','voxel-shell.js','voxel-world.js'],dance:['dance-character-choice.js','dance-menu.js','source-performance-data.js','dance-reference-data.js','dance-reference.js','dance-music.js'],music:['source-performance-data.js','dance-reference-data.js','dance-reference.js','dance-music.js']};
 const original=openComputerApp;let request=0;
 openComputerApp=async function(id){const token=++request;try{for(const file of groups[id]||[])await load(file);if(token!==request)return;original(id);if(id==='store'){
 const note=document.createElement('p');note.textContent='安装小游戏到电脑桌面，或者从下面的独立入口打开完整游戏。';computerAppContent.append(note);

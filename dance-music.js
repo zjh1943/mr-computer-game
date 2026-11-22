@@ -105,22 +105,25 @@
       };
     };
   }
-  async function prepareStems(ctx,track){
+  async function prepareStems(ctx,track,hero=null){
+    const choice=typeof module!=='undefined'?require('./dance-character-choice'):window.DanceCharacterChoice;const voiceSchedule=hero?await choice.prepareVoice(ctx,track,hero,cast):null;
     const buffers=await Promise.all(track.audioStems.map(async path=>{
       const response=await fetch(path);if(!response.ok)throw Error('歌曲分轨读取失败');
       return ctx.decodeAudioData(await response.arrayBuffer());
     }));
     return start=>{
+      const voice=voiceSchedule?.(start);
       const channels=buffers.map((buffer,index)=>{
         const source=ctx.createBufferSource(),gain=ctx.createGain();
-        source.buffer=buffer;source.connect(gain).connect(ctx.destination);source.start(start);
+        source.buffer=buffer;const routing=hero&&track.audioStems[index].toLowerCase().includes('voices-player')?ctx.createGain():null;source.connect(gain).connect(routing||ctx.destination);routing?.connect(ctx.destination);if(routing){routing.gain.setValueAtTime(choice.needsOwnVoice(track,hero,0)?0:1,start);for(const event of track.events||[])if(event.side==='player'&&'character' in event)routing.gain.setValueAtTime(choice.needsOwnVoice(track,hero,event.time)?0:1,start+event.time);}source.start(start);
         if(track.playbackDuration){gain.gain.setValueAtTime(1,start+Math.max(0,track.playbackDuration-.16));gain.gain.linearRampToValueAtTime(0,start+track.playbackDuration);source.stop(start+track.playbackDuration);}
-        return {source,gain,path:track.audioStems[index]};
+        return {source,gain,routing,path:track.audioStems[index]};
       });
       const playback={onended:null,setVoice(role,enabled){
+        if(role==='player')voice?.setVoice(enabled);
         const channel=channels.find(c=>c.path.toLowerCase().includes('voices-'+role));
         channel?.gain.gain.setValueAtTime(enabled?1:0,ctx.currentTime);
-      },stop(){channels.forEach(({source,gain})=>{source.onended=null;try{source.stop();}catch{}source.disconnect();gain.disconnect();});}};
+      },stop(){voice?.stop();channels.forEach(({source,gain,routing})=>{routing?.disconnect();source.onended=null;try{source.stop();}catch{}source.disconnect();gain.disconnect();});}};
       channels[0].source.onended=()=>playback.onended?.();
       return playback;
     };
